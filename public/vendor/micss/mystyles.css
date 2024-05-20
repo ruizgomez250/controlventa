@@ -1,0 +1,155 @@
+h1.custom-heading {
+    background: linear-gradient(to bottom, #000000, #333333);
+    color: white;
+    padding: 5px;
+    border-radius: 100px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+h1.custom-heading::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 20px;
+    background: linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent);
+    border-radius: 50px 0 0 0;
+}
+
+h1.custom-heading::after {
+    right: 0;
+    border-radius: 0 50px 0 0;
+}
+/**** h5 ****/
+h5.custom-heading {
+    background: linear-gradient(to bottom, #0000ff , #6b5efc);
+    color: white;
+    padding: 5px;
+    border-radius: 100px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 255, 1 );
+    position: relative;
+    overflow: hidden;
+}
+
+h5.custom-heading::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 20px;
+    background: linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent);
+    border-radius: 50px 0 0 0;
+}
+
+h5.custom-heading::after {
+    right: 0;
+    border-radius: 0 50px 0 0;
+}
+.custom-icon-box {
+    display: inline-block;
+    position: relative;
+}
+
+/* Estilo para el círculo */
+.custom-icon-box-black i {
+    background-color: #000; /* Color de fondo del círculo */
+    border-radius: 50%; /* Forma circular */
+    padding: 5px; /* Espacio dentro del círculo */
+    display: inline-block;
+    position: relative;
+    font-size: 24px; /* Tamaño del icono */
+}
+.custom-icon-box-orange i {
+    background-color: #f74949; /* Color de fondo del círculo */
+    border-radius: 50%; /* Forma circular */
+    padding: 5px; /* Espacio dentro del círculo */
+    display: inline-block;
+    position: relative;
+    font-size: 24px; /* Tamaño del icono */
+}
+.custom-icon-box-turquesa i {
+    background-color: #5DC1B9; /* Color de fondo del círculo */
+    border-radius: 50%; /* Forma circular */
+    padding: 5px; /* Espacio dentro del círculo */
+    display: inline-block;
+    position: relative;
+    font-size: 24px; /* Tamaño del icono */
+}
+.custom-icon-box-yellow i {
+    background-color: #f5f514; /* Color de fondo del círculo */
+    border-radius: 50%; /* Forma circular */
+    padding: 5px; /* Espacio dentro del círculo */
+    display: inline-block;
+    position: relative;
+    font-size: 24px; /* Tamaño del icono */
+}
+.custom-icon-box-verde i {
+    background-color: #3af514; /* Color de fondo del círculo */
+    border-radius: 50%; /* Forma circular */
+    padding: 5px; /* Espacio dentro del círculo */
+    display: inline-block;
+    position: relative;
+    font-size: 24px; /* Tamaño del icono */
+}
+.container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            overflow: hidden;
+        }
+
+        /* Estilos para la imagen del perrito */
+        .dog {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 100%; /* Máximo ancho igual al contenedor */
+            max-height: 100%; /* Máximo alto igual al contenedor */
+            object-fit: cover; /* Ajuste la imagen para cubrir el contenedor */
+            animation: sleeping 3s infinite alternate;
+        }
+
+        /* Estilos para el texto */
+        .text {
+            margin: 0;
+        }
+
+        /* Estilos para el pajarito */
+        .bird {
+    position: absolute;
+    bottom: 80px;
+    right: -50px;
+    animation: flying 4s infinite alternate;
+    width: 50px; /* Ancho del pajarito */
+}
+
+        /* Animación para el perrito durmiendo */
+        @keyframes sleeping {
+            from {
+                transform: translateX(-50%) rotate(0deg);
+            }
+
+            to {
+                transform: translateX(-50%) rotate(5deg);
+            }
+        }
+
+        /* Animación para el pajarito volando */
+        @keyframes flying {
+            from {
+                right: -50px;
+            }
+
+            to {
+                right: 150%;
+            }
+        }
+#preview {
+        width: 100px; /* Ancho deseado */
+        height: 100px; /* Alto deseado */
+    }
