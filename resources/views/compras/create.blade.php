@@ -14,7 +14,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <form action="{{ route('compra.store') }}" method="post" autocomplete="off">
+                    <form action="{{ route('compra.store') }}" method="post" autocomplete="off" onkeypress="return event.keyCode != 13;">
                         @csrf
                         @method('POST')
                         {{-- 'id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'id_estado','pcosto', 'pventa', 'observacion' --}}
@@ -32,9 +32,9 @@
 
 
                             <x-adminlte-input type="text" id="nrofactura" name="nrofactura" label="Factura Nº"
-                                fgroup-class="col-md-2" required/>
+                                fgroup-class="col-md-2" required />
                             <x-adminlte-input type="text" id="timbrado" name="timbrado" label="Timbrado Nº"
-                                fgroup-class="col-md-2" required/>
+                                fgroup-class="col-md-2" required />
                             <div class="card" style="width: 14rem;margin-top: -18px">
                                 <div class="card-body">
                                     <label for="">CONDICIÓN DE COMPRA</label>
@@ -81,17 +81,17 @@
                         <hr>
 
                         <div id="items">
-                            <div class="item" style="background-color: yellow;">
+                            <div class="item" style="background-color: #343A40;">
                                 <div class="row ml-2">
-                                    <label for="" class="col-1">ITEM</label>
-                                    <label for="" class="col-1">UNDM</label>
-                                    <label for="" class="col-1">CÓDIGO</label>
-                                    <label for="" class="col-1">CANTIDAD</label>
-                                    <label for="" class="col-3">DESCRIPCION</label>
-                                    <label for="" class="col-1">PRECIO UNITARIO</label>
-                                    <label for="" class="col-1">EXENTAS</label>
-                                    <label for="" class="col-1">5%</label>
-                                    <label for="" class="col-1">10%</label>
+                                    <label for="" class="col-1" style="color: white;">ITEM</label>
+                                    <label for="" class="col-1" style="color: white;">UNDM</label>
+                                    <label for="" class="col-1" style="color: white;">CÓDIGO</label>
+                                    <label for="" class="col-1" style="color: white;">CANTIDAD</label>
+                                    <label for="" class="col-3" style="color: white;">DESCRIPCION</label>
+                                    <label for="" class="col-1" style="color: white;">PRECIO UNITARIO</label>
+                                    <label for="" class="col-1" style="color: white;">EXENTAS</label>
+                                    <label for="" class="col-1" style="color: white;">5%</label>
+                                    <label for="" class="col-1" style="color: white;">10%</label>
                                 </div>
                             </div>
                         </div>
@@ -99,7 +99,7 @@
                         <button onclick="addNewItem()" class="btn btn-primary mt-2" type="button">Agregar Ítem</button>
 
                         <!-- Agrega este elemento para mostrar la suma total -->
-                    <div>Suma Total: <span id="total-sum">0</span></div>
+                        <div>Suma Total: <span id="total-sum">0</span></div>
                         <div class="row">
                             <div class="form-group col-md-12">
                                 <a class="btn btn-danger mx-1" style="float: right;"
@@ -109,7 +109,7 @@
                             </div>
                         </div>
                     </form>
-                    
+
                 </div>
             </div>
         </div>
@@ -512,7 +512,7 @@
 
         function cambiarDescripcion(inputCodigo) {
             var codigoValue = inputCodigo.value;
-            traerCargarDatosProducto(codigoValue,inputCodigo);
+            traerCargarDatosProducto(codigoValue, inputCodigo);
         }
 
         function cambiarCodigo(inputProducto) {
@@ -522,12 +522,12 @@
             if ($(inputProducto).data('ui-autocomplete').selectedItem) {
                 productoId = $(inputProducto).data('ui-autocomplete').selectedItem.codigo;
             }
-            traerCargarDatosProducto(productoId,inputProducto);
+            traerCargarDatosProducto(productoId, inputProducto);
             actualizarSumaTotal();
 
         }
 
-        function traerCargarDatosProducto(codigoValue,inputCodigo) {
+        function traerCargarDatosProducto(codigoValue, inputCodigo) {
             $.ajax({
                 url: '{{ route('obtenercodproducto') }}',
                 method: 'POST',

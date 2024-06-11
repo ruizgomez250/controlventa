@@ -350,6 +350,10 @@ return [
                     'text' => 'Registrar Productos',
                     'url'  => '/producto/create',
                 ],
+                [
+                    'text' => 'QR de Productos',
+                    'url'  => 'qrproductover',
+                ],
             ],
         ],
         [
@@ -462,7 +466,13 @@ return [
             'classes' => 'custom-icon-box-black',
             'content' => '<i class="fas fa-box"></i>',
         ],
-
+        [
+            'text' => 'Configuracion',
+            'url'  => '/configuracion',
+            'icon' => 'fas fa-fw fa-cogs', // Icono de engranaje
+            'classes' => 'custom-icon-box-black',
+            'content' => '<i class="fas fa-cogs"></i>',
+        ],
 
 
 

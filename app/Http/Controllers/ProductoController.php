@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
+
 use App\Models\Producto;
 use App\Models\Opcion;
+use App\Models\TablaPorcentaje;
 use App\Services\PermisoService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use BaconQrCode\Encoder\QrCode;
-use BaconQrCode\Renderer\Image\Png;
 use SimpleSoftwareIO\QrCode\Facades\QrCode as FacadesQrCode;
+
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
+
+use TCPDF;
 
 class ProductoController extends Controller
 {
@@ -100,7 +104,6 @@ class ProductoController extends Controller
      */
     public function show(string $id)
     {
-        //
     }
 
     /**
@@ -113,7 +116,7 @@ class ProductoController extends Controller
             $iniFilePath = public_path('config.ini');
 
             // Verificar si el archivo existe antes de intentar leerlo
-            $host=0;
+            $host = 0;
             if (file_exists($iniFilePath)) {
                 // Lee el archivo config.ini y carga su contenido en un array estructurado
                 $config = parse_ini_file($iniFilePath, true);
@@ -121,11 +124,11 @@ class ProductoController extends Controller
                 // Accede al valor del host dentro de la sección database
                 $host = $config['database']['host'];
                 // Haz algo con el valor obtenido, como pasarlo a una vista
-                
+
             }
-            
+
             //$url = route('cargardetalleventa', $producto->codigo); // Genera la URL con el ID como parámetro
-            $url = 'http://'.$host.'/controlventa/public/cargardetalleventa/' . $producto->codigo;
+            $url = 'http://' . $host . '/controlventa/public/cargardetalleventa/' . $producto->codigo;
             // // Genera el código QR con la URL generada
             $qrCode = FacadesQrCode::size(100)->generate($url);
 
@@ -199,17 +202,32 @@ class ProductoController extends Controller
     }
     public function verifcod(Request $request)
     {
+
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
         if ($tienePermiso) {
             try {
                 // Obtén el código enviado por AJAX
                 $codigo = $request->input('codigo');
+                $cantpago = $request->input('cantpago');
 
                 // Busca el producto en la base de datos por el código
                 $producto = Producto::with('unidaddemedida')->where('codigo', $codigo)->first();
 
                 // Verifica si se encontró un producto
                 if ($producto) {
+                    if ($cantpago > 1) {
+                        $tablaPorcentaje = TablaPorcentaje::where('cuota', $cantpago)
+                            ->where('estado', 1)
+                            ->first();
+
+                        // Verificar si se encontró el registro
+                        if ($tablaPorcentaje) {
+                            $precioVentaContado = $producto->pventa;
+                            $porcentajeRecargo = $tablaPorcentaje->porcentaje;
+                            $precio = $precioVentaContado * (1 + $porcentajeRecargo / 100);
+                            $producto->pventa = $precio;
+                        }
+                    }
                     // Devuelve los datos del producto en formato JSON
                     return response()->json($producto);
                 } else {
@@ -224,4 +242,100 @@ class ProductoController extends Controller
             return redirect()->route('sinpermiso');
         }
     }
+    public function createReporte()
+    {
+        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
+        if ($tienePermiso) {
+            $productos = Producto::where('estado', 1)->get();
+            return view('productos.qr', compact('productos'));
+        } else {
+            return view('sinpermiso.index');
+        }
+    }
+    public function qrproducto(int $id)
+{
+    $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
+    if ($tienePermiso) {
+
+        $iniFilePath = public_path('config.ini');
+
+        // Verificar si el archivo existe antes de intentar leerlo
+        $host = 0;
+        if (file_exists($iniFilePath)) {
+            // Lee el archivo config.ini y carga su contenido en un array estructurado
+            $config = parse_ini_file($iniFilePath, true);
+
+            // Accede al valor del host dentro de la sección database
+            $host = $config['database']['host'];
+        }
+
+        $producto = Producto::findOrFail($id);
+        $url = 'http://' . $host . '/controlventa/public/cargardetalleventa/' . $producto->codigo;
+
+        // Crear el código QR
+        $qrCode = QrCode::create($url);
+
+        // Crear el escritor de código QR usando GD
+        $writer = new PngWriter();
+
+        // Generar el contenido del código QR
+        $result = $writer->write($qrCode);
+
+        // Guardar el código QR como un archivo PNG
+        $imagePath = public_path('qrcode.png');
+        $result->saveToFile($imagePath);
+
+        // Verifica que el archivo se haya generado correctamente
+        if (!file_exists($imagePath)) {
+            throw new Exception("No se pudo generar el código QR en formato PNG.");
+        }
+
+        // Crea el PDF
+        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+
+        // Establecer márgenes y salto de página automático
+        $pdf->SetMargins(10, 10, 10);
+        $pdf->SetAutoPageBreak(false, 10);
+
+        // Añadir página
+        $pdf->AddPage();
+
+        // Establecer fuente
+        $pdf->SetFont('helvetica', 'B', 12);
+
+        // Establecer título del documento
+        $pdf->SetTitle('QR');
+
+        // Añadir título centrado
+        $pdf->Cell(0, 6, 'Codigo QR '.$producto->descripcion, 0, 1, 'C');
+        
+        // Establecer fuente más pequeña para el contenido
+        $pdf->SetFont('helvetica', '', 12);
+
+        // Ajustar la posición inicial para los códigos QR después del título
+        $qrSize = 30; // Tamaño del código QR en mm
+        $x = 10; // Posición inicial en el eje X
+        $y = 16; // Posición inicial en el eje Y, dejando espacio para el título
+
+        // Bucle para repetir la imagen del código QR en todo el PDF
+        while ($y < 280) { // mientras no se exceda la altura de la página
+            while ($x < 190) { // mientras no se exceda el ancho de la página
+                // Insertar el código QR en el PDF
+                $pdf->Image($imagePath, $x, $y, $qrSize, $qrSize, 'PNG', '', '', true, 150, '', false, false, 0, false, false, false);
+
+                // Actualizar la posición en el eje X para la próxima imagen
+                $x += $qrSize + 10; // Aumentar la posición en el eje X y agregar un espacio adicional
+            }
+            // Reiniciar la posición en el eje X y actualizar la posición en el eje Y para la próxima fila
+            $x = 10; // Restablecer la posición en el eje X
+            $y += $qrSize + 10; // Mover a la siguiente fila
+        }
+
+        // Salida del PDF
+        $pdf->Output('producto_qr.pdf', 'I');
+        exit;
+    } else {
+        return redirect()->route('sinpermiso');
+    }
+}
 }

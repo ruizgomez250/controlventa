@@ -77,7 +77,7 @@
 
                     <!-- Agrega este elemento para mostrar la suma total -->
 
-                    </form>
+                    
 
                 </div>
             </div>

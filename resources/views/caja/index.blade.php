@@ -29,9 +29,40 @@
                                 <td>{{ $compra->tipo_comprobante }}</td>
                                 <td>{{ number_format($compra->total, 0, '.', ',') }}</td>
                                 <td>{{ $compra->usuario->name }}</td>
-                                <td
-                                    class="{{ $compra->estado == 1 || $compra->estado == 4 ? 'text-success' : 'text-danger' }}">
-                                    {{ $compra->estado == 1 ? 'Pedido Generado' : ($compra->estado == 0 ? 'Anulado' : ($compra->estado == 4 ? 'Pago parcial' : 'Pagado')) }}
+                                @php
+                                    $estadoTexto = '';
+                                    $estadoClase = '';
+
+                                    switch ($compra->estado) {
+                                        case 0:
+                                            $estadoTexto = 'Anulado';
+                                            $estadoClase = 'text-danger';
+                                            break;
+                                        case 1:
+                                            $estadoTexto = 'Pedido Generado';
+                                            $estadoClase = 'text-success';
+                                            break;
+                                        case 2:
+                                            $estadoTexto = 'Pagado';
+                                            $estadoClase = 'text-success';
+                                            break;
+                                        case 4:
+                                            $estadoTexto = 'Pago parcial';
+                                            $estadoClase = 'text-success';
+                                            break;
+                                        default:
+                                            $estadoTexto = 'Desconocido';
+                                            $estadoClase = 'text-danger';
+                                            break;
+                                    }
+                                @endphp
+
+                                
+
+                                <td>
+                                    <span class="{{ $estadoClase }}">
+                                        {{ $estadoTexto }}
+                                    </span>
 
                                 </td>
                                 <td>
@@ -204,7 +235,7 @@
         @push('js')
             <script>
                 // Accede al ID desde la variable Blade
-                cuotaboton='';
+                cuotaboton = '';
                 $(document).ready(function() {
                     if (!$.fn.DataTable.isDataTable('#table1')) {
                         // DataTable no se ha inicializado en #table1, así que lo inicializamos
@@ -384,13 +415,14 @@
                             response.forEach(function(detalle) {
 
                                 fechap = detalle.fecha_pago;
-                                idc='';
+                                idc = '';
                                 boton = '';
                                 if (detalle.fecha_pago === null) {
                                     fechap = '<input id="pago' + detalle.idcuota + '" name="pago' +
                                         detalle.idcuota +
-                                        '"  class="form-control" type="date" value="{{ now()->format('Y-m-d') }}">';
-                                        boton = '<button class="btn-success btn-xs" onclick="pagar(' + detalle.idcuota + ')">Pagar</button>';
+                                        '"  class="form-control" type="date" value="{{ now()->format('Y-m-d') }}" readonly>';
+                                    boton = '<button class="btn-success btn-xs" onclick="pagar(' +
+                                        detalle.idcuota + ')">Pagar</button>';
                                 } else {
                                     idc = detalle.idcuota;
                                     boton = '<a id="documentoPagoPdfLink' + idc +
@@ -403,7 +435,7 @@
                                 }
                                 montopagado = detalle.pagosrealizados * detalle.cuota;
                                 saldo = detalle.totaldeuda - montopagado;
-                                
+
                                 detalleHTML += '<tr><th scope="row">' + item +
                                     '</th><td id="boton' + idc + '">' + boton +
                                     '</td><td>' + detalle.cuota +
@@ -462,7 +494,7 @@
                                     if (response.hasOwnProperty('ventaycuotas')) {
                                         // Recorre el arreglo de ventaycuotas
                                         response.ventaycuotas.forEach(function(detalle) {
-                                           
+
                                             // Construye la URL de la ruta usando el idcuota
                                             var url = "{{ route('documentopagopdf', '') }}/" + idcuota;
 
@@ -472,7 +504,7 @@
                                         });
 
                                         // Muestra el mensaje de éxito
-                                       // Swal.fire('Éxito', response.success, 'success');
+                                        // Swal.fire('Éxito', response.success, 'success');
                                     } else {
                                         // Si la propiedad 'ventaycuotas' no está presente en la respuesta
                                         Swal.fire('Error', 'La respuesta no contiene datos válidos', 'error');
@@ -510,7 +542,7 @@
 
                             // Obtener el token CSRF
                             var token = $('meta[name="csrf-token"]').attr('content');
-
+                            
                             $.ajax({
                                 url: 'caja/' + idventa + '/' + montoingresado + '/' + descuento,
                                 method: 'POST',
@@ -525,6 +557,7 @@
                                         var url = "{{ route('documentopagomontopdf', '') }}/" + cajaId;
 
                                         window.open(url, '_blank');
+                                        location.reload();
                                     } else {
                                         Swal.fire('Error', 'La respuesta no contiene datos válidos', 'error');
                                     }

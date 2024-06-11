@@ -11,6 +11,7 @@ use App\Http\Controllers\CajaReporteController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\CompraController;
+use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\TablaPorcentajeController;
 use App\Http\Controllers\VentaController;
@@ -42,9 +43,12 @@ Route::middleware('auth')->group(function () {
     Route::resource('/cliente', ClienteController::class);
     Route::resource('/proveedor', ProveedorController::class);
     Route::resource('/producto', ProductoController::class);
+    Route::get('/qrproductover', [ProductoController::class, 'createReporte'])->name('qrproductover');
+    Route::get('/qrproducto/{id}', [ProductoController::class, 'qrproducto'])->name('qrproducto');
     Route::resource('/mascota', MascotaController::class);
     Route::resource('/compra', CompraController::class);
     Route::resource('/venta', VentaController::class);
+
     Route::get('/compra/{id}/detalles', [CompraController::class, 'getDetalles']);
     Route::get('/venta/{id}/detalles', [VentaController::class, 'getDetalles']);
     Route::get('/getroles/{id}', [RolController::class, 'getRoles']);
@@ -59,6 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/caja/{id}/{montoabonado}/{descuento}', [VentaController::class, 'pagarMonto']);
     Route::resource('/cajareporte', CajaReporteController::class);
     Route::resource('/rol', RolController::class);
+    Route::resource('/configuracion', ConfiguracionController::class);
 
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');

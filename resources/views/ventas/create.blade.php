@@ -10,177 +10,187 @@
 @endsection
 
 @section('content')
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <form action="{{ route('venta.store') }}" method="post" autocomplete="off">
-                        @csrf
-                        @method('POST')
-                        {{-- 'id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'id_estado','pcosto', 'pventa', 'observacion' --}}
-
-                        <div class="row">
-                            {{-- With Label --}}
-                            @php
-                                $config1 = ['format' => 'DD-MM-YYYY'];
-                            @endphp
-                            <div class="form-group">
-                                <label for="fechaemision">FECHA DE EMISIÓN</label>
-                                <input type="date" class="form-control" id="fechaemision" name="fechaemision"
-                                    value="{{ date('Y-m-d') }}" required>
-                            </div>
 
 
-                            <x-adminlte-input type="text" id="nrofactura" name="nrofactura" label="Factura Nº"
-                                fgroup-class="col-md-2" value="0" required />
-                            <x-adminlte-input type="text" id="timbrado" name="timbrado" label="Timbrado Nº"
-                                fgroup-class="col-md-2" value="0" required />
-                            <div class="card" style="width: 14rem;margin-top: -18px">
-                                <div class="card-body">
-                                    <label for="">CONDICIÓN DE COMPRA</label>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="condicion" id="inlineRadio1"
-                                            value="CONTADO" onchange="ocultarOpc()" checked>
-                                        <label class="form-check-label" for="inlineRadio1">Contado</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="condicion" id="inlineRadio2"
-                                            value="CREDITO" onchange="mostrarOpc()">
-                                        <label class="form-check-label" for="inlineRadio2">Crédito</label>
-                                    </div>
-                                </div>
+    <form action="{{ route('venta.store') }}" method="post" autocomplete="off" onkeypress="return event.keyCode != 13;">
+        @csrf
+        @method('POST')
 
-                            </div>
-                            <x-adminlte-input type="number" id="cantpago" name="cantpago" fgroup-class="col-md-1"
-                                value="1" required min="1" style="display: none;" />
-                            <a data-toggle="modal" id="fechasButton" href="#modalPagare" style="display: none;"><button
-                                    class="btn btn-success" onclick="cargarPag()"><i class="fa fa-plus-circle"></i>Fechas
-                                    Pagos </button></a>
-                            <x-adminlte-input type="hidden" id="proveedor_id" name="proveedor_id" />
-
-                            <!--Modal-->
-                            <div class="modal fade" id="modalPagare" tabindex="-1" role="dialog"
-                                aria-labelledby="myModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-
-                                            <h4 class="modal-title">Guardar las fechas de los pagos</h4>
-                                        </div>
-                                        <div class="modal-body">
-                                            <table id="tblpagare"
-                                                class="table table-striped table-bordered table-condensed table-hover">
-                                                <thead>
-                                                    <th>Cuota</th>
-                                                    <th>Fecha Pago</th>
-                                                </thead>
-                                                <tbody>
-
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button class="btn btn-default" type="button"
-                                                data-dismiss="modal">Cerrar</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal fade" id="modalLectorQR" name="modalLectorQR" tabindex="-1" role="dialog"
-                                aria-labelledby="myModalLabel" aria-hidden="true">
-
-                            </div>
-                            <!-- fin Modal-->
-                            <div class="row">
-                                <x-adminlte-card title="Clientes" class="text-primary">
-
-                                    <div class="row">
-                                        <x-adminlte-input type="number" id="cod_proveedor" name="cod_proveedor"
-                                            onchange="cambiarCod()" placeholder="Codigo" label="COD."
-                                            fgroup-class="col-md-1" required />
-                                        <x-adminlte-select2 name="id_proveedor" id="id_proveedor"
-                                            label="NOMBRE/RAZON SOCIAL" data-placeholder="Seleccionar un proveedor..."
-                                            fgroup-class="col-md-7" onchange="actualizarNumeroDocumento()">
-                                            <x-slot name="prependSlot">
-                                                <div class="input-group-text bg-gradient-primary">
-                                                    <i class="fas fa-user"></i>
-                                                </div>
-                                            </x-slot>
-                                            @foreach ($clientes as $item)
-                                                <option value={{ $item->id }} data-ruc="{{ $item->ruc }}">
-                                                    {{ $item->razonsocial }}</option>
-                                            @endforeach
-                                        </x-adminlte-select2>
-                                        <x-adminlte-input type="text" id="numero_documento" name="numero_documento"
-                                            placeholder="DOCUMENTO" label="NUMERO DOC." readonly
-                                            fgroup-class="col-md-2" />
-                                        <!-- Botón para cerrar el modal -->
-                                        <!-- Contenedor de la vista de la cámara -->
-                                        <video poster="{{ asset('vendor/adminlte/dist/img/lector_QR.jpg') }}"
-                                            id="preview"></video>
-
-                                    </div>
-                                </x-adminlte-card>
-                            </div>
-                            <hr>
-
-                            <div id="items">
-                                <div class="item" style="background-color: yellow;">
-                                    <div class="row ml-2">
-                                        <label for="" class="col-1">ITEM</label>
-                                        <label for="" class="col-1">UNDM</label>
-                                        <label for="" class="col-1">CÓDIGO</label>
-                                        <label for="" class="col-1">CANTIDAD</label>
-                                        <label for="" class="col-3">DESCRIPCION</label>
-                                        <label for="" class="col-1">PRECIO UNITARIO</label>
-                                        <label for="" class="col-1">EXENTAS</label>
-                                        <label for="" class="col-1">5%</label>
-                                        <label for="" class="col-1">10%</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button onclick="addNewItem()" class="btn btn-primary mt-2" type="button">Agregar
-                                Ítem</button>
-                            <!-- Agrega este elemento para mostrar la suma total -->
-                            <div>Suma Total: <span id="total-sum">0</span></div>
-
-
-
-
-                            <a class="btn btn-danger mx-1" href="{{ route('venta.index') }}">Cancelar</a>
-                            <x-adminlte-button class="btn-group" type="submit" label="Registrar" theme="primary"
-                                icon="fas fa-lg fa-save" />
-
-
-
-                    </form>
-
+        <!--Modal-->
+        <div class="modal fade" id="modalPagare">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Guardar las fechas de los pagos</h4>
+                    </div>
+                    <div class="modal-body d-flex justify-content-center align-items-center">
+                        <table id="tblpagare" class="table table-striped table-bordered table-condensed table-hover">
+                            <thead>
+                                <th>Cuota</th>
+                                <th>Fecha Pago</th>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Cuota 1</td>
+                                    <td>Fecha de pago 1</td>
+                                </tr>
+                                <!-- Aquí puedes agregar más filas según sea necesario -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-default" type="button" data-dismiss="modal">Cerrar</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+
+
+        <!-- fin Modal-->
+        <div class="card">
+            <div class="card-body">
+
+                <div class="row">
+                    {{-- With Label --}}
+                    @php
+                        $config1 = ['format' => 'DD-MM-YYYY'];
+                    @endphp
+                    <div class="form-group">
+                        <label for="fechaemision">FECHA DE EMISIÓN</label>
+                        <input type="date" class="form-control" id="fechaemision" name="fechaemision"
+                            value="{{ date('Y-m-d') }}" required>
+                    </div>
+
+
+                    <x-adminlte-input type="text" id="nrofactura" name="nrofactura" label="Factura Nº"
+                        fgroup-class="col-md-2" value="0" required />
+                    <x-adminlte-input type="text" id="timbrado" name="timbrado" label="Timbrado Nº"
+                        fgroup-class="col-md-2" value="0" required />
+                    <div class="card" style="width: 14rem;margin-top: -18px">
+                        <div class="card-body">
+                            <label for="">CONDICIÓN DE COMPRA</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="condicion" id="inlineRadio1"
+                                    value="CONTADO" onchange="ocultarOpc()" checked>
+                                <label class="form-check-label" for="inlineRadio1">Contado</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="condicion" id="inlineRadio2"
+                                    value="CREDITO" onchange="mostrarOpc()">
+                                <label class="form-check-label" for="inlineRadio2">Crédito</label>
+                            </div>
+                        </div>
+
+                    </div>
+                    <x-adminlte-input type="number" id="cantpago" name="cantpago" fgroup-class="col-md-1" value="1"
+                        required min="1" style="display: none;" />
+                    <a data-toggle="modal" id="fechasButton" href="#modalPagare" style="display: none;"><button
+                            class="btn btn-success" onclick="cargarPag()"><i class="fa fa-plus-circle"></i>Fechas
+                            Pagos </button></a>
+                    <x-adminlte-input type="hidden" id="proveedor_id" name="proveedor_id" />
+
+
+                    <div class="row">
+                        <x-adminlte-card title="Clientes" class="text-primary">
+
+                            <div class="row">
+                                <x-adminlte-input type="number" id="cod_proveedor" name="cod_proveedor"
+                                    onchange="cambiarCod()" placeholder="Codigo" label="COD." fgroup-class="col-md-1"
+                                    required />
+                                <x-adminlte-select2 name="id_proveedor" id="id_proveedor" label="NOMBRE/RAZON SOCIAL"
+                                    data-placeholder="Seleccionar un proveedor..." fgroup-class="col-md-7"
+                                    onchange="actualizarNumeroDocumento()">
+                                    <x-slot name="prependSlot">
+                                        <div class="input-group-text bg-gradient-primary">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                    </x-slot>
+                                    @foreach ($clientes as $item)
+                                        <option value={{ $item->id }} data-ruc="{{ $item->ruc }}">
+                                            {{ $item->razonsocial }}</option>
+                                    @endforeach
+                                </x-adminlte-select2>
+                                <x-adminlte-input type="text" id="numero_documento" name="numero_documento"
+                                    placeholder="DOCUMENTO" label="NUMERO DOC." readonly fgroup-class="col-md-2" />
+                                <!-- Botón para cerrar el modal -->
+                                <!-- Contenedor de la vista de la cámara -->
+                                <video poster="{{ asset('vendor/adminlte/dist/img/lector_QR.jpg') }}"
+                                    id="preview"></video>
+
+                            </div>
+                        </x-adminlte-card>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <div id="items">
+                            <div class="item" style="background-color: #343A40;">
+                                <div class="row ml-2">
+                                    <label for="" class="col-1" style="color: white;">ITEM</label>
+                                    <label for="" class="col-1" style="color: white;">UNDM</label>
+                                    <label for="" class="col-1" style="color: white;">CÓDIGO</label>
+                                    <label for="" class="col-1" style="color: white;">CANTIDAD</label>
+                                    <label for="" class="col-3" style="color: white;">DESCRIPCION</label>
+                                    <label for="" class="col-1" style="color: white;">PRECIO
+                                        UNITARIO</label>
+                                    <label for="" class="col-1" style="color: white;">EXENTAS</label>
+                                    <label for="" class="col-1" style="color: white;">5%</label>
+                                    <label for="" class="col-1" style="color: white;">10%</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-6">
+                        <button onclick="addNewItem()" class="btn btn-primary mt-2" type="button">Agregar
+                            Ítem</button>
+                    </div>
+
+                </div>
+
+                <!-- Agrega este elemento para mostrar la suma total -->
+                <div class="row">
+                    <div class="col-12 ">
+                        <div>Suma Total: <span id="total-sum">0</span></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <a class="btn btn-danger mx-1" style="float: right;"
+                            href="{{ route('compra.index') }}">Cancelar</a>
+                        <x-adminlte-button class="btn-group" style="float: right;" type="submit" label="Registrar"
+                            theme="primary" icon="fas fa-lg fa-save" />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+    </form>
+
+
+
 
 @stop
 
 @push('js')
     <script src="{{ asset('jsQR.js') }}"></script>
     <style>
-        /* Estilos del modal */
-
-
-        /* Contenido del modal */
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 5px;
-            border: 1px solid #888;
-            width: 10%;
-            max-width: 600px;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
+        /* .modal-content {
+                background-color: #fefefe;
+                margin: 15% auto;
+                padding: 5px;
+                border: 1px solid #888;
+                width: 10%;
+                max-width: 600px;
+                border-radius: 5px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                text-align: center;
+            } */
 
 
 
@@ -638,58 +648,52 @@
         let stream;
 
         function leerQR(input) {
-
-            //$('#modalLectorQR').modal('show');
-            navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "environment"
-                    }
-                })
-                .then(function(stream) {
-                    videoElement.srcObject = stream;
-                    videoElement.play();
-
-                    const canvasElement = document.createElement('canvas');
-                    const canvasContext = canvasElement.getContext('2d');
-                    const frameRate = 1000 / 2; // 2 fps
-
-                    setInterval(function() {
-                        canvasElement.width = videoElement.videoWidth;
-                        canvasElement.height = videoElement.videoHeight;
-                        canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement
-                            .height);
-                        const imageData = canvasContext.getImageData(0, 0, canvasElement.width,
-                            canvasElement.height);
-                        const code = jsQR(imageData.data, imageData.width, imageData.height);
-                        if (code) {
-                            
-                            url = code.data.toString();
-                            const sextoSlashIndex = url.indexOf("/", // Primera "/" después de
-                                url.indexOf("/", // Quinta "/" después de
-                                    url.indexOf("/", // Cuarta "/" después de
-                                        url.indexOf("/", // Tercera "/" después de
-                                            url.indexOf("/", // Segunda "/" después de
-                                                url.indexOf("/") + 1 // Primera "/" en la cadena
-                                            ) + 1) + 1) + 1) + 1) + 1;
-
-                            // Extrae la parte del string a partir del sexto "/"
-                            const resultado = url.substring(sextoSlashIndex);
-                            input.value = resultado;
-                            cambiarDescripcion(input);
-
-                            //
-                            //cambiarDescripcion(input)
-                            closeModal(); // Cierra el modal cuando se detecta un código QR
-
+            @if ($configuracionQR && $configuracionQR->estado == 1)
+                navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: "environment"
                         }
-                    }, frameRate);
-                })
-                .catch(function(error) {
-                    console.error('Error al acceder a la cámara:', error);
-                });
-            abrirmod = false;
+                    })
+                    .then(function(stream) {
+                        videoElement.srcObject = stream;
+                        videoElement.play();
+
+                        const canvasElement = document.createElement('canvas');
+                        const canvasContext = canvasElement.getContext('2d');
+                        const frameRate = 1000 / 2; // 2 fps
+
+                        setInterval(function() {
+                            canvasElement.width = videoElement.videoWidth;
+                            canvasElement.height = videoElement.videoHeight;
+                            canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement
+                                .height);
+                            const imageData = canvasContext.getImageData(0, 0, canvasElement.width,
+                                canvasElement.height);
+                            const code = jsQR(imageData.data, imageData.width, imageData.height);
+                            if (code) {
+
+                                url = code.data.toString();
+                                const sextoSlashIndex = url.indexOf("/", // Primera "/" después de
+                                    url.indexOf("/", // Quinta "/" después de
+                                        url.indexOf("/", // Cuarta "/" después de
+                                            url.indexOf("/", // Tercera "/" después de
+                                                url.indexOf("/", // Segunda "/" después de
+                                                    url.indexOf("/") + 1 // Primera "/" en la cadena
+                                                ) + 1) + 1) + 1) + 1) + 1;
+
+                                // Extrae la parte del string a partir del sexto "/"
+                                const resultado = url.substring(sextoSlashIndex);
+                                input.value = resultado;
+                                cambiarDescripcion(input);
 
 
+                            }
+                        }, frameRate);
+                    })
+                    .catch(function(error) {
+                        console.error('Error al acceder a la cámara:', error);
+                    });
+            @endif
 
         }
 
@@ -801,11 +805,17 @@
         }
 
         function traerCargarDatosProducto(codigoValue, inputCodigo) {
+            const condicion = document.querySelector('input[name="condicion"]:checked').value;
+            let cantpago = 1;
+            if (condicion === 'CREDITO') {
+                cantpago = document.getElementById('cantpago').value;
+            }
             $.ajax({
                 url: '{{ route('obtenercodproducto') }}',
                 method: 'POST',
                 data: {
                     codigo: codigoValue,
+                    cantpago: cantpago,
                     _token: '{{ csrf_token() }}'
                 },
                 success: function(response) {

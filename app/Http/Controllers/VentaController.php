@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Http\Request;
 use TCPDF;
 use App\Helpers\NumberToWords;
+use App\Models\Configuracion;
 use App\Services\PermisoService;
 use DragonCode\Contracts\Cashier\Auth\Auth;
 use Illuminate\Support\Facades\DB;
@@ -49,7 +50,8 @@ class VentaController extends Controller
         $tienePermiso = $this->permisoService->verificarPermiso('Venta', 'crear');
         if ($tienePermiso) {
             $clientes = Cliente::where('estado', 1)->get();
-            return view('ventas.create', compact('clientes'));
+            $configuracionQR = Configuracion::where('descripcion', 'qr')->first();
+            return view('ventas.create', compact('clientes','configuracionQR'));
         } else {
             return view('sinpermiso.index');
         }
@@ -220,13 +222,14 @@ class VentaController extends Controller
     public function pagarCuota(string $id, string $fecha)
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'crear');
+        
         if ($tienePermiso) {
             try {
                 DB::beginTransaction();
 
                 $pagare = Pagare::find($id);
                 $pagare->estado = 2;
-                $pagare->fecha_pago = $fecha;
+                $pagare->fecha_pago = now();
                 $pagare->save();
 
                 $count = DB::table('pagare')
@@ -289,9 +292,11 @@ class VentaController extends Controller
         $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'crear');
         if ($tienePermiso) {
             try {
+                
                 DB::beginTransaction();
                 $montocondesc = $montoabonado + $descuento;
                 $venta = Venta::find($id);
+                //dd($venta);
                 if ($venta->tipo_comprobante == 'CONTADO') {
                     $venta->estado = 2;
                     $venta->save();
@@ -306,7 +311,7 @@ class VentaController extends Controller
                         } else {
                             $pagare->monto = $montoP - $montocondesc;
                         }
-                        $pagare->fecha_pago = Carbon::now();
+                        $pagare->fecha_pago = now();
                         if ($montocondesc > 0) {
                             $pagare->save();
                         }
@@ -318,7 +323,7 @@ class VentaController extends Controller
 
                 $caja = new Caja();
                 $caja->id_usuario = auth()->id();
-                $caja->fecha_cobro = Carbon::now();
+                $caja->fecha_cobro = now();
                 $caja->id_venta = $id;
                 $caja->monto = $montoabonado;
                 $caja->save();
