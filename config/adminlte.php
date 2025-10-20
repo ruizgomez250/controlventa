@@ -523,6 +523,7 @@ return [
     */
 
     'plugins' => [
+
         'Datatables' => [
             'active' => true,
             'files' => [
@@ -542,48 +543,8 @@ return [
                     'location' => 'vendor/datatables/css/dataTables.bootstrap4.min.css',
                 ],
             ],
+        ],
 
-        ],
-        'galaxy' => [
-            'active' => true,
-            'files' => [
-                [
-                    'type' => 'css',
-                    'asset' => true,
-                    'location' => 'vendor/micss/mystyles.css',
-                ],
-            ],
-        ],
-        'BootstrapSwitch' => [
-            'active' => false,
-            'files' => [
-                [
-                    'type' => 'js',
-                    'asset' => true,
-                    'location' => 'vendor/bootstrap-switch/js/bootstrap-switch.min.js',
-                ],
-            ],
-        ],
-        'TempusDominusBs4' => [
-            'active' => false,
-            'files' => [
-                [
-                    'type' => 'js',
-                    'asset' => false,
-                    'location' => 'vendor/moment/moment.min.js',
-                ],
-                [
-                    'type' => 'js',
-                    'asset' => false,
-                    'location' => 'vendor/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js',
-                ],
-                [
-                    'type' => 'css',
-                    'asset' => true,
-                    'location' => 'vendor/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css',
-                ],
-            ],
-        ],
         'DatatablesPlugins1' => [
             'active' => true,
             'files' => [
@@ -629,18 +590,19 @@ return [
                 ],
             ],
         ],
+
         'Select2' => [
             'active' => true,
             'files' => [
                 [
                     'type' => 'js',
                     'asset' => true,
-                    'location' => '/vendor/select2/select2.min.js', // Ruta local al archivo JS
+                    'location' => 'vendor/select2/select2.min.js',
                 ],
                 [
                     'type' => 'css',
                     'asset' => true,
-                    'location' => '/vendor/select2/select2.css', // Ruta local al archivo CSS
+                    'location' => 'vendor/select2/select2.css',
                 ],
             ],
         ],
@@ -655,8 +617,90 @@ return [
                 ],
             ],
         ],
-        
+
+        'Sweetalert2' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'js',
+                    'asset' => true,
+                    'location' => 'vendor/sweetalert2/sweetalert2.all.min.js',
+                ],
+            ],
+        ],
+
+        'galaxy' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'vendor/micss/mystyles.css',
+                ],
+            ],
+        ],
+
+        'BootstrapSwitch' => [
+            'active' => false,
+            'files' => [
+                [
+                    'type' => 'js',
+                    'asset' => true,
+                    'location' => 'vendor/bootstrap-switch/js/bootstrap-switch.min.js',
+                ],
+            ],
+        ],
+
+        'TempusDominusBs4' => [
+            'active' => false,
+            'files' => [
+                [
+                    'type' => 'js',
+                    'asset' => false,
+                    'location' => 'vendor/moment/moment.min.js',
+                ],
+                [
+                    'type' => 'js',
+                    'asset' => false,
+                    'location' => 'vendor/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js',
+                ],
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'vendor/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css',
+                ],
+            ],
+        ],
+
+        'Pace' => [
+            'active' => false,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => false,
+                    'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-center-radar.min.css',
+                ],
+                [
+                    'type' => 'js',
+                    'asset' => false,
+                    'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js',
+                ],
+            ],
+        ],
+
+        'guardaryborrar' => [
+            'active' => false,
+            'files' => [
+                [
+                    'type' => 'js',
+                    'asset' => true,
+                    'location' => 'vendor/mijs/guardaryborrar.js',
+                ],
+            ],
+        ],
+
     ],
+
 
     /*
     |--------------------------------------------------------------------------
