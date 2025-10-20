@@ -660,7 +660,7 @@ return [
             'files' => [
                 [
                     'type' => 'js',
-                    'asset' => false,
+                    'asset' => true,
                     'location' => 'https://cdn.jsdelivr.net/npm/sweetalert2@10',
                 ],
             ],
