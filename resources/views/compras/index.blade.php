@@ -17,37 +17,57 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-
-                    <x-adminlte-datatable id="table1" :heads="$heads" head-theme="dark" theme="light" striped
-                        hoverable with-buttons>
-                        @foreach ($cabecera as $compra)
-                            <tr>
-                                <td>{{ $compra->id }}</td>
-                                <!-- Agrega aquí las columnas para 'id_persona', 'id_stock', 'numero', 'timbrado', 'estado', 'tipodoc', 'metodo_pago', etc. -->
-                                <td>{{ $compra->fecha_emision }}</td>
-                                <td>{{ $compra->nro_factura }}</td>
-                                <td>{{ $compra->timbrado }}</td>
-                                <td>{{ $compra->proveedor->razonsocial }}</td>
-                                <td>{{ $compra->condicion_de_compra }}</td>
-                                <td>{{ number_format($compra->total_compra, 0, '.', ',') }}</td>
-                                <td>{{ $compra->usuario->name }}</td>
-                                <td
-                                    class="{{ $compra->estadocompra->descripcion == 'Activo' ? 'text-success' : 'text-danger' }}">
-                                    {{ $compra->estadocompra->descripcion }}</td>
-                                <td>
-
-                                    <a href="#" class="btn btn-sm btn-outline-secondary ver-detalle-btn"
-                                        data-compra-id="{{ $compra->id }}"><i class="fa fa-eye"></i></a>
-                                    @if ($compra->estadocompra->descripcion == 'Activo')
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="delete-button"
-                                            onclick="borrarCompraCombustible({{ $compra->id }})"><i
-                                                class="fa fa-sm fa-fw fa-trash"></i></button>
-                                    @endif
-
-                                </td>
+                    <table id="table1" class="table table-bordered table-hover" theme="light">
+                        <thead>
+                            <th>Detalles</th> <!-- Columna para el botón de expansión -->
+                            <th>ID</th>
+                            <th>Fecha de Emisión</th>
+                            <th>Número de Factura</th>
+                            <th>Timbrado Factura</th>
+                            <th>Proveedor</th>
+                            <th>Condición de Compra</th>
+                            <th>Total</th>
+                            <th>Usuario</th>
+                            <th>Categoria</th>
+                            <th>Acciones</th>
                             </tr>
-                        @endforeach
-                    </x-adminlte-datatable>
+                        </thead>
+                        <tbody>
+                            @foreach ($cabecera as $compra)
+                                <tr data-child-id="{{ $compra->id }}">
+                                    <td class="details-control text-center">
+                                        <i class="fa fa-plus-circle text-primary"></i> <!-- Ícono de expansión -->
+                                    </td>
+                                    <td>{{ $compra->id }}</td>
+                                    <td>{{ $compra->fecha_emision }}</td>
+                                    <td>{{ $compra->nro_factura }}</td>
+                                    <td>{{ $compra->timbrado }}</td>
+                                    <td>{{ $compra->proveedor->razonsocial }}</td>
+                                    <td>{{ $compra->condicion_de_compra }}</td>
+                                    <td>{{ number_format($compra->total_compra, 0, '.', ',') }}</td>
+                                    <td>{{ $compra->usuario->name }}</td>
+                                    <td
+                                        class="{{ $compra->estadocompra->descripcion == 'Activo' ? 'text-success' : 'text-danger' }}">
+                                        {{ $compra->estadocompra->descripcion }}
+                                    </td>
+                                    <td>
+                                        {{-- <a href="#" class="btn btn-sm btn-outline-secondary ver-detalle-btn"
+                                            data-compra-id="{{ $compra->id }}">
+                                            <i class="fa fa-eye"></i>
+                                        </a> --}}
+                                        @if ($compra->estadocompra->descripcion == 'Activo')
+                                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                id="delete-button" onclick="borrarCompraCombustible({{ $compra->id }})">
+                                                <i class="fa fa-sm fa-fw fa-trash"></i>
+                                            </button>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+
+
                     <x-adminlte-modal id="detalleModal" title="Detalles de la Compra" theme="light" size="lg">
                         <div>
                             <table class="table table-sm table-hover">
@@ -113,6 +133,74 @@
 
 @push('js')
     <script>
+        $(document).ready(function() {
+            var table = $('#table1').DataTable({
+                responsive: true,
+                autoWidth: false,
+                columnDefs: [{
+                        className: 'details-control',
+                        orderable: false,
+                        targets: 0
+                    },
+                    {
+                        orderable: false,
+                        targets: -1
+                    }
+                ],
+                order: [
+                    [1, 'desc']
+                ],
+            });
+
+            // Evento de clic en la flechita para mostrar/ocultar detalles
+            $('#table1 tbody').on('click', 'td.details-control', function() {
+                var tr = $(this).closest('tr');
+                var row = table.row(tr);
+                var compraId = tr.data('child-id');
+
+                if (row.child.isShown()) {
+                    // Si el detalle está visible, lo ocultamos
+                    row.child.hide();
+                    tr.removeClass('shown');
+                    $(this).find('i').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                } else {
+                    // Si el detalle está oculto, lo mostramos
+                    var $this = $(this); // Guarda el contexto
+                    $.ajax({
+                        url: 'compra/' + compraId + '/detalles', // Usando tu ruta
+                        method: 'GET',
+                        success: function(response) {
+                            var detalleHTML = '';
+                            response.forEach(function(detalle, index) {
+                                detalleHTML += '<tr><th scope="row">' + (index + 1) +
+                                    '</th><td>' + detalle.productos.unidaddemedida
+                                    .descripcion +
+                                    '</td><td>' + detalle.productos.codigo +
+                                    '</td><td>' + detalle.cantidad + '</td><td>' +
+                                    detalle.descripcion +
+                                    '</td><td>' + detalle.precio_u + '</td><td>' +
+                                    detalle.monto +
+                                    '</td><td>' + detalle.tipo_impuesto + '</td></tr>';
+                            });
+
+                            // Muestra el detalle
+                            row.child(
+                                '<table class="table table-bordered table-hover table-sm"><thead><tr><th>Item</th><th>U. Medida</th><th>Código</th><th>Cantidad</th><th>Descripción</th><th>Precio Unit.</th><th>Total</th><th>IVA %</th></tr></thead><tbody>' +
+                                detalleHTML + '</tbody></table>').show();
+                            tr.addClass('shown');
+                            $this.find('i').removeClass('fa-plus-circle').addClass(
+                                'fa-minus-circle');
+                        },
+                        error: function() {
+                            console.log('Error al obtener detalles de la compra');
+                        }
+                    });
+                }
+            });
+        });
+
+
+
         // Accede al ID desde la variable Blade
         function openDocumentosModal(compraId) {
             // Cambia el atributo href del enlace dentro del modal dinámicamente

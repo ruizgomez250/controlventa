@@ -15,81 +15,101 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-
-                    <x-adminlte-datatable id="table1" :heads="$heads" head-theme="dark" theme="light" striped hoverable
-                        with-buttons>
-                        @foreach ($cabecera as $compra)
+                    <table id="table1" class="table table-bordered table-hover" theme="light">
+                        <thead>
                             <tr>
-                                <td>{{ $compra->id }}</td>
-                                <!-- Agrega aquí las columnas para 'id_persona', 'id_stock', 'numero', 'timbrado', 'estado', 'tipodoc', 'metodo_pago', etc. -->
-                                <td>{{ $compra->fecha_emision }}</td>
-                                <td>{{ $compra->numero_factura }}</td>
-                                <td>{{ $compra->timbrado_factura }}</td>
-                                <td>{{ $compra->cliente->razonsocial }}</td>
-                                <td>{{ $compra->tipo_comprobante }}</td>
-                                <td>{{ number_format($compra->total, 0, '.', ',') }}</td>
-                                <td>{{ $compra->usuario->name }}</td>
-                                @php
-                                    $estadoTexto = '';
-                                    $estadoClase = '';
-
-                                    switch ($compra->estado) {
-                                        case 0:
-                                            $estadoTexto = 'Anulado';
-                                            $estadoClase = 'text-danger';
-                                            break;
-                                        case 1:
-                                            $estadoTexto = 'Pedido Generado';
-                                            $estadoClase = 'text-success';
-                                            break;
-                                        case 2:
-                                            $estadoTexto = 'Pagado';
-                                            $estadoClase = 'text-success';
-                                            break;
-                                        case 4:
-                                            $estadoTexto = 'Pago parcial';
-                                            $estadoClase = 'text-success';
-                                            break;
-                                        default:
-                                            $estadoTexto = 'Desconocido';
-                                            $estadoClase = 'text-danger';
-                                            break;
-                                    }
-                                @endphp
-
-                                
-
-                                <td>
-                                    <span class="{{ $estadoClase }}">
-                                        {{ $estadoTexto }}
-                                    </span>
-
-                                </td>
-                                <td>
-
-                                    <a href="#" class="btn btn-sm btn-outline-secondary ver-detalle-btn"
-                                        data-compra-id="{{ $compra->id }}" title="Mostrar detalles">
-                                        <i class="fa fa-eye"></i>
-                                    </a>
-                                    @if ($compra->tipo_comprobante == 'CREDITO')
-                                        <a href="#" class="btn btn-sm btn-outline-secondary pagar-cuota-btn"
-                                            data-compra-id="{{ $compra->id }}" title="Pagar Cuota">
-                                            <i class="fa fa-ruble-sign"></i></a>
-                                    @endif
-                                    <a href="#" class="btn btn-sm btn-outline-secondary pagar-monto-btn"
-                                        data-compra-id="{{ $compra->id }}" title="Pagar por Monto">
-                                        <i class="fa fa-sm fa-money-bill"></i></a>
-                                    @if ($compra->estado == 1)
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="delete-button"
-                                            onclick="borrarCompraCombustible({{ $compra->id }})" title="Anular pedido">
-                                            <i class="fa fa-sm fa-fw fa-trash"></i>
-                                        </button>
-                                    @endif
-
-                                </td>
+                                <th>Detalles</th> <!-- Columna para el botón de expansión -->
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Nro Factura</th>
+                                <th>Timbrado</th>
+                                <th>Proveedor</th>
+                                <th>Condición de Compra</th>
+                                <th>Monto Total</th>
+                                <th>Usuario</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
                             </tr>
-                        @endforeach
-                    </x-adminlte-datatable>
+                        </thead>
+                        <tbody>
+                            @foreach ($cabecera as $compra)
+                                <tr data-child-id="{{ $compra->id }}">
+                                    <td class="details-control text-center">
+                                        <i class="fa fa-plus-circle text-primary"></i> <!-- Ícono de expansión -->
+                                    </td>
+                                    <td>{{ $compra->id }}</td>
+                                    <!-- Agrega aquí las columnas para 'id_persona', 'id_stock', 'numero', 'timbrado', 'estado', 'tipodoc', 'metodo_pago', etc. -->
+                                    <td>{{ $compra->fecha_emision }}</td>
+                                    <td>{{ $compra->numero_factura }}</td>
+                                    <td>{{ $compra->timbrado_factura }}</td>
+                                    <td>{{ $compra->cliente->razonsocial }}</td>
+                                    <td>{{ $compra->tipo_comprobante }}</td>
+                                    <td>{{ number_format($compra->total, 0, '.', ',') }}</td>
+                                    <td>{{ $compra->usuario->name }}</td>
+                                    @php
+                                        $estadoTexto = '';
+                                        $estadoClase = '';
+
+                                        switch ($compra->estado) {
+                                            case 0:
+                                                $estadoTexto = 'Anulado';
+                                                $estadoClase = 'text-danger';
+                                                break;
+                                            case 1:
+                                                $estadoTexto = 'Pedido Generado';
+                                                $estadoClase = 'text-success';
+                                                break;
+                                            case 2:
+                                                $estadoTexto = 'Pagado';
+                                                $estadoClase = 'text-success';
+                                                break;
+                                            case 4:
+                                                $estadoTexto = 'Pago parcial';
+                                                $estadoClase = 'text-success';
+                                                break;
+                                            default:
+                                                $estadoTexto = 'Desconocido';
+                                                $estadoClase = 'text-danger';
+                                                break;
+                                        }
+                                    @endphp
+
+
+
+                                    <td>
+                                        <span class="{{ $estadoClase }}">
+                                            {{ $estadoTexto }}
+                                        </span>
+
+                                    </td>
+                                    <td>
+
+                                        {{-- <a href="#" class="btn btn-sm btn-outline-secondary ver-detalle-btn"
+                                            data-compra-id="{{ $compra->id }}" title="Mostrar detalles">
+                                            <i class="fa fa-eye"></i>
+                                        </a> --}}
+                                        @if ($compra->tipo_comprobante == 'CREDITO')
+                                            <a href="#" class="btn btn-sm btn-outline-secondary pagar-cuota-btn"
+                                                data-compra-id="{{ $compra->id }}" title="Pagar Cuota">
+                                                <i class="fa fa-ruble-sign"></i></a>
+                                        @endif
+                                        <a href="#" class="btn btn-sm btn-outline-secondary pagar-monto-btn"
+                                            data-compra-id="{{ $compra->id }}" title="Pagar por Monto">
+                                            <i class="fa fa-sm fa-money-bill"></i></a>
+                                        @if ($compra->estado == 1)
+                                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                id="delete-button" onclick="borrarCompraCombustible({{ $compra->id }})"
+                                                title="Anular pedido">
+                                                <i class="fa fa-sm fa-fw fa-trash"></i>
+                                            </button>
+                                        @endif
+
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+
                     <x-adminlte-modal id="detalleModal" title="Detalles de la Venta" theme="light" size="lg">
                         <div>
                             <table class="table table-sm table-hover">
@@ -237,35 +257,102 @@
                 // Accede al ID desde la variable Blade
                 cuotaboton = '';
                 $(document).ready(function() {
-                    if (!$.fn.DataTable.isDataTable('#table1')) {
-                        // DataTable no se ha inicializado en #table1, así que lo inicializamos
-                        dataTable = $('#table1').DataTable({
-                            // Configuración de DataTables
+                    // Inicialización de DataTables
+                    var table = $('#table1').DataTable({
+                        responsive: true,
+                        autoWidth: false,
+                        columnDefs: [{
+                                className: 'details-control', // Agrega clase de control de detalles
+                                orderable: false, // No se puede ordenar por esta columna
+                                targets: 0 // Índice de la columna de flechita
+                            },
+                            {
+                                orderable: false,
+                                targets: -1 // Última columna (acciones)
+                            }
+                        ],
+                        order: [
+                            [1, 'desc']
+                        ], // Ordenar por el ID (columna 1)
+                    });
+
+                    // Función para generar HTML de detalles adicionales
+                    function format(details) {
+                        var detalleHTML = '<table class="table table-bordered table-hover table-sm">' +
+                            '<thead>' +
+                            '<tr>' +
+                            '<th>Item</th>' +
+                            '<th>U. Medida</th>' +
+                            '<th>Código</th>' +
+                            '<th>Cantidad</th>' +
+                            '<th>Descripción</th>' +
+                            '<th>Precio Unit.</th>' +
+                            '<th>Total</th>' +
+                            '<th>IVA %</th>' +
+                            '</tr>' +
+                            '</thead>' +
+                            '<tbody>';
+                        details.forEach(function(detalle, index) {
+                            detalleHTML += '<tr>' +
+                                '<td>' + (index + 1) + '</td>' +
+                                '<td>' + detalle.producto.unidaddemedida.descripcion + '</td>' +
+                                '<td>' + detalle.producto.codigo + '</td>' +
+                                '<td>' + detalle.cantidad + '</td>' +
+                                '<td>' + detalle.descripcion + '</td>' +
+                                '<td>' + detalle.precio_u + '</td>' +
+                                '<td>' + detalle.monto + '</td>' +
+                                '<td>' + detalle.tipo_impuesto + '</td>' +
+                                '</tr>';
                         });
-                    } else {
-                        // DataTable ya se ha inicializado en #table1, por lo que simplemente obtenemos la instancia existente
-                        dataTable = $('#table1').DataTable();
+                        detalleHTML += '</tbody></table>';
+                        return detalleHTML;
                     }
+
+                    // Evento de clic en la flechita para mostrar/ocultar detalles
+                    $('#table1 tbody').on('click', 'td.details-control', function() {
+                        var tr = $(this).closest('tr');
+                        var row = table.row(tr);
+                        var compraId = tr.data('child-id');
+
+                        if (row.child.isShown()) {
+                            // Si el detalle está visible, lo ocultamos
+                            row.child.hide();
+                            tr.removeClass('shown');
+                            $(this).find('i').removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                        } else {
+                            // Si el detalle está oculto, lo mostramos
+                            url = 'venta/' + compraId +
+                                '/detalles';
+                            $.ajax({
+                                url: url, // Ajustar la URL según sea necesario
+                                method: 'GET',
+                                success: function(response) {
+                                    console.log(url);
+                                    var detalles = response.detalles;
+                                    // Mostramos el detalle
+                                    row.child(format(detalles)).show();
+                                    tr.addClass('shown');
+                                    $(this).find('i').removeClass('fa-plus-circle').addClass(
+                                        'fa-minus-circle');
+                                },
+                                error: function() {
+                                    console.log('Error al obtener detalles de la compra');
+                                }
+                            });
+                        }
+                    });
                 });
 
-                function openDocumentosModal(compraId) {
-                    // Cambia el atributo href del enlace dentro del modal dinámicamente
-                    //document.getElementById('ordenCompraPdfLink').href = " route('ordenescomprapdf', '') }}" + '/' + compraId;
 
+
+                function openDocumentosModal(compraId) {
 
                     // Abre el modal
                     $('#documentosModal').modal('show');
                 }
                 var cabeceraId = {{ isset($_GET['id']) ? $_GET['id'] : '0' }};
 
-                // if (cabeceraId !== 0) {
-                //     // Construye la URL para la redirección
-                //     var nuevaUrl = " route('ordenescomprapdf', '') }}" + "/" + cabeceraId;
 
-                //     // Abre una nueva pestaña y redirecciona a la URL
-                //     window.open(nuevaUrl, '_blank');
-                // }
-                // Agregar un evento clic al botón de eliminación
                 function borrarCompraCombustible(compraId) {
                     Swal.fire({
                         title: '¿Estás seguro?',
@@ -542,7 +629,7 @@
 
                             // Obtener el token CSRF
                             var token = $('meta[name="csrf-token"]').attr('content');
-                            
+
                             $.ajax({
                                 url: 'caja/' + idventa + '/' + montoingresado + '/' + descuento,
                                 method: 'POST',

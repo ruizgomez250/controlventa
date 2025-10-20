@@ -20,11 +20,7 @@ return new class extends Migration
             $table->string('telefono',30)->nullable();
             $table->string('celular',12)->nullable();
             $table->text('observacion')->nullable();
-            $table->foreignId('id_estado')
-            ->nullable()
-            ->constrained('opciones')
-            ->cascadeOnUpdate()
-            ->nullOnDelete();
+            $table->unsignedBigInteger('estado')->nullable();
             $table->timestamps();
         });
     }

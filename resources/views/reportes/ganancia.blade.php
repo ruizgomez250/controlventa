@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-    <h1 class="m-0 custom-heading">Generar Reportes de Caja</h1>
+    <h1 class="m-0 custom-heading">Generar Reportes Ganancia</h1>
 @stop
 @section('css')
     <link rel="stylesheet" href="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.css') }}">
@@ -33,20 +33,19 @@
                             <input type="date" class="form-control" id="hasta1" name="fechaemision"
                                 value="{{ date('Y-m-d') }}" required>
                         </div>
-                        <x-adminlte-select2 name="idusuario" id="idusuario" label="USUARIO DE CAJA"
+                        <x-adminlte-select2 name="idproducto" id="idproducto" label="PRODUCTO"
                             data-placeholder="Seleccionar un proveedor..." fgroup-class="col-md-4"
-                            onchange="actualizarNumeroDocumento()">
+                            >
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-secondary">
                                     <i class="fas fa-user"></i>
                                 </div>
                             </x-slot>
-                            @foreach ($usuarios as $item)
-                                <option value={{ $item->id }}>{{ $item->name }}</option>
+                            @foreach ($productos as $item)
+                                <option value={{ $item->id }}>{{ $item->descripcion }}</option>
                             @endforeach
                         </x-adminlte-select2>
-                        <x-adminlte-button class="btn" style="float: right;" label="Generar" theme="secondary" onclick="generarPDF()"
-                            icon="fas fa-lg fa-save" />
+                        <button class="btn btn-secondary" style="float: right;" onclick="generarPDF()">Generar</button>
 
 
 
@@ -71,7 +70,7 @@
                         </div>
 
                         <x-adminlte-button class="btn" style="float: right;" label="Generar" theme="secondary" onclick="generarPDFsinuser()"
-                            icon="fas fa-lg fa-save" />
+                             />
 
 
                     </div>
@@ -93,16 +92,16 @@
         function generarPDF() {
             var desde = document.getElementById('desde1').value;
             var hasta = document.getElementById('hasta1').value;
-            var idusuario = document.getElementById('idusuario').value;
+            var idproducto = document.getElementById('idproducto').value;
 
-            var url = `/controlventa/public/cajareportepdf/${desde}/${hasta}/${idusuario}`;
+            var url = `/controlventa/public/gananciareportepdf/${desde}/${hasta}/${idproducto}`;
             window.open(url, '_blank');
         }
         function generarPDFsinuser() {
             var desde = document.getElementById('desde2').value;
             var hasta = document.getElementById('hasta2').value;
 
-            var url = `/controlventa/public/cajareportepdf/${desde}/${hasta}`;
+            var url = `/controlventa/public/gananciareportepdf/${desde}/${hasta}`;
             window.open(url, '_blank');
         }
     </script>

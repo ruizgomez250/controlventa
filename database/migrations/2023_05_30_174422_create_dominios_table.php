@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -17,6 +18,19 @@ return new class extends Migration
             $table->enum('estado', array('activado', 'desactivado'));
             $table->timestamps();
         });
+        // Insertar datos por defecto
+        DB::table('dominios')->insert([
+            [
+                'id' => 3,
+                'descripcion' => 'CATEGORIA',
+                'estado' => 1,
+            ],
+            [
+                'id' => 5,
+                'descripcion' => 'UNIDAD MEDIDA',
+                'estado' => 1,
+            ]
+        ]);
     }
 
     /**

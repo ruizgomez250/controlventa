@@ -10,7 +10,7 @@ class Proveedor extends Model
     protected $table = "proveedores";//le personalizo el nombre de la tabla
     use HasFactory;
    
-    protected  $fillable = ['id','razonsocial', 'ruc', 'direccion', 'correo', 'telefono', 'celular', 'observacion', 'id_estado'];
+    protected  $fillable = ['id','razonsocial', 'ruc', 'direccion', 'correo', 'telefono', 'celular', 'observacion', 'estado'];
    
     public function estadoproveedor(){
         return $this->belongsTo(Opcion::class,'id_estado');

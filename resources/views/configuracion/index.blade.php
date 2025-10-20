@@ -33,7 +33,6 @@
                 });
             @endif
         });
-    
     </script>
 @endpush
 @section('content')
@@ -45,25 +44,64 @@
                     <form method="POST" action="{{ route('configuracion.store') }}">
                         @csrf
                         <div class="row">
+                            
+                            {{-- <div class="col-3">
+                                <div class="card" style="width: 14rem;margin-top: -18px">
+                                    <div class="card-body">
+                                        <label class="custom-heading">Lector QR Webcam</label>--}}
+                                        @php
+                                            /** CONDICION DE VENTA MAYORISTA**/
+                                            $estadocondv = 0;
+                                            /** COBRO   SIMPLIFICADO**/
+                                            $estadopagos = 0;
+                                        @endphp
+                                            @foreach ($configuraciones as $configuracion)
+                                                @if ($configuracion->descripcion == 'condicionv')
+                                                    @php
+                                                        $estadocondv = $configuracion->estado;
+
+                                                    @endphp
+                                                @elseif ($configuracion->descripcion == 'ventas')
+                                                    @php
+                                                        $estadopagos = $configuracion->estado;
+                                                    @endphp
+                                                @endif
+                                            @endforeach
+                                   {{-- </div>
+                                </div>
+                            </div> --}}
                             <div class="col-3">
-                                <h5 class="custom-heading">Lector QR Webcam</h5>
-                                @foreach ($configuraciones as $configuracion)
-                                    @if ($configuracion->descripcion == 'qr')
-                                        <label>
-                                            <input type="hidden" name="idqr"
-                                                value="{{ $configuracion->id }}">
-                                            <input type="checkbox" name="qr"
-                                                class="configuracion-checkbox"
-                                                {{ $configuracion->estado == 1 ? 'checked' : '' }}>
-                                            Leer
-                                        </label>
-                                    @endif
-                                @endforeach
-
+                                <div class="card" style="width: 14rem;margin-top: -18px">
+                                    <div class="card-body">
+                                        <label for="">Venta Mayorista</label>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="condicion"
+                                                id="inlineRadio1" value="apartir" {{ $estadocondv == 0 ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="inlineRadio1">A Partir</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="condicion"
+                                                id="inlineRadio2" value="cadavez" {{ $estadocondv == 1 ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="inlineRadio2">Cada Vez</label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                            <div class="col-3">
+                                <div class="card" style="width: 14rem;margin-top: -18px">
+                                    <div class="card-body">
+                                        <label class="custom-heading">Pago Simplificado</label>
 
+                                        <label>
+                                            <input type="checkbox" name="pagos" class="configuracion-checkbox"
+                                                {{ $estadopagos == 1 ? 'checked' : '' }}>
+                                        </label>
 
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                         <button class="btn
                                         btn-primary"
                             type="submit">Guardar</button>

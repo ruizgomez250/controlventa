@@ -14,7 +14,8 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <form action="{{ route('compra.store') }}" method="post" autocomplete="off" onkeypress="return event.keyCode != 13;">
+                    <form action="{{ route('compra.store') }}" method="post" autocomplete="off"
+                        onkeypress="return event.keyCode != 13;">
                         @csrf
                         @method('POST')
                         {{-- 'id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'id_estado','pcosto', 'pventa', 'observacion' --}}
@@ -206,7 +207,7 @@
             document.getElementById("cod_proveedor").value = cod_proveedor;
         }
         $('#search').autocomplete({
-            minlength: 3,
+            minlength: 0,
             source: function(request, response) {
                 $.ajax({
                     url: "{{ route('obtenerproveedor') }}",
@@ -243,13 +244,19 @@
             }
         });
 
+        // Variables globales para almacenar los datos del producto seleccionado
+        let productoSeleccionado = {
+            codigo: null,
+            descripcion: null,
+            id: null
+        };
+        codSeleccion='';
         $(document).on('focus', '.autocomplete-producto', function() {
             $(this).autocomplete({
-                minlength: 3,
+                minlength: 0, // Cambiamos a 0 para que se dispare el autocompletado sin escribir
                 source: function(request, response) {
                     $.ajax({
                         url: "{{ route('obtenerproducto') }}",
-                        contentType: "application/json",
                         dataType: "json",
                         data: {
                             term: request.term
@@ -257,30 +264,63 @@
                         success: function(data) {
                             var filteredData = Object.keys(data).map(function(key) {
                                 return {
-                                    label: data[key].descripcion,
-                                    value: data[key].descripcion,
+                                    label: data[key].descripcion + ' (' + data[key]
+                                        .stock + ')',
+                                    value: data[key].codigo,
                                     codigo: data[key].codigo,
                                     id: data[key].id,
                                 };
                             });
+
                             response(filteredData);
-                        },
-                        response: function(event, ui) {
-                            if (!ui.content.length) {
-                                console.log('hola');
-                            }
                         }
                     });
                 },
-                // select: function(event, ui) {
-                //     const productoidField = $(this).closest('.item').find('.producto_id');
-                //     productoidField.val(ui.item.id);
-                //     const codigoidField = $(this).closest('.item').find('.codigo_id');
-                //     codigoidField.val(ui.item.codigo);
-                //     console.log(ui.item.id);
-                // }
+                select: function(event, ui) {
+
+                    // Al seleccionar, guardamos los datos del producto en las variables globales
+                    productoSeleccionado.codigo = ui.item.codigo;
+                    productoSeleccionado.descripcion = ui.item.value;
+                    productoSeleccionado.id = ui.item.id;
+
+                    // Llamar a la función para cargar datos del producto
+                    traerCargarDatosProducto(ui.item.codigo, this);
+
+                    // Mover el foco al campo de cantidad
+                    $('input[name="cantidad[]"]').focus();
+                },
+                focus: function(event, ui) {
+                    // Este evento se dispara al mover las flechas, actualizando el campo input
+                    $(this).val(ui.item.label); // Mostrar el valor de la opción resaltada en el input
+                    codSeleccion=ui.item.value;
+                    return false; // Evitar que jQuery autocomplete cambie el valor por defecto
+                },
+                autoFocus: true, // Activamos el enfoque automático para facilitar la navegación con teclado
+
+            }).keydown(function(event) {
+                // Capturamos el evento keydown para verificar si se presionó Enter
+                if (event.keyCode === 13) {
+                    // Si se presionó Enter
+                    if ($(this).val() === "") {
+                        // Si el campo de autocompletar está vacío
+                        $('input[name="cantidad[]"]').focus(); // Movemos el foco al campo de cantidad
+                    } else {
+                        // Si el campo no está vacío y se presionó Enter, usamos los valores guardados en las variables
+                        
+                        traerCargarDatosProducto(codSeleccion, this);
+
+                        // Opcional: Mover el foco al siguiente campo si es necesario
+                        $('input[name="cantidad[]"]').focus();
+                    }
+                }
             });
         });
+
+
+
+
+
+
 
         // Script para agregar y eliminar dinámicamente ítems de compra
         const itemsContainer = document.getElementById('items');
@@ -316,8 +356,16 @@
                                     placeholder="Código" onchange="cambiarDescripcion(this)" value="" required>
                                     <input type="text" name="cantidad[]" step="any" class="form-control col-1"
                                     placeholder="Cantidad"  value =""  required oninput="sanitizeInput(this)" >
-                                    <input type="text" name="descripcion[]" class="autocomplete-producto form-control col-3 "
-                                        placeholder="Descripcion" onchange="cambiarCodigo(this)" value="" required style="font-size: 12px;>
+                                    <input type="text" name="descripcion[]" 
+                                    class="autocomplete-producto form-control col-3"
+                                    placeholder="Descripcion" 
+                                    value="" 
+                                    required 
+                                    style="font-size: 12px;" 
+                                    data-codigo="" 
+                                    data-id="" 
+                                    data-label="">
+
                                     <input type="hidden" name="productoid[]" class="producto_id form-control col-2"
                                         required>
                                     <input type="text" name="precio[]" value="" class="form-control col-1" placeholder="Precio "
@@ -528,26 +576,44 @@
         }
 
         function traerCargarDatosProducto(codigoValue, inputCodigo) {
+            const condicion = document.querySelector('input[name="condicion"]:checked').value;
+            let cantpago = 1;
+            if (condicion === 'CREDITO') {
+                cantpago = document.getElementById('cantpago').value;
+            }
             $.ajax({
                 url: '{{ route('obtenercodproducto') }}',
                 method: 'POST',
                 data: {
                     codigo: codigoValue,
+                    cantpago: cantpago,
                     _token: '{{ csrf_token() }}'
                 },
                 success: function(response) {
-                    if (response && response.id && response.descripcion) {
-                        var descripcion = response.descripcion;
-                        var id = response.id;
-                        var iva = response.impuesto;
-                        var unidadMedida = response.unidaddemedida.descripcion;
-                        var precio = response.pcosto;
-                        $(inputCodigo).closest('.row').find('input[name="descripcion[]"]').val(descripcion);
+                    if (response.producto && response.producto.id && response.producto.descripcion) {
+                        var producto = response.producto;
+                        var descripcion = producto.descripcion;
+                        var id = producto.id;
+                        var iva = producto.impuesto;
+                        var unidadMedida = producto.unidaddemedida.descripcion;
+                        var precio = producto.pventa;
+                        var pmayorista = producto.pmayorista;
+                        var cmayorista = producto.cmayorista;
+                        var stock = Math.trunc(producto.stock);
+                        var configuracionv = response.configuracion.estado;
+                        $(inputCodigo).closest('.row').find('input[name="descripcion[]"]').val(descripcion +
+                            '(' + stock + ')');
                         $(inputCodigo).closest('.row').find('input[name="codigo[]"]').val(id);
                         $(inputCodigo).closest('.row').find('input[name="unidad[]"]').val(unidadMedida);
                         $(inputCodigo).closest('.row').find('input[name="iva[]"]').val(iva);
                         $(inputCodigo).closest('.row').find('input[name="precio[]"]').val(precio);
                         $(inputCodigo).closest('.row').find('input[name="codigo1[]"]').val(codigoValue);
+                        $(inputCodigo).closest('.row').find('input[name="pmayorista[]"]').val(pmayorista);
+                        $(inputCodigo).closest('.row').find('input[name="cmayorista[]"]').val(cmayorista);
+                        $(inputCodigo).closest('.row').find('input[name="configuracionv[]"]').val(
+                            configuracionv);
+                        $(inputCodigo).closest('.row').find('input[name="precioorig[]"]').val(
+                            precio);
                         switch (iva) {
                             case 10:
                                 $(inputCodigo).closest('.row').find('input[name="cinco[]"]').val(0);
@@ -576,17 +642,16 @@
                             default:
                                 // Código a ejecutar si la variable no coincide con ninguno de los casos anteriores
                         }
-
-
                     } else {
-                        // Si la respuesta no tiene los datos esperados, limpia el input de código
-                        inputCodigo.value = '';
+                        // Maneja el caso cuando el producto no se encuentra
+                        console.error('Producto no encontrado');
                     }
                 },
                 error: function(error) {
                     console.error('Error en la petición AJAX:', error);
                 }
             });
+            actualizarSumaTotal();
         }
 
         // Agregar el evento click para agregar un nuevo ítem

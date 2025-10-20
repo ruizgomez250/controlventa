@@ -45,7 +45,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('/producto', ProductoController::class);
     Route::get('/qrproductover', [ProductoController::class, 'createReporte'])->name('qrproductover');
     Route::get('/qrproducto/{id}', [ProductoController::class, 'qrproducto'])->name('qrproducto');
-    Route::resource('/mascota', MascotaController::class);
     Route::resource('/compra', CompraController::class);
     Route::resource('/venta', VentaController::class);
 
@@ -58,6 +57,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/documentopagomontopdf/{id}', [VentaController::class, 'generarFacturaMonto'])->name('documentopagomontopdf');
     Route::get('/cajareportepdf/{desde}/{hasta}/{idusuario?}', [CajaReporteController::class, 'pdffechasusuario']);
     Route::get('/caja', [VentaController::class, 'indexCaja']);
+    Route::get('/gananciareportepdf/{desde}/{hasta}/{idproducto?}', [ProductoreporteController::class, 'pdfganancia']);
+    Route::get('/ventareportepdf/{desde}/{hasta}/{idusuario?}', [VentaController::class, 'pdffechasusuario']);
     Route::get('/caja/cobrado/{fecha?}', [VentaController::class, 'indexCobradosCaja']);
     Route::post('/caja/{id}/{fecha}', [VentaController::class, 'pagarCuota']);
     Route::post('/caja/{id}/{montoabonado}/{descuento}', [VentaController::class, 'pagarMonto']);
@@ -80,17 +81,15 @@ Route::get('/sinpermiso', function () {
 
 
 
-Route::get('/mascota/consulta/{id}', [MascotaController::class, 'consulta'])->name('consulta');
-Route::get('/mascota/consulta2/{id}', [MascotaController::class, 'consultatwo'])->name('consulta2');
-Route::get('/maestro', [MascotaController::class, 'consultamascota'])->name('consultamascota');
-Route::get('/cita/optenerdatos/{id}', [CitaController::class, 'obtenerdatos'])->name('obtenerdatos');
-Route::get('/cita/propietario/{id}',  [CitaController::class, 'obtenermascotas'])->name('obtenermascotas');
 Route::get('/autocomplete',  [AutocompleteController::class, 'autocomplete'])->name('autocomplete');
 Route::get('/autocomplete/proveedor',  [AutocompleteController::class, 'proveedor'])->name('obtenerproveedor');
 Route::get('/autocomplete/producto',  [AutocompleteController::class, 'getproducto'])->name('obtenerproducto');
 Route::post('/guardar-categoria',  [CategoriaController::class, 'storeCat'])->name('guardar-categoria');
+Route::post('/guardar-unidad',  [CategoriaController::class, 'storeCat'])->name('guardar-unidad');
 Route::delete('/borrar-categoria/{id}', [CategoriaController::class, 'destroy'])->name('borrar-categoria');
+Route::delete('/borrar-unidad/{id}', [CategoriaController::class, 'destroy'])->name('borrar-unidad');
 Route::post('/autocomplete/obtenercodprod',  [ProductoController::class, 'verifcod'])->name('obtenercodproducto');
+Route::post('/autocomplete/obtenercodtemporal',  [ProductoController::class, 'desdetemporal'])->name('obtenercodtemporal');
 //Route::post('/guardar-categoria', 'CategoriaController@storeCat')->name('guardar-categoria');
 Route::get('/create', function () {
     return view('create');

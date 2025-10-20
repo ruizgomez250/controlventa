@@ -47,7 +47,7 @@ class CompraController extends Controller
         $tienePermiso = $this->permisoService->verificarPermiso('Compra', 'crear');
         if ($tienePermiso) {
             $opcion = Opcion::where('id_dominio', 12)->get();
-            $proveedor = Proveedor::where('id_estado', 3)->get();
+            $proveedor = Proveedor::where('estado', 1)->get();
             return view('compras.create', compact('opcion', 'proveedor'));
         } else {
             return view('sinpermiso.index');
@@ -59,7 +59,7 @@ class CompraController extends Controller
      */
     public function store(Request $request)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Compra', 'guardar');
+        $tienePermiso = $this->permisoService->verificarPermiso('Compra', 'crear');
         if ($tienePermiso) {
             try {
                 DB::beginTransaction();

@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-<h1 class="m-0 custom-heading">Registrar Cliente</h1>
+    <h1 class="m-0 custom-heading">Registrar Cliente</h1>
 @stop
 @section('plugins.Sweetalert2', true)
 
@@ -21,7 +21,7 @@
                 Toast.fire({
                     icon: 'success',
                     title: '<label style="font-size: 1.6rem !important;">Operación Exitosa!</label>',
-                    text:  '{{ session('success') }}',
+                    text: '{{ session('success') }}',
                 });
             @endif
 
@@ -72,15 +72,16 @@
 
                         <div class="row">
                             <x-adminlte-select name="estado" label="Estado del Cliente"
-                                data-placeholder="Seleccionar una opción..." fgroup-class="col-md-3">                               
-                                    <option value="1">Activo</option>
-                                    <option value="0">Inactivo</option>
+                                data-placeholder="Seleccionar una opción..." fgroup-class="col-md-3">
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
                             </x-adminlte-select>
                         </div>
 
                         <div class="row">
                             <div class="form-group col-md-12">
-                                <a class="btn btn-danger" style="float: right;" href="{{route('cliente.index')}}">Cancelar</a>
+                                <a class="btn btn-danger" style="float: right;"
+                                    href="{{ route('cliente.index') }}">Cancelar</a>
                                 <x-adminlte-button class="btn-group" style="float: right;" type="submit" label="Registrar"
                                     theme="primary" icon="fas fa-lg fa-save" />
                             </div>

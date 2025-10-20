@@ -35,7 +35,7 @@
                                 <option value={{ $item->id }}>{{ $item->name }}</option>
                             @endforeach
                         </x-adminlte-select2>
-                        <button class="btn btn-secondary" style="float: right;" onclick="mostrarPermisos()">Generar</button>
+                        <button class="btn btn-secondary" style="float: right;" onclick="mostrarPermisos()">Asignar Roles</button>
 
 
 
@@ -111,16 +111,26 @@
                         <label><input type="checkbox" name="permisos[cajareporte_editar]" id="cajareporte_editar"> Editar</label>
                     </div>
                     <div class="col-6">
+                        <h5 class="custom-heading">Reportes</h5>
+                        <label><input type="checkbox" name="permisos[reporte_leer]" id="reporte_leer"> Leer</label>
+                        <label><input type="checkbox" name="permisos[reporte_borrar]" id="reporte_borrar"> Borrar</label>
+                        <label><input type="checkbox" name="permisos[reporte_crear]" id="reporte_crear"> Crear</label>
+                        <label><input type="checkbox" name="permisos[reporte_editar]" id="reporte_editar"> Editar</label>
+                    </div>
+                    <div class="col-6">
                         <h5 class="custom-heading">Roles</h5>
                         <label><input type="checkbox" name="permisos[rol_leer]" id="rol_leer"> Leer</label>
                         <label><input type="checkbox" name="permisos[rol_borrar]" id="rol_borrar"> Borrar</label>
                         <label><input type="checkbox" name="permisos[rol_crear]" id="rol_crear"> Crear</label>
                         <label><input type="checkbox" name="permisos[rol_editar]" id="rol_editar"> Editar</label>
                     </div>
+                    <div class="col-6">
+                        <h5 class="custom-heading">Configuracion</h5>
+                        <label><input type="checkbox" name="permisos[configuracion_leer]" id="configuracion_leer">Modificar</label>
+                    </div>
                     
                 </div>
-                <button class="btn
-                                btn-primary" type="submit">Guardar</button>
+                <button class="btn btn-primary" type="submit">Guardar</button>
             </form>
         </div>
     </x-adminlte-modal>
@@ -182,9 +192,9 @@
             $('#permisosModal').modal('show');
         }
         // Mostrar el mensaje de éxito o error con SweetAlert
-        if (successMessage) {
+        if (typeof successMessage !== 'undefined' && successMessage) {
             Swal.fire('Éxito', successMessage, 'success');
-        } else if (errorMessage) {
+        } else if (typeof errorMessage !== 'undefined' && errorMessage) {
             Swal.fire('Error', errorMessage, 'error');
         }
     </script>

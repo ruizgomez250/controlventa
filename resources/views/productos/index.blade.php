@@ -28,15 +28,17 @@
                         @foreach ($producto as $row)
                             <tr>
                                
-                                <td>{{ $row->codigo }}</td>
+                                <td>{{  $row->unidaddemedida->descripcion }}</td>
                                 <td>{{ $row->descripcion }}</td>
                                 <td>{{ $row->categoriaproducto->descripcion }}</td>
-                                <td>{{ $row->stock . '  ' . $row->unidaddemedida->descripcion }}</td>
+                                <td>{{ $row->stock  }}</td>
                                 <td>{{ $row->pcosto }}</td>
                                 <td>{{ $row->pventa }}</td>
                                 <td>{{ $row->impuesto }}</td>
                                 <td>{{ ($row->estado === 0) ? "Inactivo" : "Activo" }}</td>
-
+                                <td>{{ $row->cmayorista}}</td>
+                                <td>{{ $row->pmayorista}}</td>
+                                <td>{{ $row->dmayorista}}</td>
                                 <td style="float:right;">
 
 

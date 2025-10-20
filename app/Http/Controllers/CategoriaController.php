@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Dominio;
 use App\Models\Opcion;
 use Illuminate\Http\Request;
 
@@ -9,22 +10,37 @@ class CategoriaController extends Controller
 {
     public function storeCat(Request $request)
     {
-       // dd('hola mundo');
         //Validar la solicitud
-         $request->validate([
-             'descripcion' => 'required|string|max:255',
-         ]);
+        $request->validate([
+            'descripcion' => 'required|string|max:255',
+        ]);
+        $descAux = '';
+        if ($request->input('id_dominio') == 3) {
+            $descAux = 'CATEGORIA';
+        } else if ($request->input('id_dominio') == 5) {
+            $descAux = 'UNIDAD MEDIDA';
+        }
+
+        // Verificar si el dominio existe, y si no, crearlo
+        $dominio = Dominio::where('id', $request->input('id_dominio'))->first();
+        if (!$dominio) {
+            $dominio = Dominio::create([
+                'id' => $request->input('id_dominio'),
+                'descripcion' => $descAux,
+                'estado' => 'activado'
+            ]);
+        }
 
         // Crear una nueva descripción en la base de datos
-        $opcion=Opcion::create($request->all());
+        $opcion = Opcion::create($request->all());
         $responseData = [
             'id' => $opcion->id,
-            'descripcion'=>$opcion->descripcion,
-            'data'=>[$opcion->descripcion],
-          ];
-          
+            'descripcion' => $opcion->descripcion,
+            'data' => [$opcion->descripcion],
+        ];
+
         return response()->json($responseData);
-     //return response()->json($request);
+        return response()->json($request->input());
     }
     public function destroy($id)
     {

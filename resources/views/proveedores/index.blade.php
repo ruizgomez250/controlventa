@@ -77,8 +77,8 @@
                                 <td>{{ $row->correo }}</td>
                                 <td>{{ $row->celular }}</td>
                                 <td
-                                    class="{{ $row->estadoproveedor->descripcion == 'Activo' ? 'text-success' : 'text-danger' }}">
-                                    {{ $row->estadoproveedor->descripcion}}</td>
+                                    class="{{ $row->estado == 1 ? 'text-success' : 'text-danger' }}">
+                                    {{  $row->estado == 1 ? 'Activo' : 'Inactivo'}}</td>
                                 <td style="float:right;">
                                     <a href="{{ route('proveedor.edit', $row->id) }}" class="btn btn-outline-secondary"><i
                                             class="fa fa-sm fa-fw fa-pen"></i></a>

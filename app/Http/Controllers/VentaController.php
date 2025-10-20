@@ -14,10 +14,13 @@ use Illuminate\Http\Request;
 use TCPDF;
 use App\Helpers\NumberToWords;
 use App\Models\Configuracion;
+use App\Models\TemporalVentaDetalle;
 use App\Services\PermisoService;
 use DragonCode\Contracts\Cashier\Auth\Auth;
+use Illuminate\Support\Facades\Auth as FacadesAuth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+
 
 class VentaController extends Controller
 {
@@ -35,7 +38,16 @@ class VentaController extends Controller
         $tienePermiso = $this->permisoService->verificarPermiso('Venta', 'leer');
         if ($tienePermiso) {
             $heads = [
-                'ID', 'Fecha', 'Nro Factura', 'Timbrado', 'Proveedor', 'Condición de Compra', 'Monto Total', 'Usuario', 'Estado', 'Acción'
+                'ID',
+                'Fecha',
+                'Nro Factura',
+                'Timbrado',
+                'Proveedor',
+                'Condición de Compra',
+                'Monto Total',
+                'Usuario',
+                'Estado',
+                'Acción'
             ];
             $cabecera = Venta::with('cliente', 'usuario')->get();
             return view('ventas.index', compact('cabecera', 'heads'));
@@ -51,7 +63,7 @@ class VentaController extends Controller
         if ($tienePermiso) {
             $clientes = Cliente::where('estado', 1)->get();
             $configuracionQR = Configuracion::where('descripcion', 'qr')->first();
-            return view('ventas.create', compact('clientes','configuracionQR'));
+            return view('ventas.create', compact('clientes', 'configuracionQR'));
         } else {
             return view('sinpermiso.index');
         }
@@ -140,10 +152,22 @@ class VentaController extends Controller
                     }
                 }
                 $ultimoId = $cabecera->id;
+                $configuracionvs = Configuracion::where('descripcion', 'ventas')->first();
+                
+                if ($configuracionvs) {
+                    $estadov = $configuracionvs->estado;
+                } else {
+                    $configuracionvs->estado = 0;
+                    $configuracionvs->save();
+                }
+
+
+
                 DB::commit();
                 return redirect()->route('venta.create')->with([
                     'success' => 'La compra se ha registrado correctamente.',
                     'ultimoId' => $ultimoId,
+                    'estadov' => $estadov,
                 ]);
             } catch (Exception $e) {
 
@@ -222,7 +246,7 @@ class VentaController extends Controller
     public function pagarCuota(string $id, string $fecha)
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'crear');
-        
+
         if ($tienePermiso) {
             try {
                 DB::beginTransaction();
@@ -292,7 +316,7 @@ class VentaController extends Controller
         $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'crear');
         if ($tienePermiso) {
             try {
-                
+
                 DB::beginTransaction();
                 $montocondesc = $montoabonado + $descuento;
                 $venta = Venta::find($id);
@@ -392,12 +416,21 @@ class VentaController extends Controller
         $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'leer');
         if ($tienePermiso) {
             $heads = [
-                'ID', 'Fecha', 'Nro Factura', 'Timbrado', 'Proveedor', 'Condición de Compra', 'Monto Total', 'Usuario', 'Estado', 'Acción'
+                'ID',
+                'Fecha',
+                'Nro Factura',
+                'Timbrado',
+                'Proveedor',
+                'Condición de Compra',
+                'Monto Total',
+                'Usuario',
+                'Estado',
+                'Acción'
             ];
             $cabecera = Venta::with('cliente', 'usuario')
                 ->whereIn('estado', [1, 4])
                 ->get();
-            return view('caja.index', compact('cabecera', 'heads'));
+            return view('caja.index', compact('cabecera'));
         } else {
             return view('sinpermiso.index');
         }
@@ -411,10 +444,17 @@ class VentaController extends Controller
                 // Aquí puedes agregar lógica adicional según sea necesario para manejar el filtro de fecha
                 $fecha = Carbon::now()->toDateString();
             }
-
-            //
             $heads = [
-                'ID', 'Fecha', 'Nro Factura', 'Timbrado', 'Proveedor', 'Condición de Compra', 'Monto Total', 'Usuario', 'Estado', 'Acción'
+                'ID',
+                'Fecha',
+                'Nro Factura',
+                'Timbrado',
+                'Proveedor',
+                'Condición de Compra',
+                'Monto Total',
+                'Usuario',
+                'Estado',
+                'Acción'
             ];
             $idUsuarioLogueado = auth()->user()->id;
 
@@ -424,7 +464,7 @@ class VentaController extends Controller
                 ->where('cajas.id_usuario', $idUsuarioLogueado)
                 ->whereDate('cajas.fecha_cobro', $fecha)
                 ->get();
-            return view('caja.cobrado', compact('cabecera', 'heads', 'fecha'));
+            return view('caja.cobrado', compact('cabecera', 'fecha'));
         } else {
             return view('sinpermiso.index');
         }
@@ -544,5 +584,27 @@ class VentaController extends Controller
         } else {
             return redirect()->route('sinpermiso');
         }
+    }
+    public function cargarDet(Request $request, $id)
+    {
+        $producto = Producto::where('codigo', $id)->first();
+
+        // Si no se encuentra el producto, retorna un error
+        if (!$producto) {
+            return response()->json(['error' => 'Producto no encontrado'], 404);
+        } else {
+            $user_id = FacadesAuth::id();
+
+            // Crea un nuevo registro en la tabla temporal_detalle_venta
+            $temporalVentaDetalle = TemporalVentaDetalle::create([
+                'producto_id' => $producto->id,
+                'user_id' => $user_id,  // Usamos el ID del usuario autenticado
+            ]);
+
+            // Retorna una respuesta o redirecciona
+            return response()->json(['success' => true, 'data' => $temporalVentaDetalle], 201);
+        }
+        // Obtener el ID del usuario autenticado
+
     }
 }

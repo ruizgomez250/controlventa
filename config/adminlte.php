@@ -367,6 +367,15 @@ return [
                     'text' => 'Lista de Porcentajes',
                     'url'  => '/tablaporc',
                 ],
+                [
+                    'text' => 'Lista Porcentajes',
+                    'url'  => '/tablaporc/index',
+                ],
+                [
+                    'text' => 'Registrar Porcentaje',
+                    'url'  => '/tablaporc/create',
+                ],
+
             ],
         ],
         [
@@ -647,12 +656,12 @@ return [
             ],
         ],
         'Sweetalert2' => [
-            'active' => false,
+            'active' => true,
             'files' => [
                 [
                     'type' => 'js',
                     'asset' => true,
-                    'location' => '{{ asset("js/") }}',
+                    'location' => 'https://cdn.jsdelivr.net/npm/sweetalert2@10',
                 ],
             ],
         ],

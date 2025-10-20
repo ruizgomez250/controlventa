@@ -22,11 +22,11 @@ class ProveedorController extends Controller
     }
     public function index(): view
     {
-        
+
         $tienePermiso = $this->permisoService->verificarPermiso('Proveedor', 'leer');
         if ($tienePermiso) {
             //obtenemos los datos
-            $proveedor = Proveedor::with('estadoproveedor')->get();
+            $proveedor = Proveedor::all();
             //asignar cabecera datatable
             $heads = [
                 'ID', 'Razón Social', 'RUC', 'Correo', 'Teléfono', 'Estado', 'Acción'
@@ -44,8 +44,7 @@ class ProveedorController extends Controller
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Proveedor', 'crear');
         if ($tienePermiso) {
-            $opcion = Opcion::where('id_dominio', 2)->get();
-            return view('proveedores.create', ['opcion' => $opcion]);
+            return view('proveedores.create');
         } else {
             return view('sinpermiso.index');
         }
@@ -56,12 +55,25 @@ class ProveedorController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        //dd($request->input());
         $tienePermiso = $this->permisoService->verificarPermiso('Proveedor', 'crear');
         if ($tienePermiso) {
-            $request->validate(['razonsocial' => 'required']);
+            $estado = $request->input('estado');
+            if ($estado === 'true') {
+                $estado = 1;
+            } elseif ($estado === 'false' || $estado === null) {
+                $estado = 0;
+            }else{
+                $estado = $request->input('estado');
+            }
 
-            Proveedor::create($request->all());
-            return redirect()->route('proveedor.index');
+            // Recoger todos los datos del request, incluyendo el campo 'estado' procesado
+            $data = $request->all();
+            $data['estado'] = $estado;
+
+            // Crear el nuevo proveedor
+            Proveedor::create($data);
+            return redirect()->route('proveedor.create')->with('success', 'Operación exitosa');
         } else {
             return redirect()->route('sinpermiso');
         }
@@ -83,8 +95,7 @@ class ProveedorController extends Controller
         $tienePermiso = $this->permisoService->verificarPermiso('Proveedor', 'editar');
         if ($tienePermiso) {
             // dd($proveedor->razonsocial);
-            $opcion = Opcion::where('id_dominio', 2)->get();
-            return view('proveedores.edit', ['opcion' => $opcion, 'proveedor' => $proveedor]);
+            return view('proveedores.edit', ['proveedor' => $proveedor]);
         } else {
             return view('sinpermiso.index');
         }
@@ -94,15 +105,22 @@ class ProveedorController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, Proveedor $proveedor): RedirectResponse
-    {
-        $tienePermiso = $this->permisoService->verificarPermiso('Proveedor', 'editar');
-        if ($tienePermiso) {
-            $proveedor->update($request->all());
-            return redirect()->route('proveedor.index');
-        } else {
-            return redirect()->route('sinpermiso');
-        }
+{
+    $tienePermiso = $this->permisoService->verificarPermiso('Proveedor', 'editar');
+    if ($tienePermiso) {
+        // Recoger todos los datos del request excepto 'estado'
+        
+        $data = $request->input();
+
+        // Actualizar el proveedor con los datos procesados
+        $proveedor->update($data);
+        return redirect()->route('proveedor.index')->with('success', 'Proveedor actualizado con éxito');
+    } else {
+        return redirect()->route('sinpermiso');
     }
+}
+
+
 
     /**
      * Remove the specified resource from storage.

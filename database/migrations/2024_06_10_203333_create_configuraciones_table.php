@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -15,6 +16,13 @@ return new class extends Migration
             $table->string('observacion')->nullable();
             $table->timestamps();
         });
+        // Insertar registro inicial con descripcion = 'ventas' y estado = 1
+        DB::table('configuraciones')->insert([
+            'descripcion' => 'ventas',
+            'estado' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /**

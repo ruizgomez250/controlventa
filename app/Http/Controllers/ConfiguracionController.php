@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Configuracion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ConfiguracionController extends Controller
 {
@@ -31,13 +32,38 @@ class ConfiguracionController extends Controller
      */
     public function store(Request $request)
     {
+        try {
+            DB::transaction(function () use ($request) {
 
-        $configuracion = Configuracion::find($idqr = $request->input('idqr'));
-        $qrtrue = $request->has('qr') ? 1 : 0;
-        $configuracion->estado=$qrtrue;
-        $configuracion->save();
-        return redirect()->route('configuracion.index')
-            ->with('success', 'Configuracion actualizado con exito!!');
+                // Condicionv
+                $condicionv = Configuracion::firstOrCreate(
+                    ['descripcion' => 'condicionv'],
+                    ['estado' => 1]
+                );
+
+                $condicionv->estado = ($request->input('condicion') == 'cadavez') ? 1 : 0;
+                $condicionv->save();
+
+                // Ventas / pagos
+                $ventas = Configuracion::firstOrCreate(
+                    ['descripcion' => 'ventas'],
+                    ['estado' => 0] // Si no existe, por defecto 0
+                );
+
+                // Si el checkbox 'pagos' viene, marcar 1, si no, 0
+                $ventas->estado = $request->has('pagos') ? 1 : 0;
+                $ventas->save();
+            });
+
+            return redirect()->route('configuracion.index')
+                ->with('success', 'Configuración actualizada con éxito!!');
+        } catch (\Exception $e) {
+            // Opcional: puedes loguear el error
+            
+
+            return redirect()->route('configuracion.index')
+                ->with('error', 'Ocurrió un error al actualizar la configuración.');
+        }
     }
 
     /**

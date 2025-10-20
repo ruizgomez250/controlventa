@@ -91,7 +91,9 @@ class ClienteController extends Controller
         if ($tienePermiso) {
             try {
                 $request->validate(['razonsocial' => 'required']);
+                
                 Cliente::create($request->all());
+                
                 return redirect()->route('cliente.create')->with('success', 'Operación exitosa');
             } catch (ValidationException $e) {
                 return redirect()->route('cliente.create')->withErrors($e->validator)->withInput();
