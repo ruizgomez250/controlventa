@@ -618,16 +618,16 @@ return [
             ],
         ],
 
-        'Sweetalert2' => [
-            'active' => true,
-            'files' => [
-                [
-                    'type' => 'js',
-                    'asset' => true,
-                    'location' => 'vendor/sweetalert2/sweetalert2.all.min.js',
-                ],
-            ],
-        ],
+        // 'Sweetalert2' => [
+        //     'active' => true,
+        //     'files' => [
+        //         [
+        //             'type' => 'js',
+        //             'asset' => true,
+        //             'location' => 'vendor/sweetalert2/sweetalert2.all.min.js',
+        //         ],
+        //     ],
+        // ],
 
         'galaxy' => [
             'active' => true,
