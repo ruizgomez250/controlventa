@@ -10,7 +10,6 @@
         </div>
     </div>
 @stop
-@section('plugins.Sweetalert2', true)
 
 @push('js')
     <script>
