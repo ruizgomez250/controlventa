@@ -660,11 +660,12 @@ return [
             'files' => [
                 [
                     'type' => 'js',
-                    'asset' => false,
-                    'location' => 'https://cdn.jsdelivr.net/npm/sweetalert2@10',
+                    'asset' => true, // ahora indica que es un archivo local
+                    'location' => 'vendor/sweetalert2/sweetalert2.all.min.js',
                 ],
             ],
         ],
+
         'Pace' => [
             'active' => false,
             'files' => [
