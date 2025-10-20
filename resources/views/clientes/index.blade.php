@@ -12,6 +12,8 @@
 @stop
 
 @push('js')
+    <script src="{{ asset('vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
+
     <script>
         $(document).ready(function() {
             var Toast = Swal.mixin({
