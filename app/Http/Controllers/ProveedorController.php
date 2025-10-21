@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use App\Models\Proveedor;
 use App\Models\Opcion;
 use App\services\PermisoService;
+use Illuminate\Support\Facades\DB;
 
 class ProveedorController extends Controller
 {
@@ -29,7 +30,13 @@ class ProveedorController extends Controller
             $proveedor = Proveedor::all();
             //asignar cabecera datatable
             $heads = [
-                'ID', 'Razón Social', 'RUC', 'Correo', 'Teléfono', 'Estado', 'Acción'
+                'ID',
+                'Razón Social',
+                'RUC',
+                'Correo',
+                'Teléfono',
+                'Estado',
+                'Acción'
             ];
             return view('proveedores.index', ['proveedores' => $proveedor, 'heads' => $heads]);
         } else {
@@ -63,7 +70,7 @@ class ProveedorController extends Controller
                 $estado = 1;
             } elseif ($estado === 'false' || $estado === null) {
                 $estado = 0;
-            }else{
+            } else {
                 $estado = $request->input('estado');
             }
 
@@ -105,20 +112,20 @@ class ProveedorController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, Proveedor $proveedor): RedirectResponse
-{
-    $tienePermiso = $this->permisoService->verificarPermiso('Proveedor', 'editar');
-    if ($tienePermiso) {
-        // Recoger todos los datos del request excepto 'estado'
-        
-        $data = $request->input();
+    {
+        $tienePermiso = $this->permisoService->verificarPermiso('Proveedor', 'editar');
+        if ($tienePermiso) {
+            // Recoger todos los datos del request excepto 'estado'
 
-        // Actualizar el proveedor con los datos procesados
-        $proveedor->update($data);
-        return redirect()->route('proveedor.index')->with('success', 'Proveedor actualizado con éxito');
-    } else {
-        return redirect()->route('sinpermiso');
+            $data = $request->input();
+
+            // Actualizar el proveedor con los datos procesados
+            $proveedor->update($data);
+            return redirect()->route('proveedor.index')->with('success', 'Proveedor actualizado con éxito');
+        } else {
+            return redirect()->route('sinpermiso');
+        }
     }
-}
 
 
 
@@ -128,11 +135,25 @@ class ProveedorController extends Controller
     public function destroy(Proveedor $proveedor): RedirectResponse
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Proveedor', 'borrar');
-        if ($tienePermiso) {
-            $proveedor->delete();
-            return redirect()->route('proveedor.index');
-        } else {
+        if (!$tienePermiso) {
             return redirect()->route('sinpermiso');
         }
+
+        // Verificar si el proveedor tiene compras asociadas
+        $tieneCompras = DB::table('compras_cab')
+            ->where('id_proveedor', $proveedor->id)
+            ->exists();
+
+        if ($tieneCompras) {
+            return redirect()->route('proveedor.index')
+                ->with('error', 'No se puede eliminar el proveedor porque tiene compras registradas.');
+        }
+
+        // Opcional: verificar otras relaciones (ej. productos, etc.)
+
+        $proveedor->delete();
+
+        return redirect()->route('proveedor.index')
+            ->with('success', 'Proveedor eliminado correctamente.');
     }
 }
