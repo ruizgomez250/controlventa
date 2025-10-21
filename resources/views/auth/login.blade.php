@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Iniciar Sesión - ' . ($tenant->name ?? 'Sistema'))
+@section('title', 'Iniciar Sesión - Sistema'))
 
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">{{ __('Iniciar Sesión en ') . ($tenant->name ?? 'el Sistema') }}</div>
+                <div class="card-header">Iniciar Sesión en el Sistema</div>
 
                 <div class="card-body">
                     @if (session('error'))
@@ -16,7 +16,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ url('/' . $tenant->slug . '/login') }}">
+                    <form method="POST" action="{{ url('/controlventa/login') }}">
                         @csrf
 
                         <div class="mb-3">
