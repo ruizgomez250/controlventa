@@ -128,11 +128,25 @@ class ProveedorController extends Controller
     public function destroy(Proveedor $proveedor): RedirectResponse
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Proveedor', 'borrar');
-        if ($tienePermiso) {
-            $proveedor->delete();
-            return redirect()->route('proveedor.index');
-        } else {
+        if (!$tienePermiso) {
             return redirect()->route('sinpermiso');
         }
+
+        // Verificar si el proveedor tiene compras asociadas
+        $tieneCompras = DB::table('compras_cab')
+            ->where('id_proveedor', $proveedor->id)
+            ->exists();
+
+        if ($tieneCompras) {
+            return redirect()->route('proveedor.index')
+                ->with('error', 'No se puede eliminar el proveedor porque tiene compras registradas.');
+        }
+
+        // Opcional: verificar otras relaciones (ej. productos, etc.)
+
+        $proveedor->delete();
+
+        return redirect()->route('proveedor.index')
+            ->with('success', 'Proveedor eliminado correctamente.');
     }
 }
