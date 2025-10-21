@@ -137,7 +137,7 @@
                 } else {
                     // Si el detalle está oculto, lo mostramos
                     $.ajax({
-                        url: '/controlventa/public/venta/' + compraId +
+                        url: '/sisventa/public/venta/' + compraId +
                         '/detalles', // Ajustar la URL si es necesario
                         method: 'GET',
                         success: function(response) {
