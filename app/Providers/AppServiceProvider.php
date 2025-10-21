@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Http\Controllers\RolController;
-use App\Services\PermisoService;
+use App\services\PermisoService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
