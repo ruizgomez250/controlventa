@@ -256,7 +256,7 @@
         <script>
             var compraId = {{ session('ultimoId') }};
             //intervalID;
-            var url = '/sisventa/public/venta/' + compraId + '/detalles';
+            var url = '/controlventa/public/venta/' + compraId + '/detalles';
             
             // Realiza una petición AJAX para obtener los detalles de la compra
             $.ajax({

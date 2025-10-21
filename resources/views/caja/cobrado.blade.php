@@ -257,7 +257,7 @@
                             $(this).find('i').removeClass('fa-minus-circle').addClass('fa-plus-circle');
                         } else {
                             // Si el detalle está oculto, lo mostramos
-                            url = '/sisventa/public/venta/' + compraId +
+                            url = '/controlventa/public/venta/' + compraId +
                                 '/detalles';
                             $.ajax({
                                 url: url, // Ajustar la URL según sea necesario
@@ -341,7 +341,7 @@
                     var compraId = $(this).data('compra-id');
                     // Realiza una petición AJAX para obtener los detalles de la compra
                     var baseUrl = window.location.origin;
-                    var url = baseUrl + '/sisventa/public/venta/' + compraId + '/detalles';
+                    var url = baseUrl + '/controlventa/public/venta/' + compraId + '/detalles';
                     $.ajax({
                         url: url,
                         method: 'GET',
@@ -445,7 +445,7 @@
                     item = 1;
                     // Realiza una petición AJAX para obtener los detalles de la compra
                     var baseUrl = window.location.origin;
-                    var url = baseUrl + '/sisventa/public/venta/' + compraId + '/cuotas';
+                    var url = baseUrl + '/controlventa/public/venta/' + compraId + '/cuotas';
                     $.ajax({
                         url: url,
                         method: 'GET',
