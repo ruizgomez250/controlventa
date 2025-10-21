@@ -1,24 +1,24 @@
 @extends('adminlte::page')
 @php
-    // function convertirMes($mes)
-    // {
-    //     $meses = [
-    //         'January' => 'Enero',
-    //         'February' => 'Febrero',
-    //         'March' => 'Marzo',
-    //         'April' => 'Abril',
-    //         'May' => 'Mayo',
-    //         'June' => 'Junio',
-    //         'July' => 'Julio',
-    //         'August' => 'Agosto',
-    //         'September' => 'Septiembre',
-    //         'October' => 'Octubre',
-    //         'November' => 'Noviembre',
-    //         'December' => 'Diciembre'
-    //     ];
+    function convertirMesAux($mes)
+    {
+        $meses = [
+            'January' => 'Enero',
+            'February' => 'Febrero',
+            'March' => 'Marzo',
+            'April' => 'Abril',
+            'May' => 'Mayo',
+            'June' => 'Junio',
+            'July' => 'Julio',
+            'August' => 'Agosto',
+            'September' => 'Septiembre',
+            'October' => 'Octubre',
+            'November' => 'Noviembre',
+            'December' => 'Diciembre'
+        ];
 
-    //     return $meses[$mes] ?? $mes;
-    // }
+        return $meses[$mes] ?? $mes;
+    }
 
     // Inicializar variables para almacenar los totales por mes
     $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -33,26 +33,26 @@
     // Iterar sobre los detalles obtenidos de la consulta de compras
     foreach ($detalles as $detalle) {
         $mes = strftime('%B', strtotime($detalle->fechaemision));
-        $mes = convertirMes($mes);
+        $mes = convertirMesAux($mes);
         $totalPorMes[$mes] += $detalle->cantidad;
     }
 
     foreach ($detallesAnhoAnterior as $detalle) {
         $mes = strftime('%B', strtotime($detalle->fechaemision));
-        $mes = convertirMes($mes);
+        $mes = convertirMesAux($mes);
         $totalPorMesAnhoAnterior[$mes] += $detalle->cantidad;
     }
 
     // Iterar sobre los detalles obtenidos de la consulta de ventas
     foreach ($detallesV as $detalle) {
         $mes = strftime('%B', strtotime($detalle->fecha));
-        $mes = convertirMes($mes);
+        $mes = convertirMesAux($mes);
         $totalPorMesV[$mes] += $detalle->cantidad;
     }
 
     foreach ($detallesAnhoAnteriorV as $detalle) {
         $mes = strftime('%B', strtotime($detalle->fecha));
-        $mes = convertirMes($mes);
+        $mes = convertirMesAux($mes);
         $totalPorMesAnhoAnteriorV[$mes] += $detalle->cantidad;
     }
 @endphp
