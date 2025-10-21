@@ -1,24 +1,24 @@
 @extends('adminlte::page')
 @php
-    function convertirMes($mes)
-    {
-        $meses = [
-            'January' => 'Enero',
-            'February' => 'Febrero',
-            'March' => 'Marzo',
-            'April' => 'Abril',
-            'May' => 'Mayo',
-            'June' => 'Junio',
-            'July' => 'Julio',
-            'August' => 'Agosto',
-            'September' => 'Septiembre',
-            'October' => 'Octubre',
-            'November' => 'Noviembre',
-            'December' => 'Diciembre'
-        ];
+    // function convertirMes($mes)
+    // {
+    //     $meses = [
+    //         'January' => 'Enero',
+    //         'February' => 'Febrero',
+    //         'March' => 'Marzo',
+    //         'April' => 'Abril',
+    //         'May' => 'Mayo',
+    //         'June' => 'Junio',
+    //         'July' => 'Julio',
+    //         'August' => 'Agosto',
+    //         'September' => 'Septiembre',
+    //         'October' => 'Octubre',
+    //         'November' => 'Noviembre',
+    //         'December' => 'Diciembre'
+    //     ];
 
-        return $meses[$mes] ?? $mes;
-    }
+    //     return $meses[$mes] ?? $mes;
+    // }
 
     // Inicializar variables para almacenar los totales por mes
     $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
