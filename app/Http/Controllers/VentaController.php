@@ -15,7 +15,7 @@ use TCPDF;
 use App\Helpers\NumberToWords;
 use App\Models\Configuracion;
 use App\Models\TemporalVentaDetalle;
-use App\Services\PermisoService;
+use App\services\PermisoService;
 use DragonCode\Contracts\Cashier\Auth\Auth;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
 use Illuminate\Support\Facades\DB;

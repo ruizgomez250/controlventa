@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TablaPorcentaje;
-use App\Services\PermisoService;
+use App\services\PermisoService;
 use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;

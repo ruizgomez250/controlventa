@@ -7,7 +7,7 @@ use App\Models\Compra_cab;
 use App\Models\Compra_det;
 use App\Models\Producto;
 use App\Models\Proveedor;
-use App\Services\PermisoService;
+use App\services\PermisoService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Exception;

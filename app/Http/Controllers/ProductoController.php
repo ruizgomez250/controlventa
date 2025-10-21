@@ -7,7 +7,7 @@ use App\Models\Producto;
 use App\Models\Opcion;
 use App\Models\TablaPorcentaje;
 use App\Models\TemporalVentaDetalle;
-use App\Services\PermisoService;
+use App\services\PermisoService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Helpers\NumberToWords;
-use App\Services\PermisoService;
+use App\services\PermisoService;
 use TCPDF;
 
 class ReporteVentaController extends Controller

@@ -9,7 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use App\Models\Cliente;
 use App\Models\Opcion;
-use App\Services\PermisoService;
+use App\services\PermisoService;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Exception;

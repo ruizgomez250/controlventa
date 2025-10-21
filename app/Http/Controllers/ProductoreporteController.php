@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Caja;
 use App\Models\User;
-use App\Services\PermisoService;
+use App\services\PermisoService;
 use App\Helpers\NumberToWords;
 use App\Models\Producto;
 use App\Models\Venta;
