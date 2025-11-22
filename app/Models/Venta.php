@@ -7,9 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Venta extends Model
 {
-    protected $table = "ventas";//le personalizo el nombre de la tabla
+    protected $table = "ventas"; //le personalizo el nombre de la tabla
     protected $fillable = [
-        'id_usuario', 'id_cliente', 'tipo_comprobante', 'total', 'fecha_emision', 'numero_factura', 'timbrado_factura', 'fecha_vencimiento','estado'
+        'id_usuario',
+        'id_cliente',
+        'tipo_comprobante',
+        'total',
+        'fecha_emision',
+        'numero_factura',
+        'timbrado_factura',
+        'fecha_vencimiento',
+        'estado'
     ];
 
     public function usuario()
@@ -25,5 +33,9 @@ class Venta extends Model
     public function detalles()
     {
         return $this->hasMany(VentaDetalle::class, 'id_venta');
+    }
+    public function pagare()
+    {
+        return $this->hasOne(Pagare::class, 'id_venta');
     }
 }

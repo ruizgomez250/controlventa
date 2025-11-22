@@ -12,9 +12,11 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\ProductoreporteController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\TablaPorcentajeController;
 use App\Http\Controllers\VentaController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------

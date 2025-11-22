@@ -8,11 +8,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Cliente extends Model
 {
     use HasFactory;
+    protected $table = 'clientes'; 
     //use SoftDeletes;
     protected  $fillable = ['id','razonsocial','ruc','direccion','correo','telefono','celular','estado','observacion'];
     
-
-    public function propietariomascota(){
-        return $this->hasMany(Mascota::class,'id');
+    // Relación con las ventas
+    public function ventas()
+    {
+        return $this->hasMany(Venta::class, 'id_cliente');
     }
+
 }

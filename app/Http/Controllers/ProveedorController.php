@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use App\Models\Proveedor;
 use App\Models\Opcion;
 use App\services\PermisoService;
+use Illuminate\Support\Facades\DB;
 
 class ProveedorController extends Controller
 {

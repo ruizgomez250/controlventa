@@ -34,7 +34,13 @@ class ClienteController extends Controller
                     $cliente = $cliente->sortBy("Razón Social");
                 }
                 $heads = [
-                    'ID', 'Razón Social', 'RUC', 'Correo', 'Teléfono', 'Estado', 'Acción'
+                    'ID',
+                    'Razón Social',
+                    'RUC',
+                    'Correo',
+                    'Teléfono',
+                    'Estado',
+                    'Acción'
                 ];
                 return view('clientes.index', ['clientes' => $cliente, 'heads' => $heads]);
             } catch (Exception $e) {
@@ -44,6 +50,43 @@ class ClienteController extends Controller
             return view('sinpermiso.index');
         }
     }
+    public function indexA()
+    {
+        // Verificar permisos (opcional)
+       
+
+        try {
+            // Obtener todos los clientes
+            $clientes = Cliente::all();
+
+            // Si no hay registros
+            if ($clientes->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'No se encontraron clientes registrados.',
+                    'data' => []
+                ], 200);
+            }
+
+            // Ordenar por nombre o razón social
+            $clientes = $clientes->sortBy('razonsocial')->values();
+
+            // Devolver respuesta JSON
+            return response()->json([
+                'success' => true,
+                'message' => 'Lista de clientes obtenida correctamente.',
+                'total' => $clientes->count(),
+                'data' => $clientes
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los clientes.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     public function getClientes(string $id)
     {
@@ -91,9 +134,9 @@ class ClienteController extends Controller
         if ($tienePermiso) {
             try {
                 $request->validate(['razonsocial' => 'required']);
-                
+
                 Cliente::create($request->all());
-                
+
                 return redirect()->route('cliente.create')->with('success', 'Operación exitosa');
             } catch (ValidationException $e) {
                 return redirect()->route('cliente.create')->withErrors($e->validator)->withInput();
@@ -105,6 +148,7 @@ class ClienteController extends Controller
         }
     }
 
+
     public function apistore(Request $request)
     {
         try {
@@ -114,6 +158,44 @@ class ClienteController extends Controller
             return redirect()->route('cliente.create')->withErrors($e->validator)->withInput();
         } catch (Exception $e) {
             return redirect()->route('cliente.create')->with('error', 'No se pudo completar la operación.');
+        }
+    }
+    public function storeA(Request $request)
+    {
+
+
+
+        try {
+            // Validación: solo 'nombre' es obligatorio
+            $validatedData = $request->validate([
+                'razonsocial' => 'required|string|max:255',
+                'telefono' => 'nullable|string|max:30',
+                'correo' => 'nullable|email|max:255',
+                'direccion' => 'nullable|string|max:255',
+                'observacion' => 'nullable|string',
+                'estado' => 'required|integer',
+            ]);
+
+            // Crear el registro
+            $cliente = Cliente::create($validatedData);
+
+            // Retornar respuesta JSON
+            return response()->json([
+                'success' => true,
+                'message' => 'Cliente creado exitosamente.',
+                'data' => $cliente
+            ], 201);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors()
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno al crear el cliente.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -170,7 +252,8 @@ class ClienteController extends Controller
             Cliente::create($request->all());
             // Retorna una respuesta JSON con código de respuesta HTTP 201
             return response()->json([
-                'message' => 'Cliente creado correctamente', 'success' => 'success',
+                'message' => 'Cliente creado correctamente',
+                'success' => 'success',
             ], 201);
         } else {
             return view('sinpermiso.index');

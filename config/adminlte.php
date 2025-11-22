@@ -304,6 +304,7 @@ return [
             'text'       => 'Clientes',
             'icon'       => 'fas fa-id-card',
             'icon_color' => 'warning',
+            'topnav_right' =>true,
             'classes' => 'custom-icon-box-black',
             'content' => '<i class="fas fa-box"></i>',
             'submenu'        => [
@@ -322,6 +323,7 @@ return [
             'text'       => 'Proveedores',
             'icon'       => 'fas fa-truck',
             'icon_color' => 'danger',
+            'topnav_right' =>true,
             'classes' => 'custom-icon-box-black',
             'content' => '<i class="fas fa-box"></i>',
             'submenu'        => [
@@ -340,6 +342,7 @@ return [
             'text'       => 'Productos',
             'icon'       => 'fas fa-box',
             'classes' => 'custom-icon-box-black',
+            'topnav_right' =>true,
             'content' => '<i class="fas fa-box"></i>',
             'submenu'        => [
                 [

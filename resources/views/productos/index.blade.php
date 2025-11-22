@@ -27,7 +27,19 @@
                         hoverable with-buttons>
                         @foreach ($producto as $row)
                             <tr>
-                               
+                               <td>
+                                    @if ($row->imagen)
+                                        <img src="{{ asset('storage/' . $row->imagen) }}" 
+                                            alt="Imagen del producto"
+                                            class="img-thumbnail"
+                                            style="width: 70px; height: 70px; object-fit: cover;">
+                                    @else
+                                        <img src="{{ asset('images/no-image.png') }}" 
+                                            alt="Sin imagen"
+                                            class="img-thumbnail"
+                                            style="width: 70px; height: 70px; object-fit: cover;">
+                                    @endif
+                                </td>
                                 <td>{{  $row->unidaddemedida->descripcion }}</td>
                                 <td>{{ $row->descripcion }}</td>
                                 <td>{{ $row->categoriaproducto->descripcion }}</td>

@@ -16,7 +16,7 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode as FacadesQrCode;
 
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
-
+use Illuminate\Support\Facades\Storage;
 use TCPDF;
 
 class ProductoController extends Controller
@@ -30,15 +30,13 @@ class ProductoController extends Controller
     {
         $this->permisoService = $permisoService;
     }
-    public function index(): view
+    public function index(): View
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
         if ($tienePermiso) {
-            //obtenemos los datos
-            $producto = Producto::All()->sortBy("descripcion");
-
-            //asignar cabecera datatable
+            $producto = Producto::all()->sortBy("descripcion");
             $heads = [
+                'Imagen',
                 'Unidad M.',
                 'Descripción',
                 'Categoría',
@@ -52,10 +50,9 @@ class ProductoController extends Controller
                 'Estado',
                 'Acción'
             ];
-            return view('productos.index', ['producto' =>  $producto, 'heads' => $heads]);
-        } else {
-            return view('sinpermiso.index');
+            return view('productos.index', compact('producto', 'heads'));
         }
+        return view('sinpermiso.index');
     }
 
     /**
@@ -68,10 +65,9 @@ class ProductoController extends Controller
             $headcat = ['Descripción', 'Acción'];
             $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
             $medida = Opcion::where('id_dominio', 5)->orderBy('id')->get();
-            return view('productos.create', ['medida' => $medida, 'categoria' => $categoria, 'headcat' => $headcat]);
-        } else {
-            return view('sinpermiso.index');
+            return view('productos.create', compact('medida', 'categoria', 'headcat'));
         }
+        return view('sinpermiso.index');
     }
 
     /**
@@ -81,33 +77,52 @@ class ProductoController extends Controller
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'crear');
 
-        if ($tienePermiso) {
-            try {
-                // Normalizar estado
-                $estado = $request->input('estado', null);
-                $estado = $estado !== null ? ($estado ? "1" : "0") : "0";
-                $request->merge(['estado' => $estado]);
-
-                // Validaciones
-                $request->validate([
-                    'descripcion'   => 'required|string|max:255',
-                    'id_categoria'  => 'required|exists:opciones,id',
-                    'id_medida'     => 'required|exists:opciones,id',
-                ]);
-
-                // Crear el producto
-                Producto::create($request->all());
-
-                // Redirigir con mensaje de éxito
-                return redirect()->route('producto.index')->with('success', 'Producto creado exitosamente');
-            } catch (Exception $e) {
-                // Manejo de errores
-                return redirect()->back()->with('error', 'Error al crear el producto: ' . $e->getMessage());
-            }
-        } else {
+        if (!$tienePermiso) {
             return view('sinpermiso.index');
         }
+
+        try {
+            // Normalizar estado
+            $estado = $request->input('estado', null);
+            $estado = $estado !== null ? ($estado ? "1" : "0") : "0";
+            $request->merge(['estado' => $estado]);
+
+            // Validaciones
+            $request->validate([
+                'codigo' => 'required|string|max:255|unique:productos,codigo',
+                'descripcion' => 'required|string|max:255',
+                'id_categoria' => 'required|exists:opciones,id',
+                'id_medida' => 'required|exists:opciones,id',
+                'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            ]);
+
+            // Procesar imagen
+            $data = $request->all();
+            if ($request->hasFile('imagen')) {
+                // Guardar en storage/app/public/productos
+                $imagen = $request->file('imagen')->store('productos', 'public');
+                $request->merge(['imagen' => $imagen]);
+                $data['imagen'] =  $imagen;
+            } else {
+                $data['imagen'] = null;
+            }
+
+            // Crear producto
+            Producto::create($data);
+
+            return redirect()->route('producto.index')->with('success', 'Producto creado exitosamente');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al crear el producto: ' . $e->getMessage())
+                ->withInput();
+        }
     }
+
+
+
+
+
+
+
 
     /**
      * Display the specified resource.
@@ -120,43 +135,21 @@ class ProductoController extends Controller
     public function edit(Producto $producto)
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'editar');
-        if ($tienePermiso) {
-            $iniFilePath = public_path('config.ini');
+        if (!$tienePermiso) return view('sinpermiso.index');
 
-            // Verificar si el archivo existe antes de intentar leerlo
-            $host = 0;
-            if (file_exists($iniFilePath)) {
-                // Lee el archivo config.ini y carga su contenido en un array estructurado
-                $config = parse_ini_file($iniFilePath, true);
-
-                // Accede al valor del host dentro de la sección database
-                $host = $config['database']['host'];
-                // Haz algo con el valor obtenido, como pasarlo a una vista
-
-            }
-
-            $url = $producto->codigo; // Genera la URL con el ID como parámetro
-            //$url = 'http://' . $host . '/controlventa/public/cargardetalleventa/' . $producto->codigo;
-            // // Genera el código QR con la URL generada
-            //$url ='https://concurso.diputados.gov.py/documentos/FORMULARIO_DE_P_20240615_214330.pdf';
-            $qrCode = FacadesQrCode::size(100)->generate($url);
-
-
-
-            // $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
-            // $medida = Opcion::where('id_dominio', 5)->orderBy('descripcion')->get();
-            // dd($producto);
-            $codigo = $producto->codigo;
-
-            // Genera el código QR con solo el código
-            //$qrCode = FacadesQrCode::size(300)->generate($codigo);
-            $headcat = ['Descripción', 'Acción'];
-            $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
-            $medida = Opcion::where('id_dominio', 5)->orderBy('descripcion')->get();
-            return view('productos.edit', ['headcat' => $headcat, 'categoria' => $categoria, 'producto' => $producto, 'medida' => $medida, 'qrCode' => $qrCode]);
-        } else {
-            return view('sinpermiso.index');
+        $iniFilePath = public_path('config.ini');
+        $host = 0;
+        if (file_exists($iniFilePath)) {
+            $config = parse_ini_file($iniFilePath, true);
+            $host = $config['database']['host'] ?? 0;
         }
+
+        $qrCode = FacadesQrCode::size(100)->generate($producto->codigo);
+        $headcat = ['Descripción', 'Acción'];
+        $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
+        $medida = Opcion::where('id_dominio', 5)->orderBy('descripcion')->get();
+
+        return view('productos.edit', compact('headcat', 'categoria', 'producto', 'medida', 'qrCode'));
     }
 
     /**
@@ -165,24 +158,31 @@ class ProductoController extends Controller
     public function update(Request $request, Producto $producto): RedirectResponse
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'editar');
-        if ($tienePermiso) {
-            $estado = $request->input('estado', null);
-            //
-            if ($estado !== null) {
-                // Convertir el valor a 1 si es true y a 0 si es false
-                $estado = $estado ? "1" : "0";
-            } else {
-                // Si el parámetro "estado" no existe en la solicitud, crearlo con valor 0
-                $estado = "0";
-            }
+        if (!$tienePermiso) return redirect()->route('sinpermiso');
 
-            // Actualizar el valor del parámetro "estado" en la solicitud
-            $request->merge(['estado' => $estado]);
-            $producto->update($request->all());
-            return redirect()->route('producto.index');
-        } else {
-            return redirect()->route('sinpermiso');
+        $estado = $request->input('estado', null);
+        $estado = $estado !== null ? ($estado ? "1" : "0") : "0";
+        $request->merge(['estado' => $estado]);
+
+        $validated = $request->validate([
+            'descripcion'   => 'required|string|max:255',
+            'id_categoria'  => 'required|exists:opciones,id',
+            'id_medida'     => 'required|exists:opciones,id',
+            'imagen'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        // ✅ Si se carga una nueva imagen
+        if ($request->hasFile('imagen')) {
+            if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
+                Storage::disk('public')->delete($producto->imagen);
+            }
+            $path = $request->file('imagen')->store('productos', 'public');
+            $validated['imagen'] = $path;
         }
+
+        $producto->update($validated);
+
+        return redirect()->route('producto.index')->with('success', 'Producto actualizado correctamente.');
     }
 
     /**
@@ -191,22 +191,18 @@ class ProductoController extends Controller
     public function destroy(Producto $producto)
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'borrar');
-        if ($tienePermiso) {
-            if (!$producto) {
-                // Maneja el caso en que el producto no existe
-                return redirect()->back()->with('error', 'Producto no encontrado.');
+        if (!$tienePermiso) return redirect()->route('sinpermiso');
+
+        try {
+            // ✅ eliminar imagen si existe
+            if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
+                Storage::disk('public')->delete($producto->imagen);
             }
 
-            // Intenta eliminar el producto y maneja restricciones de clave foránea
-            try {
-                $producto->delete();
-                return redirect()->route('producto.index')->with('success', 'Producto eliminado con éxito.');
-            } catch (\Illuminate\Database\QueryException $e) {
-                // Maneja una excepción que indica restricciones de clave foránea
-                return redirect()->back()->with('error', 'No se puede eliminar el producto debido a restricciones de clave foránea.');
-            }
-        } else {
-            return redirect()->route('sinpermiso');
+            $producto->delete();
+            return redirect()->route('producto.index')->with('success', 'Producto eliminado con éxito.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->back()->with('error', 'No se puede eliminar el producto debido a restricciones de clave foránea.');
         }
     }
     public function verifcod(Request $request)
@@ -415,5 +411,34 @@ class ProductoController extends Controller
         } else {
             return redirect()->route('sinpermiso');
         }
+    }
+
+    public function indexl()
+    {
+        $productos = Producto::with(['categoriaproducto', 'unidaddemedida'])
+            ->select('id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'stock', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'impuesto', 'imagen')
+            ->get()
+            ->map(function ($producto) {
+                // Convertimos los campos numéricos a enteros (sin decimales)
+                $producto->stock = (int) $producto->stock;
+                $producto->pcosto = (int) round($producto->pcosto);
+                $producto->pventa = (int) round($producto->pventa);
+                $producto->impuesto = (int) round($producto->impuesto);
+
+                return $producto;
+            });
+
+        return response()->json($productos);
+    }
+
+
+    // Obtener un producto específico
+    public function showl($id)
+    {
+        $producto = Producto::with(['categoriaproducto', 'unidaddemedida'])
+            ->select('id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'stock', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'impuesto')
+            ->findOrFail($id);
+
+        return response()->json($producto);
     }
 }

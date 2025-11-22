@@ -12,54 +12,71 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form action="{{ route('producto.store') }}" method="post" autocomplete="off">
+                <form action="{{ route('producto.store') }}" method="post" enctype="multipart/form-data"
+                    autocomplete="off">
                     @csrf
-                    @method('POST')
-                    {{-- 'id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'id_estado','pcosto', 'pventa', 'observacion' --}}
 
+                    {{-- Imagen del Producto --}}
+                    <div class="form-group d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <label for="imagen" class="text-info">Imagen del Producto</label>
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="imagen" name="imagen"
+                                    accept="image/*">
+                                <label class="custom-file-label" for="imagen">Seleccionar imagen...</label>
+                            </div>
+                            @error('imagen')
+                                <div class="text-danger mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Vista previa --}}
+                        <div id="preview-container" class="text-center ml-3 d-none" style="min-width: 230px;">
+                            <img id="preview" src="#" alt="Vista previa" class="img-thumbnail shadow-sm mb-2"
+                                style="max-width: 220px; max-height: 220px;">
+                            <button type="button" id="remove-preview" class="btn btn-outline-danger btn-sm w-100">
+                                <i class="fas fa-times"></i> Quitar
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Código y descripción --}}
                     <div class="row">
                         <x-adminlte-input name="codigo" label="Código" placeholder="Código" fgroup-class="col-md-3"
                             value="{{ $barra = generarcodigo() }}" style="text-align: center;" label-class="text-info">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-info">
-                                    <i class="fas fa-barcode "></i>
+                                    <i class="fas fa-barcode"></i>
                                 </div>
                             </x-slot>
                         </x-adminlte-input>
-
 
                         <x-adminlte-input name="descripcion" label="Descripción"
                             placeholder="Ingresar descripción del producto" fgroup-class="col-md-7" />
                         @error('descripcion')
                             <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
-                        <x-adminlte-select name="impuesto" id="impuesto" label="Impuesto"
-                            data-placeholder="Seleccionar una categoría..." fgroup-class="col-md-2"
+
+                        <x-adminlte-select name="impuesto" label="Impuesto" fgroup-class="col-md-2"
                             label-class="text-success">
-                            <x-slot name="prependSlot">
-                                <div class="input-group-text bg-gradient-success">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                </div>
-                            </x-slot>
                             <option value="10">10 %</option>
                             <option value="5">5 %</option>
                             <option value="0">0 %</option>
                         </x-adminlte-select>
                     </div>
 
+                    {{-- Detalle y categoría --}}
                     <div class="row">
-                        {{-- Disabled --}}
                         <x-adminlte-textarea name="detalle" label="Detalle del Producto" fgroup-class="col-md-7"
                             placeholder="Ingresar detalle del producto" label-class="text-warning">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-warning">
-                                    <i class="fas fa-lg fa-file-alt "></i>
+                                    <i class="fas fa-lg fa-file-alt"></i>
                                 </div>
                             </x-slot>
                         </x-adminlte-textarea>
 
-                        <x-adminlte-select2 name="id_categoria" id="id_categoria" label="Categoria"
-                            data-placeholder="Seleccionar una categoría..." fgroup-class="col-md-5"
+                        <x-adminlte-select2 name="id_categoria" label="Categoría" fgroup-class="col-md-5"
                             label-class="text-danger">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-red">
@@ -71,22 +88,18 @@
                                     icon="fas fa-lg fa-plus text-danger" />
                             </x-slot>
 
-
-
                             @foreach ($categoria as $item)
-                                <option value={{ $item->id }}>{{ $item->descripcion }}</option>
+                                <option value="{{ $item->id }}">{{ $item->descripcion }}</option>
                             @endforeach
                         </x-adminlte-select2>
-
                     </div>
 
+                    {{-- Stock, unidad de medida, precios y estado --}}
                     <div class="row">
                         <x-adminlte-input name="stock" type="number" label="Stock" fgroup-class="col-md-2"
                             step="any" min="0" value="0.000" />
 
-
-                        <x-adminlte-select2 name="id_medida" id="id_medida" label="Unidad Medida"
-                            data-placeholder="Seleccionar una medida..." fgroup-class="col-md-3"
+                        <x-adminlte-select2 name="id_medida" label="Unidad Medida" fgroup-class="col-md-3"
                             label-class="text-danger">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-red">
@@ -98,79 +111,45 @@
                                     data-target="#addunidmedidaModal" icon="fas fa-lg fa-plus text-danger" />
                             </x-slot>
 
-
-
                             @foreach ($medida as $item)
-                                <option value={{ $item->id }}>{{ $item->descripcion }}</option>
+                                <option value="{{ $item->id }}">{{ $item->descripcion }}</option>
                             @endforeach
                         </x-adminlte-select2>
 
+                        <x-adminlte-input name="pcosto" type="number" label="Precio Costo" fgroup-class="col-md-2"
+                            value="0" min="0" />
+                        <x-adminlte-input name="porcentaje" type="number" label="% Margen" fgroup-class="col-md-1"
+                            value="0" min="0" max="100" step="any"
+                            label-class="text-success" />
+                        <x-adminlte-input name="pventa" type="number" label="Precio Venta" fgroup-class="col-md-2"
+                            value="0" min="0" />
 
-
-
-
-                        <x-adminlte-input name="pcosto" id="pcosto" type="number" label="Precio Costo"
-                            fgroup-class="col-md-2" value="0" min="0"
-                            oninput="calcularPorcentajeAumento()" />
-
-
-                        <x-adminlte-input name="porcentaje" id="porcentaje" type="number" label="% Margen"
-                            fgroup-class="col-md-1" value="0" min="0" max="100" step="any"
-                            oninput="calcularPrecioVenta()" label-class="text-success" />
-                        <x-adminlte-input name="pventa" id="pventa" type="number" label="Precio Venta"
-                            fgroup-class="col-md-2" value="0" min="0"
-                            oninput="calcularPorcentajeAumento()" />
-
-                        {{-- Label, and prepend icon --}}
-                        @php
-                            $config = [
-                                'onColor' => 'success',
-                                'offColor' => 'gray',
-                                'onText' => 'Activo',
-                                'offText' => 'Inactivo',
-                                'state' => false,
-                                'labelText' => '<i class="fas fa-power-off text-muted"></i>',
-                            ];
-                        @endphp
-                        <x-adminlte-select name="estado" label="Estado del Producto"
-                        data-placeholder="Seleccionar una opción..." fgroup-class="col-md-2">
-                        <option value="1">Activo</option>
-                        <option value="0">Inactivo</option>
-                    </x-adminlte-select>
-
+                        <x-adminlte-select name="estado" label="Estado del Producto" fgroup-class="col-md-2">
+                            <option value="1">Activo</option>
+                            <option value="0">Inactivo</option>
+                        </x-adminlte-select>
                     </div>
-                    <div class="row">
-                        <x-adminlte-input name="cmayorista" id="cmayorista" type="number"
-                            label="Cantidad Mayorista" fgroup-class="col-md-2" value="0" min="0"
-                            oninput="calcularDescuento()" />
-                        <x-adminlte-input name="pmayorista" id="pmayorista" type="number" label="Precio Mayorista"
-                            fgroup-class="col-md-2" value="0" min="0"
-                            oninput="calcularPorcentajeAumento()" />
-                        <x-adminlte-input name="dmayorista" id="dmayorista" type="number" label="Descuento"
-                            fgroup-class="col-md-2" value="0" min="0" step="any"
-                            oninput="calcularPrecioMayorista()" label-class="text-success" />
-                        <div class="col-6 rcorners2 importet">
-                            <p><strong>Margen según fórmula:</strong>(Precio Venta - Costo) / Precio Venta;</p>
 
+                    {{-- Mayorista --}}
+                    <div class="row">
+                        <x-adminlte-input name="cmayorista" type="number" label="Cantidad Mayorista"
+                            fgroup-class="col-md-2" value="0" min="0" />
+                        <x-adminlte-input name="pmayorista" type="number" label="Precio Mayorista"
+                            fgroup-class="col-md-2" value="0" min="0" />
+                        <x-adminlte-input name="dmayorista" type="number" label="Descuento" fgroup-class="col-md-2"
+                            value="0" min="0" step="any" label-class="text-success" />
+                        <div class="col-6 rcorners2 importet">
+                            <p><strong>Margen según fórmula:</strong> (Precio Venta - Costo) / Precio Venta;</p>
                             <h1 id="margenganancia" class="text-center">0 %</h1>
                         </div>
-
-
-
-
-
                     </div>
 
-
-
-
-
+                    {{-- Botones --}}
                     <div class="row">
-                        <div class="form-group col-md-12">
-                            <a class="btn btn-danger mx-1" style="float: right;"
-                                href="{{ route('producto.index') }}">Cancelar</a>
-                            <x-adminlte-button class="btn-group mx-1" style="float: right;" type="submit"
-                                label="Registrar" theme="primary" icon="fas fa-lg fa-save" />
+                        <div class="form-group col-md-12 text-right">
+                            <a class="btn btn-danger mx-1" href="{{ route('producto.index') }}">Cancelar</a>
+                            <x-adminlte-button type="submit" label="Registrar" theme="primary"
+                                icon="fas fa-lg fa-save" />
                         </div>
                     </div>
                 </form>
@@ -315,26 +294,45 @@
 @stop
 @push('js')
 <script>
+    document.getElementById('imagen').addEventListener('change', function(event) {
+        const [file] = event.target.files;
+        const previewContainer = document.getElementById('preview-container');
+        const preview = document.getElementById('preview');
+        const removeBtn = document.getElementById('remove-preview');
+
+        if (file) {
+            preview.src = URL.createObjectURL(file);
+            previewContainer.classList.remove('d-none');
+        }
+
+        // 🗑️ Quitar vista previa
+        removeBtn.addEventListener('click', () => {
+            preview.src = '#';
+            previewContainer.classList.add('d-none');
+            document.getElementById('imagen').value = ''; // limpiar input file
+        });
+    });
+
     function calcularPorcentajeAumento() {
         // Obtén los valores de precio de costo y precio de venta
         var pcosto = parseFloat(document.getElementById('pcosto').value);
         var pventa = parseFloat(document.getElementById('pventa').value);
 
         // Calcula el porcentaje de aumento si ambos valores son mayores a 0
-        
-        
+
+
         if (pcosto > 0 && pventa > 0) {
             var porcentajeAumento = ((pventa - pcosto) / pcosto) * 100;
-            var margenGanancia = ((pventa - pcosto) / pventa)*100;
+            var margenGanancia = ((pventa - pcosto) / pventa) * 100;
 
             // Muestra el resultado en el campo de porcentaje
             document.getElementById('porcentaje').value = porcentajeAumento.toFixed(2);
             const margenGananciaElement = document.getElementById('margenganancia');
-            margenGananciaElement.textContent = margenGanancia+' %';
+            margenGananciaElement.textContent = margenGanancia + ' %';
 
         } else {
             // Si uno de los valores es 0, establece el porcentaje en 0
-            
+
             document.getElementById('porcentaje').value = 0;
         }
         calcularDescuento();
@@ -347,8 +345,8 @@
 
         // Verifica si el porcentaje ingresado es mayor a 0
         const margenGananciaElement = document.getElementById('margenganancia');
-        margenGananciaElement.textContent = margenGanancia+'0 %';
-        
+        margenGananciaElement.textContent = margenGanancia + '0 %';
+
         if (porcentaje > 0) {
             // Calcula el precio de venta
             var pventa = pcosto * (1 + porcentaje / 100);
@@ -356,12 +354,12 @@
             // Muestra el resultado en el campo de precio de venta
             document.getElementById('pventa').value = pventa.toFixed(2);
 
-            
+
 
             // Muestra el resultado en el campo de porcentaje
             document.getElementById('porcentaje').value = porcentajeAumento.toFixed(2);
             const margenGananciaElement = document.getElementById('margenganancia');
-            margenGananciaElement.textContent = margenGanancia+' %';
+            margenGananciaElement.textContent = margenGanancia + ' %';
         } else {
             // Si el porcentaje es 0 o negativo, establece el precio de venta en 0
             document.getElementById('pventa').value = 0;

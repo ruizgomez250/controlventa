@@ -42,7 +42,7 @@ class VentaController extends Controller
                 'Fecha',
                 'Nro Factura',
                 'Timbrado',
-                'Proveedor',
+                'Cliente',
                 'Condición de Compra',
                 'Monto Total',
                 'Usuario',
@@ -153,7 +153,7 @@ class VentaController extends Controller
                 }
                 $ultimoId = $cabecera->id;
                 $configuracionvs = Configuracion::where('descripcion', 'ventas')->first();
-                
+
                 if ($configuracionvs) {
                     $estadov = $configuracionvs->estado;
                 } else {
@@ -177,6 +177,194 @@ class VentaController extends Controller
             }
         } else {
             return redirect()->route('sinpermiso');
+        }
+    }
+    public function storeApiSimplified(Request $request)
+    {
+        try {
+            // Validar entrada mínima
+            $request->validate([
+                'id_cliente' => 'required|integer|exists:clientes,id', // Asegúrate de que la tabla se llame "clientes"
+                'detalle' => 'required|array|min:1',
+                'detalle.*.codigo' => 'required|integer|exists:productos,id',
+                'detalle.*.descripcion' => 'required|string',
+                'detalle.*.precio' => 'required|numeric|min:0',
+            ]);
+
+            // Fecha actual (emisión)
+            $fechaActual = now()->format('Y-m-d'); // Ej: "2025-11-13"
+
+            // Completar datos faltantes
+            $dataCompleta = [
+                'fechaemision' => $fechaActual,
+                'nrofactura' => 'F0',
+                'condicion' => 'CREDITO',
+                'timbrado' => '0',
+                'id_cliente' => $request->id_cliente,
+                'cantpago' => 2,
+                'fechP' => [
+                    now()->addMonth()->format('Y-m-d'),   // 1 mes después
+                    now()->addMonths(2)->format('Y-m-d') // 2 meses después
+                ],
+                'detalle' => []
+            ];
+
+            // Completar cada ítem del detalle
+            foreach ($request->detalle as $item) {
+                $dataCompleta['detalle'][] = [
+                    'codigo' => $item['codigo'],
+                    'descripcion' => $item['descripcion'],
+                    'cantidad' => 1, // valor por defecto
+                    'precio' => $item['precio'],
+                    'iva' => 0, // siempre 0 en tu ejemplo
+                    'exenta' => $item['precio'], // si IVA=0, todo es exento
+                    'cinco' => 0,
+                    'diez' => 0
+                ];
+            }
+
+            // Crear una nueva request con los datos completos
+            $nuevaRequest = new \Illuminate\Http\Request();
+            $nuevaRequest->replace($dataCompleta);
+
+            // Llamar a la función original
+            return $this->storeApi($nuevaRequest);
+        } catch (\Exception $e) {
+            Log::error('Error en storeApiSimplified: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la solicitud simplificada.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function storeApi(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $fechaEmision = Carbon::createFromFormat('Y-m-d', $request->get('fechaemision'));
+            $idCliente = $request->get('id_cliente');
+
+            // 🔍 1️⃣ Buscar si ya existe una venta del cliente en esa fecha
+            $cabecera = Venta::whereDate('fecha_emision', $fechaEmision)
+                ->where('id_cliente', $idCliente)
+                ->first();
+
+            // Si no existe, crear una nueva
+            if (!$cabecera) {
+                $cabecera = new Venta();
+                $cabecera->fecha_emision = $fechaEmision;
+                $cabecera->fecha_vencimiento = $fechaEmision;
+                $cabecera->numero_factura = $request->get('nrofactura');
+                $cabecera->id_cliente = $idCliente;
+                $cabecera->tipo_comprobante = $request->get('condicion');
+                $cabecera->total = 0;
+                $cabecera->estado = 1;
+                $cabecera->timbrado_factura = $request->get('timbrado');
+                $cabecera->id_usuario = 1; // auth()->id();
+                $cabecera->save();
+            }
+
+            $total = $cabecera->total; // mantener el total previo
+            $ultimoId = $cabecera->id;
+
+            // 2️⃣ Procesar detalles nuevos
+            $detalleItems = $request->input('detalle', []);
+            foreach ($detalleItems as $item) {
+                $montoTotParc = 0;
+                switch ($item['iva']) {
+                    case 0:
+                        $montoTotParc = $item['exenta'] ?? 0;
+                        break;
+                    case 5:
+                        $montoTotParc = $item['cinco'] ?? 0;
+                        break;
+                    case 10:
+                        $montoTotParc = $item['diez'] ?? 0;
+                        break;
+                }
+                $total += $montoTotParc;
+
+                $detalle = new VentaDetalle();
+                $detalle->id_venta = $ultimoId;
+                $detalle->cantidad = $item['cantidad'];
+                $detalle->descripcion = $item['descripcion'];
+                $detalle->id_producto = $item['codigo'];
+                $detalle->precio_u = $item['precio'];
+                $detalle->monto = $montoTotParc;
+                $detalle->tipo_impuesto = $item['iva'];
+                $detalle->save();
+
+                // 3️⃣ Actualizar stock
+                $producto = Producto::find($item['codigo']);
+                if ($producto) {
+                    $producto->stock = $producto->stock - $detalle->cantidad;
+                    $producto->save();
+                }
+            }
+
+            // 4️⃣ Actualizar total acumulado
+            $cabecera->total = $total;
+            $cabecera->save();
+
+            // 5️⃣ Crear pagarés solo si es CREDITO y la venta era nueva
+            $cantpago = $request->input('cantpago');
+            $monto = $total / $cantpago;
+            if ($request->get('condicion') === 'CREDITO' && !$cabecera->wasRecentlyCreated) {
+                $pagaresPendientes = Pagare::where('id_venta', $cabecera->id)
+                    ->whereNull('fecha_pago')
+                    ->get();
+                $montoSumado = $monto / $pagaresPendientes->count();
+                $detalles = [];
+                foreach ($pagaresPendientes as $pagare) {
+                    $montoOriginal = $pagare->monto;
+                    $nuevoMonto = $montoOriginal + $montoSumado;
+
+                    $pagare->update([
+                        'monto' => $nuevoMonto
+                    ]);
+
+                   
+                }
+            } elseif ($request->get('condicion') === 'CREDITO') {
+
+                $fechasPago = $request->input('fechP', []);
+
+                foreach ($fechasPago as $fechaV) {
+                    $pagare = new Pagare();
+                    $pagare->fecha_emision = $fechaEmision;
+                    $pagare->fecha_vencimiento = Carbon::createFromFormat('Y-m-d', $fechaV);
+                    $pagare->monto = $monto;
+                    $pagare->id_venta = $ultimoId;
+                    $pagare->estado = 1;
+                    $pagare->save();
+                }
+            }
+
+            // 6️⃣ Configuración de ventas
+            $configuracionvs = Configuracion::where('descripcion', 'ventas')->first();
+            $estadov = $configuracionvs ? $configuracionvs->estado : 0;
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => $cabecera->wasRecentlyCreated
+                    ? 'Venta registrada correctamente.'
+                    : 'Venta actualizada correctamente (se agregaron más productos).',
+                'ultimoId' => $cabecera->id,
+                'estadov' => $estadov,
+            ], 201);
+        } catch (Exception $e) {
+            
+            DB::rollBack();
+            Log::error($e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al registrar la venta.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -420,7 +608,7 @@ class VentaController extends Controller
                 'Fecha',
                 'Nro Factura',
                 'Timbrado',
-                'Proveedor',
+                'Cliente',
                 'Condición de Compra',
                 'Monto Total',
                 'Usuario',

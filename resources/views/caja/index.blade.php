@@ -23,7 +23,7 @@
                                 <th>Fecha</th>
                                 <th>Nro Factura</th>
                                 <th>Timbrado</th>
-                                <th>Proveedor</th>
+                                <th>Cliente</th>
                                 <th>Condición de Compra</th>
                                 <th>Monto Total</th>
                                 <th>Usuario</th>
@@ -103,7 +103,7 @@
                                                 <i class="fa fa-sm fa-fw fa-trash"></i>
                                             </button>
                                         @endif
-
+                                        
                                     </td>
                                 </tr>
                             @endforeach
@@ -463,7 +463,48 @@
                         }
                     });
                 });
+                $('.pagado-monto-btn').click(function() {
+                    var compraId = $(this).data('compra-id');
+                    // Realiza una petición AJAX para obtener los detalles de la compra
+                    $.ajax({
+                        url: 'venta/' + compraId + '/pagomontos',
+                        method: 'GET',
+                        success: function(response) {
+                            console.log(response);
+                            var cajas = response; // Aquí response contiene las cajas relacionadas con la venta
 
+                            var detalleHTML = '';
+                            var total = 0;
+
+                            // Construye el HTML de los detalles de la compra utilizando los datos obtenidos 
+                            cajas.forEach(function(caja, index) {
+                                boton = '<a id="documentoPagomontoPdfLink' +caja.id +
+                                        '" href="{{ route('documentopagomontopdf', '') }}' + '/' +caja.id +
+                                        '" target="_blank"' +
+                                        ' class="btn btn-sm btn-outline-secondary">' +
+                                        '<i class="fa fa-sm fa-fw fa-file-pdf"></i>' +
+                                        '</a>';
+
+                                detalleHTML += '<tr><td>' +caja.id+ '</td>' +
+                                    '<td>'+boton+'</td>' +
+                                    '<td>' + caja.monto + '</td>' +
+                                    '<td>' + caja.fecha_cobro + '</td></tr>';
+
+                                
+                            });
+
+
+                            // Llena el contenido del modal con los detalles
+                            $('#tablaModBod').html(detalleHTML);
+
+                            // Muestra el modal
+                            $('#pagomontoModal').modal('show');
+                        },
+                        error: function() {
+                            console.log('Error al obtener detalles de la compra');
+                        }
+                    });
+                });
                 function verifMonto() {
                     montoingresado = parseFloat(document.getElementById('montoAbonar').value);
                     montoreal = parseFloat(document.getElementById('montoAbonar1').value);

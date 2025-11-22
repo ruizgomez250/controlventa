@@ -13,10 +13,36 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <form action="{{ route('producto.update', $producto) }}" method="post">
+                <form action="{{ route('producto.update', $producto) }}" method="post" enctype="multipart/form-data">
                     @csrf
                     @method('put')
-                   
+                    <div class="row mt-3">
+                        <div class="form-group col-md-6 d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <label for="imagen" class="text-info">Imagen del Producto</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="imagen" name="imagen"
+                                        accept="image/*">
+                                    <label class="custom-file-label" for="imagen">Seleccionar imagen...</label>
+                                </div>
+                                @error('imagen')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- 🖼️ Contenedor de vista previa al lado derecho --}}
+                            <div id="preview-container" class="text-center ml-3 {{ $producto->imagen ? '' : 'd-none' }}"
+                                style="min-width: 230px;">
+                                <img id="preview"
+                                    src="{{ $producto->imagen ? asset('storage/' . $producto->imagen) : '#' }}"
+                                    alt="Vista previa" class="img-thumbnail shadow-sm mb-2"
+                                    style="max-width: 220px; max-height: 220px;">
+                                <button type="button" id="remove-preview" class="btn btn-outline-danger btn-sm w-100">
+                                    <i class="fas fa-times"></i> Quitar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="row">
 
@@ -126,11 +152,12 @@
                         <x-adminlte-input name="pventa" type="number" label="Precio Venta"
                             value="{{ $producto->pventa }}" fgroup-class="col-md-2" />
 
-                            <x-adminlte-select name="estado" label="Estado del Producto" data-placeholder="Seleccionar una opción..." fgroup-class="col-md-3">
-                                <option value="1" {{ $producto->estado === 1 ? 'selected' : '' }} >Activo</option>
-                                <option value="0" {{ $producto->estado === 0 ? 'selected' : '' }} >Inactivo</option>
-                            </x-adminlte-select>
-                        
+                        <x-adminlte-select name="estado" label="Estado del Producto"
+                            data-placeholder="Seleccionar una opción..." fgroup-class="col-md-3">
+                            <option value="1" {{ $producto->estado === 1 ? 'selected' : '' }}>Activo</option>
+                            <option value="0" {{ $producto->estado === 0 ? 'selected' : '' }}>Inactivo</option>
+                        </x-adminlte-select>
+
                         {{-- <x-adminlte-select name="id_estado" label="Estado"
                             data-placeholder="Seleccionar una opción..." fgroup-class="col-md-3">
                             
@@ -314,6 +341,24 @@
 @stop
 @push('js')
 <script>
+    document.getElementById('imagen').addEventListener('change', function(event) {
+        const [file] = event.target.files;
+        const previewContainer = document.getElementById('preview-container');
+        const preview = document.getElementById('preview');
+        const removeBtn = document.getElementById('remove-preview');
+
+        if (file) {
+            preview.src = URL.createObjectURL(file);
+            previewContainer.classList.remove('d-none');
+        }
+
+        removeBtn.addEventListener('click', () => {
+            preview.src = '#';
+            previewContainer.classList.add('d-none');
+            document.getElementById('imagen').value = '';
+        });
+    });
+
     function calcularPorcentajeAumento() {
         // Obtén los valores de precio de costo y precio de venta
         var pcosto = parseFloat(document.getElementById('pcosto').value);
@@ -485,7 +530,7 @@
                 } else {
                     addedRow = dataTable1.row.add(filaDatos).draw(false).node();
                 }
-                 
+
                 $(addedRow).attr("data-id", id);
                 $(addedRow).addClass("table-row");
             },
