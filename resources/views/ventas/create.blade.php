@@ -356,7 +356,7 @@
 
 
         }
-
+        cambiarCod();
         // --- Funciones de validación y cálculo ---
         function sanitizeInput(input) {
             input.value = input.value.replace(/[^0-9.]/g, '').replace(/,/g, '.');
