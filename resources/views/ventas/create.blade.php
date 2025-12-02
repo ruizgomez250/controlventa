@@ -545,7 +545,8 @@
             newItem.querySelector('input[name="cantidad[]"]').addEventListener('keydown', e => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    newItem.querySelector('input[name="precio[]"]').focus().select();
+                    newItem.querySelector('input[name="precio[]"]').focus();
+                    actualizarSumaTotal();
                 }
             });
 
