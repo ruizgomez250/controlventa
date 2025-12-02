@@ -83,7 +83,7 @@
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="form-group col-md-2">
-                        <label for="fechaemision">FECHA DE EMISIÓN</label>
+                        <label for="fechaemision">FECHA DE EMISIÓN (alt+shift+f)</label>
                         <input type="date" class="form-control" id="fechaemision" name="fechaemision"
                             value="{{ date('Y-m-d') }}" required>
                     </div>
@@ -146,38 +146,19 @@
                 <hr>
 
                 <style>
-                    /* Contenedor del scroll */
+                    /* 🔥 Contenedor que obliga al scroll sí o sí */
                     .scroll-area {
+                        display: block !important;
+                        width: 100% !important;
                         overflow-x: auto !important;
                         overflow-y: hidden;
                         white-space: nowrap !important;
-
-                        /*  ancho mínimo evita que se corte en pantallas chicas */
-                        min-width: 1250px;
-
+                        min-width: 1200px;
+                        /* Ajustar según suma de columnas */
                         border: 1px solid #ccc;
                     }
 
-                    /* Fila de cabecera */
-                    .header-row {
-                        display: flex;
-                        flex-wrap: nowrap;
-                        background: #000;
-                        color: white;
-                        font-weight: bold;
-                        padding: 10px 0;
-                    }
-
-                    /* Fila de items */
-                    .item-row {
-                        display: flex;
-                        flex-wrap: nowrap;
-                        background: #f7f7f7;
-                        padding: 6px 0;
-                        border-bottom: 1px solid #ccc;
-                    }
-
-                    /* Columnas 100% fijas (NO Bootstrap) */
+                    /* 🔥 Columnas fijas que no se achican */
                     .col-small {
                         width: 80px;
                         min-width: 80px;
@@ -206,34 +187,36 @@
                         text-align: center;
                     }
 
-                    /* Inputs adaptados */
-                    .item-row input {
-                        width: 100%;
-                        text-align: center;
+                    .header-row {
+                        display: flex;
+                        flex-direction: row;
+                        flex-wrap: nowrap;
+                        align-items: center;
+                        background: #000;
+                        color: #fff;
+                        font-weight: bold;
+                        padding: 10px 0;
                     }
                 </style>
-
 
                 <!-- 🔥 CONTENEDOR QUE GARANTIZA EL SCROLL -->
                 <div class="scroll-area">
 
-    <div class="header-row">
-        <div class="col-small">ITEM</div>
-        <div class="col-small">UNDM</div>
-        <div class="col-medium">CÓDIGO</div>
-        <div class="col-large">DESCRIPCIÓN</div>
-        <div class="col-fixed">CANTIDAD</div>
-        <div class="col-medium">PRECIO UNIT.</div>
-        <div class="col-fixed">EXENTAS</div>
-        <div class="col-small">5%</div>
-        <div class="col-small">10%</div>
-        <div class="col-small"></div>
-    </div>
+                    <div class="header-row">
+                        <div class="col-small">ITEM</div>
+                        <div class="col-small">UNDM</div>
+                        <div class="col-medium">CÓDIGO</div>
+                        <div class="col-large">DESCRIPCIÓN</div>
+                        <div class="col-fixed">CANTIDAD</div>
+                        <div class="col-medium">PRECIO UNIT.</div>
+                        <div class="col-fixed">EXENTAS</div>
+                        <div class="col-small">5%</div>
+                        <div class="col-small">10%</div>
+                        <div class="col-small"></div>
+                    </div>
 
-    <div id="items"></div>
-
-</div>
-
+                    <div id="items"></div>
+                </div>
 
 
 
@@ -271,7 +254,7 @@
         <script>
             $(function() {
                 let compraId = {{ session('ultimoId') }};
-                $.get(`/sisventa/public/venta/${compraId}/detalles`, function(response) {
+                $.get(`{{ url('/') }}/venta/${compraId}/detalles`, function(response) {
                     let total = 0,
                         rows = '';
                     response.detalles.forEach(d => {
@@ -309,13 +292,80 @@
             if (e.altKey && e.shiftKey && e.key === 'C') $('input[name="codigo1[]"]').first().focus();
             if (e.altKey && e.shiftKey && e.key === 'F') $('#fechaemision').focus();
         });
+        function cargarPag() {
+            var n = new Date();
+            var y = n.getFullYear();
+            var m = n.getMonth() + 1;
+            var d = n.getDate();
+            if (m < 10) m = '0' + m;
+            if (d < 10) d = '0' + d;
+            var fech = y + "-" + m + "-" + d;
+            var cantp = document.getElementById("cantpago").value;
+            var contAux = 1;
+            var valor = [];
+
+            // Agregar la primera fecha actual
+            var fecha = '<tr class="filas" id="fila0">' +
+                '<td><input type="date" onchange="cambiarsiguientesfechas(0)" name="fechP[]" value="' + fech + '"></td>' +
+                '</tr>';
+            var book = new datosA(contAux, fecha);
+            valor.push(book);
+            contAux++;
+
+            // Agregar las siguientes fechas
+            for (let index = 1; index < cantp; index++) {
+                // Incrementar el mes
+                m++;
+                if (m > 12) {
+                    m = 1;
+                    y++;
+                }
+                // Formatear el mes y año
+                var mm = (m < 10) ? '0' + m : m;
+                var yy = y;
+                // Crear la fecha
+                var nextFech = yy + "-" + mm + "-" + d;
+                fecha = '<tr class="filas" id="fila' + index + '">' +
+                    '<td><input type="date" onchange="cambiarsiguientesfechas(' + index + ')" name="fechP[]"  id="fechP' +
+                    index + '" value="' +
+                    nextFech +
+                    '"></td>' +
+                    '</tr>';
+                book = new datosA(contAux, fecha);
+                valor.push(book);
+                contAux++;
+            }
+
+            $('#tblpagare').DataTable({
+                paging: false,
+                searching: false,
+                info: false,
+                data: valor,
+                "bDestroy": true,
+                columns: [{
+                        title: "Pago",
+                        data: "num"
+                    },
+                    {
+                        title: "Fecha",
+                        data: "fecha"
+                    }
+                ]
+            });
+
+
+
+        }
 
         // --- Funciones de validación y cálculo ---
         function sanitizeInput(input) {
             input.value = input.value.replace(/[^0-9.]/g, '').replace(/,/g, '.');
             actualizarSumaTotal();
         }
-
+        function datosA(num, fecha) {
+            this.num = num;
+            this.fecha = fecha;
+        }
         function actualizarSumaTotal() {
             totalSum = 0;
             const rows = document.querySelectorAll('#items .item:not(:first-child) .d-flex');
@@ -527,6 +577,39 @@
             }
             actualizarNumeroDocumento();
         }
+        $(document).on('focus', '.autocomplete-producto', function() {
+    if ($(this).data("ui-autocomplete")) return; // ✅ evita duplicados
+
+    $(this).autocomplete({
+        minLength: 0,
+        source: function(request, response) {
+            $.ajax({
+                url: "{{ route('obtenerproducto') }}",
+                dataType: "json",
+                data: { term: request.term },
+                success: function(data) {
+
+                    // ✅ FORMATO CORRECTO PARA jQuery UI
+                    response($.map(data, function(p) {
+                        return {
+                            label: p.descripcion + " (" + p.stock + ")",
+                            value: p.descripcion,   // ✅ ESTO EVITA EL ERROR
+                            codigo: p.codigo,
+                            id: p.id
+                        };
+                    }));
+
+                }
+            });
+        },
+        select: function(event, ui) {
+            traerCargarDatosProducto(ui.item.codigo, this);
+            $(this).closest('.d-flex').find('input[name="cantidad[]"]').focus();
+        },
+        autoFocus: true
+    });
+});
+
 
         function actualizarNumeroDocumento() {
             const selected = $('#id_proveedor option:selected');
@@ -552,6 +635,7 @@
                     const row = $(inputRef).closest('.d-flex');
                     row.find('input[name="descripcion[]"]').val(`${p.descripcion} (${Math.trunc(p.stock)})`);
                     row.find('input[name="codigo[]"]').val(p.id);
+                    row.find('input[name="codigo1[]"]').val(p.codigo);
                     row.find('input[name="unidad[]"]').val(p.unidaddemedida?.descripcion || 'UNIDAD');
                     row.find('input[name="iva[]"]').val(p.impuesto);
                     row.find('input[name="precio[]"]').val(p.pventa);
@@ -590,75 +674,6 @@
             const efectivo = parseFloat($('#descUs').val()) || 0;
             $('#vuelto').text((efectivo - abono).toFixed(2));
         }
-        function datosA(num, fecha) {
-            this.num = num;
-            this.fecha = fecha;
-        }
-
-        function cargarPag() {
-            var n = new Date();
-            var y = n.getFullYear();
-            var m = n.getMonth() + 1;
-            var d = n.getDate();
-            if (m < 10) m = '0' + m;
-            if (d < 10) d = '0' + d;
-            var fech = y + "-" + m + "-" + d;
-            var cantp = document.getElementById("cantpago").value;
-            var contAux = 1;
-            var valor = [];
-
-            // Agregar la primera fecha actual
-            var fecha = '<tr class="filas" id="fila0">' +
-                '<td><input type="date" onchange="cambiarsiguientesfechas(0)" name="fechP[]" value="' + fech + '"></td>' +
-                '</tr>';
-            var book = new datosA(contAux, fecha);
-            valor.push(book);
-            contAux++;
-
-            // Agregar las siguientes fechas
-            for (let index = 1; index < cantp; index++) {
-                // Incrementar el mes
-                m++;
-                if (m > 12) {
-                    m = 1;
-                    y++;
-                }
-                // Formatear el mes y año
-                var mm = (m < 10) ? '0' + m : m;
-                var yy = y;
-                // Crear la fecha
-                var nextFech = yy + "-" + mm + "-" + d;
-                fecha = '<tr class="filas" id="fila' + index + '">' +
-                    '<td><input type="date" onchange="cambiarsiguientesfechas(' + index + ')" name="fechP[]"  id="fechP' +
-                    index + '" value="' +
-                    nextFech +
-                    '"></td>' +
-                    '</tr>';
-                book = new datosA(contAux, fecha);
-                valor.push(book);
-                contAux++;
-            }
-
-            $('#tblpagare').DataTable({
-                paging: false,
-                searching: false,
-                info: false,
-                data: valor,
-                "bDestroy": true,
-                columns: [{
-                        title: "Pago",
-                        data: "num"
-                    },
-                    {
-                        title: "Fecha",
-                        data: "fecha"
-                    }
-                ]
-            });
-
-
-
-        }
 
         function pagar1() {
             Swal.fire({
@@ -673,7 +688,7 @@
                     const id = $('#idfac').val();
                     const monto = $('#montoAbonar').val();
                     const desc = $('#descuent').val() || 0;
-                    $.post(`/sisventa/public/caja/${id}/${monto}/${desc}`, {
+                    $.post(`{{ url('/') }}/caja/${id}/${monto}/${desc}`, {
                             _token: '{{ csrf_token() }}'
                         })
                         .done(res => {

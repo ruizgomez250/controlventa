@@ -94,14 +94,14 @@
             var hasta = document.getElementById('hasta1').value;
             var idproducto = document.getElementById('idproducto').value;
 
-            var url = `/sisventa/public/gananciareportepdf/${desde}/${hasta}/${idproducto}`;
+            var url = `{{ url('/') }}/gananciareportepdf/${desde}/${hasta}/${idproducto}`;
             window.open(url, '_blank');
         }
         function generarPDFsinuser() {
             var desde = document.getElementById('desde2').value;
             var hasta = document.getElementById('hasta2').value;
 
-            var url = `/sisventa/public/gananciareportepdf/${desde}/${hasta}`;
+            var url = `{{ url('/') }}/gananciareportepdf/${desde}/${hasta}`;
             window.open(url, '_blank');
         }
     </script>
