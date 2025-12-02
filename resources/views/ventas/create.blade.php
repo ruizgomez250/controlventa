@@ -292,6 +292,7 @@
             if (e.altKey && e.shiftKey && e.key === 'C') $('input[name="codigo1[]"]').first().focus();
             if (e.altKey && e.shiftKey && e.key === 'F') $('#fechaemision').focus();
         });
+
         function cargarPag() {
             var n = new Date();
             var y = n.getFullYear();
@@ -362,20 +363,43 @@
             input.value = input.value.replace(/[^0-9.]/g, '').replace(/,/g, '.');
             actualizarSumaTotal();
         }
+
         function datosA(num, fecha) {
             this.num = num;
             this.fecha = fecha;
         }
+
         function actualizarSumaTotal() {
+
+            console.clear(); // limpia la consola cada vez
             totalSum = 0;
-            const rows = document.querySelectorAll('#items .item:not(:first-child) .d-flex');
+
+            const rows = document.querySelectorAll('#items .item'); // ✅ selector correcto
+
             let itemN = 0;
-            rows.forEach(row => {
-                const qty = parseFloat(row.querySelector('input[name="cantidad[]"]').value) || 0;
-                const priceOrig = parseFloat(row.querySelector('input[name="precioorig[]"]').value) || 0;
-                const cmay = parseFloat(row.querySelector('input[name="cmayorista[]"]').value) || 0;
-                const pmay = parseFloat(row.querySelector('input[name="pmayorista[]"]').value) || 0;
-                const cond = parseFloat(row.querySelector('input[name="condicionv[]"]').value) || 0;
+
+            rows.forEach((item, index) => {
+
+
+                const qtyInput = item.querySelector('input[name="cantidad[]"]');
+                const priceOrigInput = item.querySelector('input[name="precioorig[]"]');
+                const cmayInput = item.querySelector('input[name="cmayorista[]"]');
+                const pmayInput = item.querySelector('input[name="pmayorista[]"]');
+                const condInput = item.querySelector('input[name="condicionv[]"]');
+                const ivaInput = item.querySelector('input[name="iva[]"]');
+
+                if (!qtyInput || !priceOrigInput || !ivaInput) {
+                    return;
+                }
+
+                const qty = parseFloat(qtyInput.value) || 0;
+                const priceOrig = parseFloat(priceOrigInput.value) || 0;
+                const cmay = parseFloat(cmayInput?.value) || 0;
+                const pmay = parseFloat(pmayInput?.value) || 0;
+                const cond = parseFloat(condInput?.value) || 0;
+
+                
+
                 let price = priceOrig;
 
                 if (cmay > 0 && qty >= cmay) {
@@ -386,10 +410,13 @@
                         const resto = qty % cmay;
                         price = (entero * pmay + resto * priceOrig) / qty;
                     }
+                } else {
                 }
 
-                const iva = parseFloat(row.querySelector('input[name="iva[]"]').value) || 0;
+                const iva = parseFloat(ivaInput.value) || 0;
+
                 const subtotal = qty * price;
+
                 let exenta = 0,
                     cinco = 0,
                     diez = 0;
@@ -398,15 +425,17 @@
                 else if (iva === 5) cinco = subtotal * 1.05;
                 else if (iva === 10) diez = subtotal * 1.10;
 
-                row.querySelector('input[name="item[]"]').value = ++itemN;
-                row.querySelector('input[name="exenta[]"]').value = exenta.toFixed(2);
-                row.querySelector('input[name="cinco[]"]').value = cinco.toFixed(2);
-                row.querySelector('input[name="diez[]"]').value = diez.toFixed(2);
+                item.querySelector('input[name="item[]"]').value = ++itemN;
+                item.querySelector('input[name="exenta[]"]').value = exenta.toFixed(2);
+                item.querySelector('input[name="cinco[]"]').value = cinco.toFixed(2);
+                item.querySelector('input[name="diez[]"]').value = diez.toFixed(2);
 
                 totalSum += (exenta + cinco + diez);
             });
+
             totalSumElement.textContent = totalSum.toFixed(2);
         }
+
 
         // --- Agregar Ítem ---
         function addNewItem() {
@@ -579,37 +608,40 @@
             actualizarNumeroDocumento();
         }
         $(document).on('focus', '.autocomplete-producto', function() {
-    if ($(this).data("ui-autocomplete")) return; // ✅ evita duplicados
+            if ($(this).data("ui-autocomplete")) return; // ✅ evita duplicados
 
-    $(this).autocomplete({
-        minLength: 0,
-        source: function(request, response) {
-            $.ajax({
-                url: "{{ route('obtenerproducto') }}",
-                dataType: "json",
-                data: { term: request.term },
-                success: function(data) {
+            $(this).autocomplete({
+                minLength: 0,
+                source: function(request, response) {
+                    $.ajax({
+                        url: "{{ route('obtenerproducto') }}",
+                        dataType: "json",
+                        data: {
+                            term: request.term
+                        },
+                        success: function(data) {
 
-                    // ✅ FORMATO CORRECTO PARA jQuery UI
-                    response($.map(data, function(p) {
-                        return {
-                            label: p.descripcion + " (" + p.stock + ")",
-                            value: p.descripcion,   // ✅ ESTO EVITA EL ERROR
-                            codigo: p.codigo,
-                            id: p.id
-                        };
-                    }));
+                            // ✅ FORMATO CORRECTO PARA jQuery UI
+                            response($.map(data, function(p) {
+                                return {
+                                    label: p.descripcion + " (" + p.stock + ")",
+                                    value: p
+                                    .descripcion, // ✅ ESTO EVITA EL ERROR
+                                    codigo: p.codigo,
+                                    id: p.id
+                                };
+                            }));
 
-                }
+                        }
+                    });
+                },
+                select: function(event, ui) {
+                    traerCargarDatosProducto(ui.item.codigo, this);
+                    $(this).closest('.d-flex').find('input[name="cantidad[]"]').focus();
+                },
+                autoFocus: true
             });
-        },
-        select: function(event, ui) {
-            traerCargarDatosProducto(ui.item.codigo, this);
-            $(this).closest('.d-flex').find('input[name="cantidad[]"]').focus();
-        },
-        autoFocus: true
-    });
-});
+        });
 
 
         function actualizarNumeroDocumento() {
