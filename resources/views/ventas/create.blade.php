@@ -83,7 +83,7 @@
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="form-group col-md-2">
-                        <label for="fechaemision">FECHA DE EMISIÓN (alt+shift+f)</label>
+                        <label for="fechaemision">FECHA DE EMISIÓN</label>
                         <input type="date" class="form-control" id="fechaemision" name="fechaemision"
                             value="{{ date('Y-m-d') }}" required>
                     </div>
@@ -146,19 +146,38 @@
                 <hr>
 
                 <style>
-                    /* 🔥 Contenedor que obliga al scroll sí o sí */
+                    /* Contenedor del scroll */
                     .scroll-area {
-                        display: block !important;
-                        width: 100% !important;
                         overflow-x: auto !important;
                         overflow-y: hidden;
                         white-space: nowrap !important;
-                        min-width: 1200px;
-                        /* Ajustar según suma de columnas */
+
+                        /*  ancho mínimo evita que se corte en pantallas chicas */
+                        min-width: 1250px;
+
                         border: 1px solid #ccc;
                     }
 
-                    /* 🔥 Columnas fijas que no se achican */
+                    /* Fila de cabecera */
+                    .header-row {
+                        display: flex;
+                        flex-wrap: nowrap;
+                        background: #000;
+                        color: white;
+                        font-weight: bold;
+                        padding: 10px 0;
+                    }
+
+                    /* Fila de items */
+                    .item-row {
+                        display: flex;
+                        flex-wrap: nowrap;
+                        background: #f7f7f7;
+                        padding: 6px 0;
+                        border-bottom: 1px solid #ccc;
+                    }
+
+                    /* Columnas 100% fijas (NO Bootstrap) */
                     .col-small {
                         width: 80px;
                         min-width: 80px;
@@ -187,36 +206,34 @@
                         text-align: center;
                     }
 
-                    .header-row {
-                        display: flex;
-                        flex-direction: row;
-                        flex-wrap: nowrap;
-                        align-items: center;
-                        background: #000;
-                        color: #fff;
-                        font-weight: bold;
-                        padding: 10px 0;
+                    /* Inputs adaptados */
+                    .item-row input {
+                        width: 100%;
+                        text-align: center;
                     }
                 </style>
+
 
                 <!-- 🔥 CONTENEDOR QUE GARANTIZA EL SCROLL -->
                 <div class="scroll-area">
 
-                    <div class="header-row">
-                        <div class="col-small">ITEM</div>
-                        <div class="col-small">UNDM</div>
-                        <div class="col-medium">CÓDIGO</div>
-                        <div class="col-large">DESCRIPCIÓN</div>
-                        <div class="col-fixed">CANTIDAD</div>
-                        <div class="col-medium">PRECIO UNIT.</div>
-                        <div class="col-fixed">EXENTAS</div>
-                        <div class="col-small">5%</div>
-                        <div class="col-small">10%</div>
-                        <div class="col-small"></div>
-                    </div>
+    <div class="header-row">
+        <div class="col-small">ITEM</div>
+        <div class="col-small">UNDM</div>
+        <div class="col-medium">CÓDIGO</div>
+        <div class="col-large">DESCRIPCIÓN</div>
+        <div class="col-fixed">CANTIDAD</div>
+        <div class="col-medium">PRECIO UNIT.</div>
+        <div class="col-fixed">EXENTAS</div>
+        <div class="col-small">5%</div>
+        <div class="col-small">10%</div>
+        <div class="col-small"></div>
+    </div>
 
-                    <div id="items"></div>
-                </div>
+    <div id="items"></div>
+
+</div>
+
 
 
 
@@ -572,6 +589,75 @@
             const abono = parseFloat($('#montoAbonar').val()) || 0;
             const efectivo = parseFloat($('#descUs').val()) || 0;
             $('#vuelto').text((efectivo - abono).toFixed(2));
+        }
+        function datosA(num, fecha) {
+            this.num = num;
+            this.fecha = fecha;
+        }
+
+        function cargarPag() {
+            var n = new Date();
+            var y = n.getFullYear();
+            var m = n.getMonth() + 1;
+            var d = n.getDate();
+            if (m < 10) m = '0' + m;
+            if (d < 10) d = '0' + d;
+            var fech = y + "-" + m + "-" + d;
+            var cantp = document.getElementById("cantpago").value;
+            var contAux = 1;
+            var valor = [];
+
+            // Agregar la primera fecha actual
+            var fecha = '<tr class="filas" id="fila0">' +
+                '<td><input type="date" onchange="cambiarsiguientesfechas(0)" name="fechP[]" value="' + fech + '"></td>' +
+                '</tr>';
+            var book = new datosA(contAux, fecha);
+            valor.push(book);
+            contAux++;
+
+            // Agregar las siguientes fechas
+            for (let index = 1; index < cantp; index++) {
+                // Incrementar el mes
+                m++;
+                if (m > 12) {
+                    m = 1;
+                    y++;
+                }
+                // Formatear el mes y año
+                var mm = (m < 10) ? '0' + m : m;
+                var yy = y;
+                // Crear la fecha
+                var nextFech = yy + "-" + mm + "-" + d;
+                fecha = '<tr class="filas" id="fila' + index + '">' +
+                    '<td><input type="date" onchange="cambiarsiguientesfechas(' + index + ')" name="fechP[]"  id="fechP' +
+                    index + '" value="' +
+                    nextFech +
+                    '"></td>' +
+                    '</tr>';
+                book = new datosA(contAux, fecha);
+                valor.push(book);
+                contAux++;
+            }
+
+            $('#tblpagare').DataTable({
+                paging: false,
+                searching: false,
+                info: false,
+                data: valor,
+                "bDestroy": true,
+                columns: [{
+                        title: "Pago",
+                        data: "num"
+                    },
+                    {
+                        title: "Fecha",
+                        data: "fecha"
+                    }
+                ]
+            });
+
+
+
         }
 
         function pagar1() {
