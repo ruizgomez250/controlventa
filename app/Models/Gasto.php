@@ -9,7 +9,6 @@ class Gasto extends Model
 {
     protected $fillable = [
         'user_id',
-        'categoria_id',
         'concepto',
         'monto',
         'fecha',
@@ -24,9 +23,6 @@ class Gasto extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function categoria()
-    {
-        return $this->belongsTo(CategoriaGasto::class, 'categoria_id');
-    }
+    
 }
 

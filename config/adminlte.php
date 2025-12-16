@@ -94,7 +94,7 @@ return [
     'auth_logo' => [
         'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/easystock.png.',
+            'path' => 'vendor/adminlte/dist/img/e.png.',
             'alt' => 'Auth Logo',
             'class' => '',
             'width' => 180,
@@ -356,28 +356,28 @@ return [
                 ],
             ],
         ],
-        [
-            'text'       => 'Tabla Porcentajes',
-            'icon'       => 'fas fa-chart-bar',
-            'icon_color' => 'warning',
-            'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-chart-bar"></i>',
-            'submenu'        => [
-                [
-                    'text' => 'Lista de Porcentajes',
-                    'url'  => '/tablaporc',
-                ],
-                [
-                    'text' => 'Lista Porcentajes',
-                    'url'  => '/tablaporc/index',
-                ],
-                [
-                    'text' => 'Registrar Porcentaje',
-                    'url'  => '/tablaporc/create',
-                ],
+        // [
+        //     'text'       => 'Tabla Porcentajes',
+        //     'icon'       => 'fas fa-chart-bar',
+        //     'icon_color' => 'warning',
+        //     'classes' => 'custom-icon-box-black',
+        //     'content' => '<i class="fas fa-chart-bar"></i>',
+        //     'submenu'        => [
+        //         [
+        //             'text' => 'Lista de Porcentajes',
+        //             'url'  => '/tablaporc',
+        //         ],
+        //         [
+        //             'text' => 'Lista Porcentajes',
+        //             'url'  => '/tablaporc/index',
+        //         ],
+        //         [
+        //             'text' => 'Registrar Porcentaje',
+        //             'url'  => '/tablaporc/create',
+        //         ],
 
-            ],
-        ],
+        //     ],
+        // ],
         [
             'text'       => 'Compras',
             'icon'       => 'fas fa-shopping-bag',
@@ -410,6 +410,24 @@ return [
                 [
                     'text' => 'Registrar Ventas',
                     'url'  => '/venta/create',
+                ],
+            ],
+        ],
+        [
+            'text'       => 'Gastos',
+            'icon'       => 'fas fa-shopping-bag',
+            'icon_color' => 'cyan',
+            'classes' => 'custom-icon-box-black',
+            'content' => '<i class="fas fa-box"></i>',
+            'submenu'        => [
+                [
+                    'text' => 'Lista de Gastos',
+                    'url'  => '/gasto',
+
+                ],
+                [
+                    'text' => 'Registrar Gastos',
+                    'url'  => '/gasto/create',
                 ],
             ],
         ],

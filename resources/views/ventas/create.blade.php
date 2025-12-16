@@ -438,6 +438,7 @@
 
 
         // --- Agregar Ítem ---
+        
         function addNewItem() {
             const newItem = document.createElement("div");
             newItem.classList.add("item", "px-2", "py-1");

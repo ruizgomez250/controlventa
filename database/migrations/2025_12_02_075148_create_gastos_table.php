@@ -15,7 +15,6 @@ return new class extends Migration
         $table->id();
 
         $table->foreignId('user_id')->constrained()->onDelete('cascade');
-        $table->foreignId('categoria_id')->constrained('categorias_gastos');
 
         $table->string('concepto');
         $table->decimal('monto', 12, 2);
