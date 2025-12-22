@@ -54,8 +54,7 @@
                     name="metodo_pago"
                     label="Método de Pago"
                     fgroup-class="col-md-4">
-                    <option value="">Seleccione</option>
-                    <option value="efectivo">Efectivo</option>
+                    <option value="efectivo" selected>Efectivo</option>
                     <option value="transferencia">Transferencia</option>
                     <option value="tarjeta">Tarjeta</option>
                 </x-adminlte-select>

@@ -115,7 +115,7 @@
 
 
                         <x-adminlte-input name="porcentaje" id="porcentaje" type="number" label="% Margen"
-                            fgroup-class="col-md-1" value="0" min="0" max="100" step="any"
+                            fgroup-class="col-md-1" value="0" min="0"  step="any"
                             oninput="calcularPrecioVenta()" label-class="text-success" />
                         <x-adminlte-input name="pventa" id="pventa" type="number" label="Precio Venta"
                             fgroup-class="col-md-2" value="0" min="0"
