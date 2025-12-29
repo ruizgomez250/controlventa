@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Configuracion;
+use App\Models\Impuesto;
 use App\Models\Producto;
 use App\Models\Opcion;
 use App\Models\TablaPorcentaje;
@@ -66,9 +67,10 @@ class ProductoController extends Controller
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'crear');
         if ($tienePermiso) {
             $headcat = ['Descripción', 'Acción'];
+            $impuestos = Impuesto::all();
             $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
             $medida = Opcion::where('id_dominio', 5)->orderBy('id')->get();
-            return view('productos.create', ['medida' => $medida, 'categoria' => $categoria, 'headcat' => $headcat]);
+            return view('productos.create', ['medida' => $medida, 'categoria' => $categoria,'impuestos' => $impuestos, 'headcat' => $headcat]);
         } else {
             return view('sinpermiso.index');
         }
@@ -99,7 +101,7 @@ class ProductoController extends Controller
                 Producto::create($request->all());
 
                 // Redirigir con mensaje de éxito
-                return redirect()->route('producto.index')->with('success', 'Producto creado exitosamente');
+                return redirect()->route('producto.create')->with('success', 'Producto creado exitosamente');
             } catch (Exception $e) {
                 // Manejo de errores
                 return redirect()->back()->with('error', 'Error al crear el producto: ' . $e->getMessage());
@@ -151,9 +153,10 @@ class ProductoController extends Controller
             // Genera el código QR con solo el código
             //$qrCode = FacadesQrCode::size(300)->generate($codigo);
             $headcat = ['Descripción', 'Acción'];
+            $impuestos = Impuesto::all();
             $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
             $medida = Opcion::where('id_dominio', 5)->orderBy('descripcion')->get();
-            return view('productos.edit', ['headcat' => $headcat, 'categoria' => $categoria, 'producto' => $producto, 'medida' => $medida, 'qrCode' => $qrCode]);
+            return view('productos.edit', ['headcat' => $headcat, 'categoria' => $categoria, 'producto' => $producto, 'medida' => $medida, 'qrCode' => $qrCode,'impuestos' => $impuestos]);
         } else {
             return view('sinpermiso.index');
         }

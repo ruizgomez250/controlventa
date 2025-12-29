@@ -16,6 +16,7 @@ use App\Http\Controllers\RolController;
 use App\Http\Controllers\TablaPorcentajeController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\GastoController;
+use App\Http\Controllers\ImpuestoController;
 use App\Http\Controllers\ProductoreporteController;
 
 /*
@@ -41,6 +42,7 @@ Route::get('/home', function () {
 
 //acceden los autenticados
 Route::middleware('auth')->group(function () {
+    Route::resource('impuestos', ImpuestoController::class);
     Route::resource('/gasto', GastoController::class);
     Route::resource('/tablaporc', TablaPorcentajeController::class);
     Route::resource('/cliente', ClienteController::class);

@@ -16,7 +16,7 @@
                 <form action="{{ route('producto.update', $producto) }}" method="post">
                     @csrf
                     @method('put')
-                   
+
 
                     <div class="row">
 
@@ -36,18 +36,25 @@
                         @error('descripcion')
                             <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
-                        <x-adminlte-select name="impuesto" id="impuesto" label="Impuesto"
-                            data-placeholder="Seleccionar una categoría..." fgroup-class="col-md-2"
+                        
+                        <x-adminlte-select name="impuesto" id="impuesto" label="Impuesto" fgroup-class="col-md-2"
                             label-class="text-success">
+
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-success">
                                     <i class="fas fa-money-bill-wave"></i>
                                 </div>
                             </x-slot>
-                            <option value="10" {{ $producto->impuesto == 10 ? 'selected' : '' }}>10 %</option>
-                            <option value="5" {{ $producto->impuesto == 5 ? 'selected' : '' }}>5 %</option>
-                            <option value="0" {{ $producto->impuesto == 0 ? 'selected' : '' }}>0 %</option>
+
+                            @foreach ($impuestos as $impuesto)
+                                <option value="{{ $impuesto->valor }}"
+                                    {{ old('impuesto', $producto->impuesto) == $impuesto->valor ? 'selected' : '' }}>
+                                    {{ $impuesto->descripcion }} {{ number_format($impuesto->valor, 0, ',', '.') }} %
+                                </option>
+                            @endforeach
+
                         </x-adminlte-select>
+
 
                     </div>
 
@@ -126,11 +133,12 @@
                         <x-adminlte-input name="pventa" type="number" label="Precio Venta"
                             value="{{ $producto->pventa }}" fgroup-class="col-md-2" />
 
-                            <x-adminlte-select name="estado" label="Estado del Producto" data-placeholder="Seleccionar una opción..." fgroup-class="col-md-3">
-                                <option value="1" {{ $producto->estado === 1 ? 'selected' : '' }} >Activo</option>
-                                <option value="0" {{ $producto->estado === 0 ? 'selected' : '' }} >Inactivo</option>
-                            </x-adminlte-select>
-                        
+                        <x-adminlte-select name="estado" label="Estado del Producto"
+                            data-placeholder="Seleccionar una opción..." fgroup-class="col-md-3">
+                            <option value="1" {{ $producto->estado === 1 ? 'selected' : '' }}>Activo</option>
+                            <option value="0" {{ $producto->estado === 0 ? 'selected' : '' }}>Inactivo</option>
+                        </x-adminlte-select>
+
                         {{-- <x-adminlte-select name="id_estado" label="Estado"
                             data-placeholder="Seleccionar una opción..." fgroup-class="col-md-3">
                             
@@ -485,7 +493,7 @@
                 } else {
                     addedRow = dataTable1.row.add(filaDatos).draw(false).node();
                 }
-                 
+
                 $(addedRow).attr("data-id", id);
                 $(addedRow).addClass("table-row");
             },

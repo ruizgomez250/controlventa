@@ -34,17 +34,23 @@
                             <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
                         <x-adminlte-select name="impuesto" id="impuesto" label="Impuesto"
-                            data-placeholder="Seleccionar una categoría..." fgroup-class="col-md-2"
+                            fgroup-class="col-md-2"
                             label-class="text-success">
+
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-success">
                                     <i class="fas fa-money-bill-wave"></i>
                                 </div>
                             </x-slot>
-                            <option value="10">10 %</option>
-                            <option value="5">5 %</option>
-                            <option value="0">0 %</option>
+
+                            @foreach ($impuestos as $impuesto)
+                                <option value="{{ $impuesto->valor }}">
+                                    {{ $impuesto->descripcion }} {{ number_format($impuesto->valor, 0, ',', '.') }} %
+                                </option>
+                            @endforeach
+
                         </x-adminlte-select>
+
                     </div>
 
                     <div class="row">
@@ -115,7 +121,7 @@
 
 
                         <x-adminlte-input name="porcentaje" id="porcentaje" type="number" label="% Margen"
-                            fgroup-class="col-md-1" value="0" min="0"  step="any"
+                            fgroup-class="col-md-1" value="0" min="0" step="any"
                             oninput="calcularPrecioVenta()" label-class="text-success" />
                         <x-adminlte-input name="pventa" id="pventa" type="number" label="Precio Venta"
                             fgroup-class="col-md-2" value="0" min="0"
@@ -133,10 +139,10 @@
                             ];
                         @endphp
                         <x-adminlte-select name="estado" label="Estado del Producto"
-                        data-placeholder="Seleccionar una opción..." fgroup-class="col-md-2">
-                        <option value="1">Activo</option>
-                        <option value="0">Inactivo</option>
-                    </x-adminlte-select>
+                            data-placeholder="Seleccionar una opción..." fgroup-class="col-md-2">
+                            <option value="1">Activo</option>
+                            <option value="0">Inactivo</option>
+                        </x-adminlte-select>
 
                     </div>
                     <div class="row">
@@ -315,26 +321,33 @@
 @stop
 @push('js')
 <script>
+    var successMessage = "{{ session('success') }}";
+    var errorMessage = "{{ session('error') }}";
+    if (successMessage) {
+        Swal.fire('Éxito', successMessage, 'success');
+    } else if (errorMessage) {
+        Swal.fire('Error', errorMessage, 'error');
+    }
     function calcularPorcentajeAumento() {
         // Obtén los valores de precio de costo y precio de venta
         var pcosto = parseFloat(document.getElementById('pcosto').value);
         var pventa = parseFloat(document.getElementById('pventa').value);
 
         // Calcula el porcentaje de aumento si ambos valores son mayores a 0
-        
-        
+
+
         if (pcosto > 0 && pventa > 0) {
             var porcentajeAumento = ((pventa - pcosto) / pcosto) * 100;
-            var margenGanancia = ((pventa - pcosto) / pventa)*100;
+            var margenGanancia = ((pventa - pcosto) / pventa) * 100;
 
             // Muestra el resultado en el campo de porcentaje
             document.getElementById('porcentaje').value = porcentajeAumento.toFixed(2);
             const margenGananciaElement = document.getElementById('margenganancia');
-            margenGananciaElement.textContent = margenGanancia+' %';
+            margenGananciaElement.textContent = margenGanancia + ' %';
 
         } else {
             // Si uno de los valores es 0, establece el porcentaje en 0
-            
+
             document.getElementById('porcentaje').value = 0;
         }
         calcularDescuento();
@@ -347,8 +360,8 @@
 
         // Verifica si el porcentaje ingresado es mayor a 0
         const margenGananciaElement = document.getElementById('margenganancia');
-        margenGananciaElement.textContent = margenGanancia+'0 %';
-        
+        margenGananciaElement.textContent = margenGanancia + '0 %';
+
         if (porcentaje > 0) {
             // Calcula el precio de venta
             var pventa = pcosto * (1 + porcentaje / 100);
@@ -356,12 +369,12 @@
             // Muestra el resultado en el campo de precio de venta
             document.getElementById('pventa').value = pventa.toFixed(2);
 
-            
+
 
             // Muestra el resultado en el campo de porcentaje
             document.getElementById('porcentaje').value = porcentajeAumento.toFixed(2);
             const margenGananciaElement = document.getElementById('margenganancia');
-            margenGananciaElement.textContent = margenGanancia+' %';
+            margenGananciaElement.textContent = margenGanancia + ' %';
         } else {
             // Si el porcentaje es 0 o negativo, establece el precio de venta en 0
             document.getElementById('pventa').value = 0;
