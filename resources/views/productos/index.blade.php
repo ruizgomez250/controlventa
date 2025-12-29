@@ -30,7 +30,7 @@
                                
                                 <td>{{  $row->unidaddemedida->descripcion }}</td>
                                 <td>{{ $row->descripcion }}</td>
-                                <td>{{ $row->categoriaproducto->descripcion }}</td>
+                                <td>{{ $row->categoriaproducto?->descripcion }}</td>
                                 <td>{{ $row->stock  }}</td>
                                 <td>{{ $row->pcosto }}</td>
                                 <td>{{ $row->pventa }}</td>
