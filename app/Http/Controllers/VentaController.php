@@ -73,268 +73,98 @@ class VentaController extends Controller
     public function store(Request $request)
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Venta', 'crear');
-        if ($tienePermiso) {
-            try {
-                DB::beginTransaction();
-
-                $cabecera = new Venta();
-                $cabecera->fecha_emision = Carbon::createFromFormat('Y-m-d', $request->get('fechaemision'));
-                $cabecera->fecha_vencimiento = Carbon::createFromFormat('Y-m-d', $request->get('fechaemision'));
-                $cabecera->numero_factura = $request->get('nrofactura');
-                $cabecera->id_cliente = $request->get('id_proveedor');
-                $cabecera->tipo_comprobante = $request->get('condicion');
-                $cabecera->total = 0;
-                $cabecera->estado = 1;
-                $cabecera->timbrado_factura = $request->get('timbrado');
-                $cabecera->id_usuario = auth()->id();
-                $cabecera->save();
-                $ultimoId = $cabecera->id; //retorna el id de compra
-
-                // Datos para el detalle
-
-                $contador = count($request->input('codigo'));
-                $cantidad = $request->input('cantidad');
-                $descripcion = $request->input('descripcion');
-                $idProductos = $request->input('codigo');
-                $precioU = $request->input('precio');
-                $tipoImpuesto = $request->input('iva');
-                $total = 0;
-
-                for ($i = 0; $i < $contador; $i++) {
-
-                    $montoTotParc = 0;
-                    switch ($tipoImpuesto[$i]) {
-                        case 0:
-                            $montoTotParc = $request->input('exenta')[$i];
-                            break;
-                        case 5:
-                            $montoTotParc = $request->input('cinco')[$i];
-                            break;
-                        case 10:
-                            $montoTotParc = $request->input('diez')[$i];
-                            break;
-                        default:
-                    }
-                    $total = $total + $montoTotParc;
-
-                    $detalle = new VentaDetalle();
-                    $detalle->id_venta = $ultimoId;
-                    $detalle->cantidad = $cantidad[$i];
-                    $detalle->descripcion = $descripcion[$i];
-                    $detalle->id_producto = $idProductos[$i];
-                    $detalle->precio_u = $precioU[$i];
-                    $detalle->monto = $montoTotParc;
-                    $detalle->tipo_impuesto = $tipoImpuesto[$i];
-
-                    $detalle->save();
-
-                    $producto = Producto::find($idProductos[$i]);
-                    $producto->stock = $producto->stock - $detalle->cantidad;
-                    $producto->save();
-                }
-                $cabecera->total = $total;
-                $cabecera->save();
-                $contador = count($request->input('fechP'));
-                if ($request->get('condicion') == 'CREDITO') {
-                    $cantpago = $request->input('cantpago');
-                    $monto = $total / $cantpago;
-                    $fechaP = $request->input('fechP');
-
-                    for ($i = 0; $i < $contador; $i++) {
-
-                        $pagare = new Pagare();
-                        $pagare->fecha_emision = Carbon::createFromFormat('Y-m-d', $request->get('fechaemision'));
-                        $pagare->fecha_vencimiento = Carbon::createFromFormat('Y-m-d', $fechaP[$i]);
-                        $pagare->monto = $monto;
-                        $pagare->id_venta = $ultimoId;
-                        $pagare->estado = 1;
-                        $pagare->save();
-                    }
-                }
-                $ultimoId = $cabecera->id;
-                $configuracionvs = Configuracion::where('descripcion', 'ventas')->first();
-
-                if ($configuracionvs) {
-                    $estadov = $configuracionvs->estado;
-                } else {
-                    $configuracionvs->estado = 0;
-                    $configuracionvs->save();
-                }
-
-
-
-                DB::commit();
-                return redirect()->route('venta.create')->with([
-                    'success' => 'La compra se ha registrado correctamente.',
-                    'ultimoId' => $ultimoId,
-                    'estadov' => $estadov,
-                ]);
-            } catch (Exception $e) {
-
-                DB::rollBack();
-                Log::error($e->getMessage());
-                return redirect()->route('venta.create')->with('error', 'Ha ocurrido un error al registrar la compra. Por favor, inténtelo de nuevo.');
-            }
-        } else {
+        if (!$tienePermiso) {
             return redirect()->route('sinpermiso');
         }
-    }
-    public function storeApiSimplified(Request $request)
-    {
-        try {
-            // Validar entrada mínima
-            $request->validate([
-                'id_cliente' => 'required|integer|exists:clientes,id', // Asegúrate de que la tabla se llame "clientes"
-                'detalle' => 'required|array|min:1',
-                'detalle.*.codigo' => 'required|integer|exists:productos,id',
-                'detalle.*.descripcion' => 'required|string',
-                'detalle.*.precio' => 'required|numeric|min:0',
-            ]);
 
-            // Fecha actual (emisión)
-            $fechaActual = now()->format('Y-m-d'); // Ej: "2025-11-13"
-
-            // Completar datos faltantes
-            $dataCompleta = [
-                'fechaemision' => $fechaActual,
-                'nrofactura' => 'F0',
-                'condicion' => 'CREDITO',
-                'timbrado' => '0',
-                'id_cliente' => $request->id_cliente,
-                'cantpago' => 2,
-                'fechP' => [
-                    now()->addMonth()->format('Y-m-d'),   // 1 mes después
-                    now()->addMonths(2)->format('Y-m-d') // 2 meses después
-                ],
-                'detalle' => []
-            ];
-
-            // Completar cada ítem del detalle
-            foreach ($request->detalle as $item) {
-                $dataCompleta['detalle'][] = [
-                    'codigo' => $item['codigo'],
-                    'descripcion' => $item['descripcion'],
-                    'cantidad' => 1, // valor por defecto
-                    'precio' => $item['precio'],
-                    'iva' => 0, // siempre 0 en tu ejemplo
-                    'exenta' => $item['precio'], // si IVA=0, todo es exento
-                    'cinco' => 0,
-                    'diez' => 0
-                ];
-            }
-
-            // Crear una nueva request con los datos completos
-            $nuevaRequest = new \Illuminate\Http\Request();
-            $nuevaRequest->replace($dataCompleta);
-
-            // Llamar a la función original
-            return $this->storeApi($nuevaRequest);
-        } catch (\Exception $e) {
-            Log::error('Error en storeApiSimplified: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al procesar la solicitud simplificada.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-    public function storeApi(Request $request)
-    {
         try {
             DB::beginTransaction();
 
-            $fechaEmision = Carbon::createFromFormat('Y-m-d', $request->get('fechaemision'));
-            $idCliente = $request->get('id_cliente');
-
-            // 🔍 1️⃣ Buscar si ya existe una venta del cliente en esa fecha
-            $cabecera = Venta::whereDate('fecha_emision', $fechaEmision)
-                ->where('id_cliente', $idCliente)
-                ->first();
-
-            // Si no existe, crear una nueva
-            if (!$cabecera) {
-                $cabecera = new Venta();
-                $cabecera->fecha_emision = $fechaEmision;
-                $cabecera->fecha_vencimiento = $fechaEmision;
-                $cabecera->numero_factura = $request->get('nrofactura');
-                $cabecera->id_cliente = $idCliente;
-                $cabecera->tipo_comprobante = $request->get('condicion');
-                $cabecera->total = 0;
-                $cabecera->estado = 1;
-                $cabecera->timbrado_factura = $request->get('timbrado');
-                $cabecera->id_usuario = 1; // auth()->id();
-                $cabecera->save();
+            // ✅ VALIDACIÓN MÍNIMA
+            if (!$request->filled('codigo')) {
+                return back()->with('error', 'No se cargaron productos.');
             }
 
-            $total = $cabecera->total; // mantener el total previo
+            // ✅ CABECERA
+            $cabecera = new Venta();
+            $cabecera->fecha_emision      = Carbon::createFromFormat('Y-m-d', $request->fechaemision);
+            $cabecera->fecha_vencimiento = Carbon::createFromFormat('Y-m-d', $request->fechaemision);
+            $cabecera->numero_factura    = $request->nrofactura;
+            $cabecera->id_cliente        = $request->id_proveedor;
+            $cabecera->tipo_comprobante = $request->condicion;
+            $cabecera->total             = 0;
+            $cabecera->estado            = 1;
+            $cabecera->timbrado_factura  = $request->timbrado;
+            $cabecera->id_usuario        = auth()->id();
+            $cabecera->save();
+
             $ultimoId = $cabecera->id;
 
-            // 2️⃣ Procesar detalles nuevos
-            $detalleItems = $request->input('detalle', []);
-            foreach ($detalleItems as $item) {
+            // ✅ ARRAYS SEGUROS
+            $cantidad     = $request->input('cantidad', []);
+            $descripcion  = $request->input('descripcion', []);
+            $idProductos  = $request->input('codigo', []);
+            $precioU      = $request->input('precio', []);
+            $tipoImpuesto = $request->input('iva', []);
+            $exenta       = $request->input('exenta', []);
+            $cinco        = $request->input('cinco', []);
+            $diez         = $request->input('diez', []);
+
+            $contador = count($idProductos);
+            $total = 0;
+
+            // ✅ DETALLE DE VENTA
+            for ($i = 0; $i < $contador; $i++) {
+
                 $montoTotParc = 0;
-                switch ($item['iva']) {
+
+                switch ((int)$tipoImpuesto[$i]) {
                     case 0:
-                        $montoTotParc = $item['exenta'] ?? 0;
+                        $montoTotParc = floatval($exenta[$i] ?? 0);
                         break;
                     case 5:
-                        $montoTotParc = $item['cinco'] ?? 0;
+                        $montoTotParc = floatval($cinco[$i] ?? 0);
                         break;
                     case 10:
-                        $montoTotParc = $item['diez'] ?? 0;
+                        $montoTotParc = floatval($diez[$i] ?? 0);
                         break;
                 }
+
                 $total += $montoTotParc;
 
                 $detalle = new VentaDetalle();
-                $detalle->id_venta = $ultimoId;
-                $detalle->cantidad = $item['cantidad'];
-                $detalle->descripcion = $item['descripcion'];
-                $detalle->id_producto = $item['codigo'];
-                $detalle->precio_u = $item['precio'];
-                $detalle->monto = $montoTotParc;
-                $detalle->tipo_impuesto = $item['iva'];
+                $detalle->id_venta      = $ultimoId;
+                $detalle->cantidad     = $cantidad[$i];
+                $detalle->descripcion  = $descripcion[$i];
+                $detalle->id_producto  = $idProductos[$i];
+                $detalle->precio_u     = $precioU[$i];
+                $detalle->monto        = $montoTotParc;
+                $detalle->tipo_impuesto = $tipoImpuesto[$i];
                 $detalle->save();
 
-                // 3️⃣ Actualizar stock
-                $producto = Producto::find($item['codigo']);
+                // ✅ DESCUENTA STOCK
+                $producto = Producto::find($idProductos[$i]);
                 if ($producto) {
-                    $producto->stock = $producto->stock - $detalle->cantidad;
+                    $producto->stock -= $detalle->cantidad;
                     $producto->save();
                 }
             }
 
-            // 4️⃣ Actualizar total acumulado
+            // ✅ ACTUALIZA TOTAL CABECERA
             $cabecera->total = $total;
             $cabecera->save();
 
-            // 5️⃣ Crear pagarés solo si es CREDITO y la venta era nueva
-            $cantpago = $request->input('cantpago');
-            $monto = $total / $cantpago;
-            if ($request->get('condicion') === 'CREDITO' && !$cabecera->wasRecentlyCreated) {
-                $pagaresPendientes = Pagare::where('id_venta', $cabecera->id)
-                    ->whereNull('fecha_pago')
-                    ->get();
-                $montoSumado = $monto / $pagaresPendientes->count();
-                $detalles = [];
-                foreach ($pagaresPendientes as $pagare) {
-                    $montoOriginal = $pagare->monto;
-                    $nuevoMonto = $montoOriginal + $montoSumado;
+            // ✅ PAGARÉ SOLO SI ES CRÉDITO
+            if ($request->condicion === 'CREDITO' && $request->filled('fechP')) {
 
-                    $pagare->update([
-                        'monto' => $nuevoMonto
-                    ]);
+                $fechas = $request->input('fechP');
+                $cantpago = count($fechas);
+                $monto = $total / max($cantpago, 1);
 
-                   
-                }
-            } elseif ($request->get('condicion') === 'CREDITO') {
-
-                $fechasPago = $request->input('fechP', []);
-
-                foreach ($fechasPago as $fechaV) {
+                foreach ($fechas as $fecha) {
                     $pagare = new Pagare();
-                    $pagare->fecha_emision = $fechaEmision;
-                    $pagare->fecha_vencimiento = Carbon::createFromFormat('Y-m-d', $fechaV);
+                    $pagare->fecha_emision      = Carbon::createFromFormat('Y-m-d', $request->fechaemision);
+                    $pagare->fecha_vencimiento = Carbon::createFromFormat('Y-m-d', $fecha);
                     $pagare->monto = $monto;
                     $pagare->id_venta = $ultimoId;
                     $pagare->estado = 1;
@@ -342,29 +172,25 @@ class VentaController extends Controller
                 }
             }
 
-            // 6️⃣ Configuración de ventas
+            // ✅ CONFIGURACIÓN CORREGIDA (ACÁ TENÍAS UN BUG GRAVE)
             $configuracionvs = Configuracion::where('descripcion', 'ventas')->first();
             $estadov = $configuracionvs ? $configuracionvs->estado : 0;
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => $cabecera->wasRecentlyCreated
-                    ? 'Venta registrada correctamente.'
-                    : 'Venta actualizada correctamente (se agregaron más productos).',
-                'ultimoId' => $cabecera->id,
-                'estadov' => $estadov,
-            ], 201);
-        } catch (Exception $e) {
-            
-            DB::rollBack();
-            Log::error($e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al registrar la venta.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return redirect()->route('venta.create')->with([
+                'success'  => 'La venta se ha registrado correctamente.',
+                'ultimoId' => $ultimoId,
+                'estadov'  => $estadov,
+            ]);
+        } catch (\Exception $e) {
+
+                DB::rollBack();
+                Log::error($e->getMessage());
+                return redirect()->route('venta.create')->with('error', 'Ha ocurrido un error al registrar la compra. Por favor, inténtelo de nuevo.');
+            }
+        } else {
+            return redirect()->route('sinpermiso');
         }
     }
 

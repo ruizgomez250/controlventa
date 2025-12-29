@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Configuracion;
+use App\Models\Impuesto;
 use App\Models\Producto;
 use App\Models\Opcion;
 use App\Models\TablaPorcentaje;
@@ -63,9 +64,12 @@ class ProductoController extends Controller
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'crear');
         if ($tienePermiso) {
             $headcat = ['Descripción', 'Acción'];
+            $impuestos = Impuesto::all();
             $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
             $medida = Opcion::where('id_dominio', 5)->orderBy('id')->get();
-            return view('productos.create', compact('medida', 'categoria', 'headcat'));
+            return view('productos.create', ['medida' => $medida, 'categoria' => $categoria,'impuestos' => $impuestos, 'headcat' => $headcat]);
+        } else {
+            return view('sinpermiso.index');
         }
         return view('sinpermiso.index');
     }
@@ -87,33 +91,24 @@ class ProductoController extends Controller
             $estado = $estado !== null ? ($estado ? "1" : "0") : "0";
             $request->merge(['estado' => $estado]);
 
-            // Validaciones
-            $request->validate([
-                'codigo' => 'required|string|max:255|unique:productos,codigo',
-                'descripcion' => 'required|string|max:255',
-                'id_categoria' => 'required|exists:opciones,id',
-                'id_medida' => 'required|exists:opciones,id',
-                'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            ]);
+                // Validaciones
+                $request->validate([
+                    'descripcion'   => 'required|string|max:255',
+                    'id_categoria'  => 'required|exists:opciones,id',
+                    'id_medida'     => 'required|exists:opciones,id',
+                ]);
 
-            // Procesar imagen
-            $data = $request->all();
-            if ($request->hasFile('imagen')) {
-                // Guardar en storage/app/public/productos
-                $imagen = $request->file('imagen')->store('productos', 'public');
-                $request->merge(['imagen' => $imagen]);
-                $data['imagen'] =  $imagen;
-            } else {
-                $data['imagen'] = null;
+                // Crear el producto
+                Producto::create($request->all());
+
+                // Redirigir con mensaje de éxito
+                return redirect()->route('producto.index')->with('success', 'Producto creado exitosamente');
+            } catch (Exception $e) {
+                // Manejo de errores
+                return redirect()->back()->with('error', 'Error al crear el producto: ' . $e->getMessage());
             }
-
-            // Crear producto
-            Producto::create($data);
-
-            return redirect()->route('producto.index')->with('success', 'Producto creado exitosamente');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al crear el producto: ' . $e->getMessage())
-                ->withInput();
+        } else {
+            return view('sinpermiso.index');
         }
     }
 
@@ -135,21 +130,43 @@ class ProductoController extends Controller
     public function edit(Producto $producto)
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'editar');
-        if (!$tienePermiso) return view('sinpermiso.index');
+        if ($tienePermiso) {
+            $iniFilePath = public_path('config.ini');
 
-        $iniFilePath = public_path('config.ini');
-        $host = 0;
-        if (file_exists($iniFilePath)) {
-            $config = parse_ini_file($iniFilePath, true);
-            $host = $config['database']['host'] ?? 0;
+            // Verificar si el archivo existe antes de intentar leerlo
+            $host = 0;
+            if (file_exists($iniFilePath)) {
+                // Lee el archivo config.ini y carga su contenido en un array estructurado
+                $config = parse_ini_file($iniFilePath, true);
+
+                // Accede al valor del host dentro de la sección database
+                $host = $config['database']['host'];
+                // Haz algo con el valor obtenido, como pasarlo a una vista
+
+            }
+
+            $url = $producto->codigo; // Genera la URL con el ID como parámetro
+            //$url = 'http://' . $host . '/controlventa/public/cargardetalleventa/' . $producto->codigo;
+            // // Genera el código QR con la URL generada
+            //$url ='https://concurso.diputados.gov.py/documentos/FORMULARIO_DE_P_20240615_214330.pdf';
+            $qrCode = FacadesQrCode::size(100)->generate($url);
+
+
+
+            // $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
+            // $medida = Opcion::where('id_dominio', 5)->orderBy('descripcion')->get();
+            // dd($producto);
+            $codigo = $producto->codigo;
+
+            // Genera el código QR con solo el código
+            //$qrCode = FacadesQrCode::size(300)->generate($codigo);
+            $headcat = ['Descripción', 'Acción'];
+            $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
+            $medida = Opcion::where('id_dominio', 5)->orderBy('descripcion')->get();
+            return view('productos.edit', ['headcat' => $headcat, 'categoria' => $categoria, 'producto' => $producto, 'medida' => $medida, 'qrCode' => $qrCode]);
+        } else {
+            return view('sinpermiso.index');
         }
-
-        $qrCode = FacadesQrCode::size(100)->generate($producto->codigo);
-        $headcat = ['Descripción', 'Acción'];
-        $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
-        $medida = Opcion::where('id_dominio', 5)->orderBy('descripcion')->get();
-
-        return view('productos.edit', compact('headcat', 'categoria', 'producto', 'medida', 'qrCode'));
     }
 
     /**

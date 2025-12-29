@@ -95,14 +95,14 @@
             var hasta = document.getElementById('hasta1').value;
             var idusuario = document.getElementById('idusuario').value;
 
-            var url = `/controlventa/public/cajareportepdf/${desde}/${hasta}/${idusuario}`;
+            var url = `{{ url('/') }}/cajareportepdf/${desde}/${hasta}/${idusuario}`;
             window.open(url, '_blank');
         }
         function generarPDFsinuser() {
             var desde = document.getElementById('desde2').value;
             var hasta = document.getElementById('hasta2').value;
 
-            var url = `/controlventa/public/cajareportepdf/${desde}/${hasta}`;
+            var url = `/sisventa/public/cajareportepdf/${desde}/${hasta}`;
             window.open(url, '_blank');
         }
     </script>

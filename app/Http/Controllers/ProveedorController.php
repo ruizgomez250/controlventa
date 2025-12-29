@@ -30,7 +30,13 @@ class ProveedorController extends Controller
             $proveedor = Proveedor::all();
             //asignar cabecera datatable
             $heads = [
-                'ID', 'Razón Social', 'RUC', 'Correo', 'Teléfono', 'Estado', 'Acción'
+                'ID',
+                'Razón Social',
+                'RUC',
+                'Correo',
+                'Teléfono',
+                'Estado',
+                'Acción'
             ];
             return view('proveedores.index', ['proveedores' => $proveedor, 'heads' => $heads]);
         } else {
@@ -64,7 +70,7 @@ class ProveedorController extends Controller
                 $estado = 1;
             } elseif ($estado === 'false' || $estado === null) {
                 $estado = 0;
-            }else{
+            } else {
                 $estado = $request->input('estado');
             }
 
@@ -106,20 +112,20 @@ class ProveedorController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, Proveedor $proveedor): RedirectResponse
-{
-    $tienePermiso = $this->permisoService->verificarPermiso('Proveedor', 'editar');
-    if ($tienePermiso) {
-        // Recoger todos los datos del request excepto 'estado'
-        
-        $data = $request->input();
+    {
+        $tienePermiso = $this->permisoService->verificarPermiso('Proveedor', 'editar');
+        if ($tienePermiso) {
+            // Recoger todos los datos del request excepto 'estado'
 
-        // Actualizar el proveedor con los datos procesados
-        $proveedor->update($data);
-        return redirect()->route('proveedor.index')->with('success', 'Proveedor actualizado con éxito');
-    } else {
-        return redirect()->route('sinpermiso');
+            $data = $request->input();
+
+            // Actualizar el proveedor con los datos procesados
+            $proveedor->update($data);
+            return redirect()->route('proveedor.index')->with('success', 'Proveedor actualizado con éxito');
+        } else {
+            return redirect()->route('sinpermiso');
+        }
     }
-}
 
 
 

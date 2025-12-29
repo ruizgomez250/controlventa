@@ -16,33 +16,7 @@
                 <form action="{{ route('producto.update', $producto) }}" method="post" enctype="multipart/form-data">
                     @csrf
                     @method('put')
-                    <div class="row mt-3">
-                        <div class="form-group col-md-6 d-flex align-items-center">
-                            <div class="flex-grow-1">
-                                <label for="imagen" class="text-info">Imagen del Producto</label>
-                                <div class="custom-file">
-                                    <input type="file" class="custom-file-input" id="imagen" name="imagen"
-                                        accept="image/*">
-                                    <label class="custom-file-label" for="imagen">Seleccionar imagen...</label>
-                                </div>
-                                @error('imagen')
-                                    <div class="text-danger mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
 
-                            {{-- 🖼️ Contenedor de vista previa al lado derecho --}}
-                            <div id="preview-container" class="text-center ml-3 {{ $producto->imagen ? '' : 'd-none' }}"
-                                style="min-width: 230px;">
-                                <img id="preview"
-                                    src="{{ $producto->imagen ? asset('storage/' . $producto->imagen) : '#' }}"
-                                    alt="Vista previa" class="img-thumbnail shadow-sm mb-2"
-                                    style="max-width: 220px; max-height: 220px;">
-                                <button type="button" id="remove-preview" class="btn btn-outline-danger btn-sm w-100">
-                                    <i class="fas fa-times"></i> Quitar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
                     <div class="row">
 
@@ -62,18 +36,25 @@
                         @error('descripcion')
                             <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
-                        <x-adminlte-select name="impuesto" id="impuesto" label="Impuesto"
-                            data-placeholder="Seleccionar una categoría..." fgroup-class="col-md-2"
+                        
+                        <x-adminlte-select name="impuesto" id="impuesto" label="Impuesto" fgroup-class="col-md-2"
                             label-class="text-success">
+
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-success">
                                     <i class="fas fa-money-bill-wave"></i>
                                 </div>
                             </x-slot>
-                            <option value="10" {{ $producto->impuesto == 10 ? 'selected' : '' }}>10 %</option>
-                            <option value="5" {{ $producto->impuesto == 5 ? 'selected' : '' }}>5 %</option>
-                            <option value="0" {{ $producto->impuesto == 0 ? 'selected' : '' }}>0 %</option>
+
+                            @foreach ($impuestos as $impuesto)
+                                <option value="{{ $impuesto->valor }}"
+                                    {{ old('impuesto', $producto->impuesto) == $impuesto->valor ? 'selected' : '' }}>
+                                    {{ $impuesto->descripcion }} {{ number_format($impuesto->valor, 0, ',', '.') }} %
+                                </option>
+                            @endforeach
+
                         </x-adminlte-select>
+
 
                     </div>
 
