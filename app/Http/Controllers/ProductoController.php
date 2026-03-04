@@ -43,7 +43,6 @@ class ProductoController extends Controller
             ])
                 ->orderBy('id', 'desc')
                 ->get();
-            dd($producto);
 
 
             //asignar cabecera datatable
