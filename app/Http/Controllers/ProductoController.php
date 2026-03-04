@@ -36,7 +36,13 @@ class ProductoController extends Controller
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
         if ($tienePermiso) {
             //obtenemos los datos
-            $producto = Producto::orderBy('id', 'desc')->get();
+            $producto = Producto::with([
+                'impuesto',
+                'unidaddemedida',
+                'categoriaproducto'
+            ])
+                ->orderBy('id', 'desc')
+                ->get();
 
 
             //asignar cabecera datatable
@@ -72,7 +78,7 @@ class ProductoController extends Controller
             $impuestos = Impuesto::all();
             $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
             $medida = Opcion::where('id_dominio', 5)->orderBy('id')->get();
-            return view('productos.create', ['medida' => $medida, 'categoria' => $categoria,'impuestos' => $impuestos, 'headcat' => $headcat]);
+            return view('productos.create', ['medida' => $medida, 'categoria' => $categoria, 'impuestos' => $impuestos, 'headcat' => $headcat]);
         } else {
             return view('sinpermiso.index');
         }
@@ -157,7 +163,7 @@ class ProductoController extends Controller
             $impuestos = Impuesto::all();
             $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
             $medida = Opcion::where('id_dominio', 5)->orderBy('descripcion')->get();
-            return view('productos.edit', ['headcat' => $headcat, 'categoria' => $categoria, 'producto' => $producto, 'medida' => $medida, 'qrCode' => $qrCode,'impuestos' => $impuestos]);
+            return view('productos.edit', ['headcat' => $headcat, 'categoria' => $categoria, 'producto' => $producto, 'medida' => $medida, 'qrCode' => $qrCode, 'impuestos' => $impuestos]);
         } else {
             return view('sinpermiso.index');
         }
