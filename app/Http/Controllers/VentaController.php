@@ -602,7 +602,11 @@ class VentaController extends Controller
     }
     public function cargarDet(Request $request, $id)
     {
-        $producto = Producto::where('codigo', $id)->first();
+        $producto = Producto::where('codigo', $id)
+                    ->where('stock', '>', 0)
+                    ->where('tipo', 'venta')
+                    ->first();
+
 
         // Si no se encuentra el producto, retorna un error
         if (!$producto) {

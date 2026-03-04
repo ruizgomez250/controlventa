@@ -12,9 +12,18 @@ class ImpuestoController extends Controller
      */
     public function index()
     {
-        $impuestos = Impuesto::orderBy('valor', 'desc')->get();
-        return view('impuestos.index', compact('impuestos'));
+        $heads = [
+            'ID',
+            'Descripción',
+            ['label' => 'Valor (%)', 'class' => 'text-right'],
+            ['label' => 'Acciones', 'no-export' => true, 'width' => 10],
+        ];
+
+        $impuestos = Impuesto::all();
+
+        return view('impuestos.index', compact('impuestos', 'heads'));
     }
+
 
     /**
      * Mostrar formulario de creación

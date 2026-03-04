@@ -36,10 +36,12 @@ class ProductoController extends Controller
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
         if ($tienePermiso) {
             //obtenemos los datos
-            $producto = Producto::All()->sortBy("descripcion");
+            $producto = Producto::orderBy('id', 'desc')->get();
+
 
             //asignar cabecera datatable
             $heads = [
+                'N°',
                 'Unidad M.',
                 'Descripción',
                 'Categoría',
@@ -48,9 +50,9 @@ class ProductoController extends Controller
                 'P. Venta',
                 'Impuesto',
                 'Estado',
-                'Prec. May.',
-                'Desc. May.',
-                'Estado',
+                'Cantidad Mayorista',
+                'Precio May.',
+                'Descuento May.',
                 'Acción'
             ];
             return view('productos.index', ['producto' =>  $producto, 'heads' => $heads]);
@@ -89,20 +91,19 @@ class ProductoController extends Controller
                 $estado = $request->input('estado', null);
                 $estado = $estado !== null ? ($estado ? "1" : "0") : "0";
                 $request->merge(['estado' => $estado]);
-
                 // Validaciones
                 $request->validate([
                     'descripcion'   => 'required|string|max:255',
                     'id_categoria'  => 'required|exists:opciones,id',
                     'id_medida'     => 'required|exists:opciones,id',
+                    'id_impuesto'   => 'required|exists:impuestos,id',
                 ]);
-
                 // Crear el producto
                 Producto::create($request->all());
-
                 // Redirigir con mensaje de éxito
                 return redirect()->route('producto.create')->with('success', 'Producto creado exitosamente');
             } catch (Exception $e) {
+                dd($e);
                 // Manejo de errores
                 return redirect()->back()->with('error', 'Error al crear el producto: ' . $e->getMessage());
             }
@@ -182,9 +183,9 @@ class ProductoController extends Controller
             // Actualizar el valor del parámetro "estado" en la solicitud
             $request->merge(['estado' => $estado]);
             $producto->update($request->all());
-            return redirect()->route('producto.index');
+            return redirect()->route('producto.index')->with('success', 'Producto actualizado exitosamente');;
         } else {
-            return redirect()->route('sinpermiso');
+            return redirect()->route('sinpermiso')->with('error', 'Error al actualizar el producto: ');
         }
     }
 

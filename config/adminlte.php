@@ -299,6 +299,23 @@ return [
 
     'menu' => [
         ['header' => 'EasyStock'],
+        [
+            'text'       => 'Impuestos',
+            'icon'       => 'fas fa-id-card',
+            'icon_color' => 'warning',
+            'classes' => 'custom-icon-box-black',
+            'content' => '<i class="fas fa-box"></i>',
+            'submenu'        => [
+                [
+                    'text' => 'Lista de Impuestos',
+                    'url'  => '/impuestos',
+                ],
+                [
+                    'text' => 'Registrar Impuestos',
+                    'url'  => '/impuestos/create',
+                ],
+            ],
+        ],
 
         [
             'text'       => 'Clientes',
