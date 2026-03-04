@@ -382,6 +382,7 @@
 
 
                 const qtyInput = item.querySelector('input[name="cantidad[]"]');
+                const preciounit = item.querySelector('input[name="precio[]"]');
                 const priceOrigInput = item.querySelector('input[name="precioorig[]"]');
                 const cmayInput = item.querySelector('input[name="cmayorista[]"]');
                 const pmayInput = item.querySelector('input[name="pmayorista[]"]');
@@ -398,9 +399,15 @@
                 const pmay = parseFloat(pmayInput?.value) || 0;
                 const cond = parseFloat(condInput?.value) || 0;
 
-                
 
-                let price = priceOrig;
+
+                // Tomar precio ingresado manualmente
+                let price = parseFloat(preciounit?.value) || 0;
+
+                // Si está vacío o es 0 → usar precio original
+                if (price <= 0) {
+                    price = priceOrig;
+                }
 
                 if (cmay > 0 && qty >= cmay) {
                     if (cond === 0) {
@@ -410,8 +417,7 @@
                         const resto = qty % cmay;
                         price = (entero * pmay + resto * priceOrig) / qty;
                     }
-                } else {
-                }
+                } else {}
 
                 const iva = parseFloat(ivaInput.value) || 0;
 
@@ -438,7 +444,7 @@
 
 
         // --- Agregar Ítem ---
-        
+
         function addNewItem() {
             const newItem = document.createElement("div");
             newItem.classList.add("item", "px-2", "py-1");
@@ -627,7 +633,7 @@
                                 return {
                                     label: p.descripcion + " (" + p.stock + ")",
                                     value: p
-                                    .descripcion, // ✅ ESTO EVITA EL ERROR
+                                        .descripcion, // ✅ ESTO EVITA EL ERROR
                                     codigo: p.codigo,
                                     id: p.id
                                 };
