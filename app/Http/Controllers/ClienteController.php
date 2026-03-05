@@ -101,7 +101,7 @@ class ClienteController extends Controller
                 return redirect()->route('cliente.create')->with('error', 'No se pudo completar la operación.');
             }
         } else {
-            return view('sinpermiso.index');
+            return redirect()->route('sinpermiso');
         }
     }
 
@@ -140,7 +140,7 @@ class ClienteController extends Controller
                 $cliente->update($request->all());
                 return redirect()->route('cliente.index')->with('success', 'Operación exitosa');
             } catch (Exception $e) {
-                return view('clientes.index');
+                return redirect()->route('cliente.index')->with('error', 'no se pudo completar la operacion!!');
             }
         } else {
             return redirect()->route('sinpermiso');
