@@ -81,19 +81,25 @@
                         </div>
                         <hr>
 
-                        <div id="items">
-                            <div class="item" style="background-color: #343A40;">
-                                <div class="row ml-2">
-                                    <label for="" class="col-1" style="color: white;">ITEM</label>
-                                    <label for="" class="col-1" style="color: white;">UNDM</label>
-                                    <label for="" class="col-1" style="color: white;">CÓDIGO</label>
-                                    <label for="" class="col-1" style="color: white;">CANTIDAD</label>
-                                    <label for="" class="col-3" style="color: white;">DESCRIPCION</label>
-                                    <label for="" class="col-1" style="color: white;">PRECIO UNITARIO</label>
-                                    <label for="" class="col-1" style="color: white;">EXENTAS</label>
-                                    <label for="" class="col-1" style="color: white;">5%</label>
-                                    <label for="" class="col-1" style="color: white;">10%</label>
+                        <hr>
+
+                        <div class="table-responsive">
+                            <div id="items" style="min-width:1100px;">
+
+                                <div class="item" style="background-color: #343A40;">
+                                    <div class="row ml-2 flex-nowrap">
+                                        <label class="col-1 text-white">ITEM</label>
+                                        <label class="col-1 text-white">UNDM</label>
+                                        <label class="col-1 text-white">CÓDIGO</label>
+                                        <label class="col-1 text-white">CANTIDAD</label>
+                                        <label class="col-3 text-white">DESCRIPCIÓN</label>
+                                        <label class="col-1 text-white">PRECIO UNITARIO</label>
+                                        <label class="col-1 text-white">EXENTAS</label>
+                                        <label class="col-1 text-white">5%</label>
+                                        <label class="col-1 text-white">10%</label>
+                                    </div>
                                 </div>
+
                             </div>
                         </div>
 
@@ -117,7 +123,26 @@
     </div>
 
 @stop
+@section('css')
+<link rel="stylesheet" href="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.css') }}">
 
+<style>
+
+#items .row{
+    flex-wrap: nowrap;
+}
+
+#items .form-control{
+    min-width: 90px;
+}
+
+#items label{
+    font-size:13px;
+}
+
+</style>
+
+@endsection
 @push('js')
     <script src="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.js') }}"></script>
     <script>
@@ -250,7 +275,7 @@
             descripcion: null,
             id: null
         };
-        codSeleccion='';
+        codSeleccion = '';
         $(document).on('focus', '.autocomplete-producto', function() {
             $(this).autocomplete({
                 minlength: 0, // Cambiamos a 0 para que se dispare el autocompletado sin escribir
@@ -292,7 +317,7 @@
                 focus: function(event, ui) {
                     // Este evento se dispara al mover las flechas, actualizando el campo input
                     $(this).val(ui.item.label); // Mostrar el valor de la opción resaltada en el input
-                    codSeleccion=ui.item.value;
+                    codSeleccion = ui.item.value;
                     return false; // Evitar que jQuery autocomplete cambie el valor por defecto
                 },
                 autoFocus: true, // Activamos el enfoque automático para facilitar la navegación con teclado
@@ -306,7 +331,7 @@
                         $('input[name="cantidad[]"]').focus(); // Movemos el foco al campo de cantidad
                     } else {
                         // Si el campo no está vacío y se presionó Enter, usamos los valores guardados en las variables
-                        
+
                         traerCargarDatosProducto(codSeleccion, this);
 
                         // Opcional: Mover el foco al siguiente campo si es necesario
