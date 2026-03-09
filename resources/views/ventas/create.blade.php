@@ -450,34 +450,7 @@
             newItem.classList.add("item", "px-2", "py-1");
 
             newItem.innerHTML = `
-    <style>
-        .col-fixed {
-            flex: 0 0 auto !important;
-            min-width: 120px;
-            max-width: 120px;
-        }
-        .col-small {
-            flex: 0 0 auto !important;
-            min-width: 80px;
-            max-width: 80px;
-        }
-        .col-medium {
-            flex: 0 0 auto !important;
-            min-width: 140px;
-            max-width: 140px;
-        }
-        .col-large {
-            flex: 0 0 auto !important;
-            min-width: 240px;
-            max-width: 240px;
-        }
-        .col-small input,
-        .col-fixed input,
-        .col-medium input,
-        .col-large input {
-            width: 100% !important;
-        }
-    </style>
+    
 
     <div class="d-flex flex-nowrap align-items-center py-2" style="white-space: nowrap;">
 
