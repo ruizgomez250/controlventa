@@ -432,10 +432,10 @@ return [
         ],
         [
             'text'       => 'Gastos',
-            'icon'       => 'fas fa-shopping-bag',
+            'icon'       => 'fas fa-file-invoice-dollar',
             'icon_color' => 'cyan',
             'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-box"></i>',
+            'content' => '<i class="fas fa-file-invoice-dollar"></i>',
             'submenu'        => [
                 [
                     'text' => 'Lista de Gastos',
@@ -445,6 +445,23 @@ return [
                 [
                     'text' => 'Registrar Gastos',
                     'url'  => '/gasto/create',
+                ],
+            ],
+        ],
+        [
+            'text'       => 'Cheques',
+            'icon'       => 'fas fa-money-check-alt',
+            'icon_color' => 'green',
+            'classes' => 'custom-icon-box-black',
+            'content' => '<i class="fas fa-money-check-alt"></i>',
+            'submenu' => [
+                [
+                    'text' => 'Lista de Cheques',
+                    'url'  => '/cheques',
+                ],
+                [
+                    'text' => 'Registrar Cheque',
+                    'url'  => '/cheques/create',
                 ],
             ],
         ],

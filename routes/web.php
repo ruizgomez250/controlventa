@@ -10,6 +10,7 @@ use App\Http\Controllers\AutocompleteController;
 use App\Http\Controllers\CajaReporteController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ChangePasswordController;
+use App\Http\Controllers\ChequeController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\RolController;
@@ -99,6 +100,7 @@ Route::post('/autocomplete/obtenercodtemporal',  [ProductoController::class, 'de
 Route::get('/create', function () {
     return view('create');
 });
+Route::resource('cheques', ChequeController::class);
 //Route::post('/guardar-categoria', [CrearCategoriaComponent::class, 'store'])->name('guardar-categoria');
 
 
