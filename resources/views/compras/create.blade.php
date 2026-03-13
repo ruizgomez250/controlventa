@@ -86,16 +86,17 @@
                             </div>
 
                             <x-adminlte-input type="text" id="nrofactura" name="nrofactura" label="Factura Nº"
-                                fgroup-class="col-md-2" required />
+                                fgroup-class="col-md-2" value="0" required />
                             <x-adminlte-input type="text" id="timbrado" name="timbrado" label="Timbrado Nº"
-                                fgroup-class="col-md-2" required />
+                                fgroup-class="col-md-2" value="0" required />
 
                             <div class="col-md-3">
                                 <div class="card" style="margin-top: -18px">
                                     <div class="card-body">
                                         <label>CONDICIÓN DE COMPRA</label>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="condicion" value="CONTADO" checked>
+                                            <input class="form-check-input" type="radio" name="condicion" value="CONTADO"
+                                                checked>
                                             <label class="form-check-label">Contado</label>
                                         </div>
                                         <div class="form-check form-check-inline">
@@ -112,7 +113,8 @@
                         <x-adminlte-card title="Proveedor" class="text-primary mb-3">
                             <div class="row">
                                 <x-adminlte-input type="number" id="cod_proveedor" name="cod_proveedor"
-                                    onchange="cambiarCod()" placeholder="Código" label="COD." fgroup-class="col-md-1" required />
+                                    onchange="cambiarCod()" placeholder="Código" label="COD." fgroup-class="col-md-1"
+                                    required />
                                 <x-adminlte-select2 name="id_proveedor" id="id_proveedor" label="RAZON SOCIAL"
                                     data-placeholder="Seleccionar un proveedor..." fgroup-class="col-md-8"
                                     onchange="actualizarNumeroDocumento()">
@@ -166,7 +168,8 @@
                         <div class="row">
                             <div class="col-md-12 text-right">
                                 <a class="btn btn-danger mx-1" href="{{ route('compra.index') }}">Cancelar</a>
-                                <x-adminlte-button type="submit" label="Registrar" theme="primary" icon="fas fa-lg fa-save" />
+                                <x-adminlte-button type="submit" label="Registrar" theme="primary"
+                                    icon="fas fa-lg fa-save" />
                             </div>
                         </div>
                     </form>
@@ -196,18 +199,20 @@
             }
         });
 
-        document.querySelectorAll('input[name="fechaemision"], input[name="nrofactura"], input[name="timbrado"], input[name="cod_proveedor"]').forEach((input, index, array) => {
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (array[index + 1]) {
-                        array[index + 1].focus();
-                    } else {
-                        document.querySelector('input[name="codigo1[]"]')?.focus();
+        document.querySelectorAll(
+                'input[name="fechaemision"], input[name="nrofactura"], input[name="timbrado"], input[name="cod_proveedor"]')
+            .forEach((input, index, array) => {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (array[index + 1]) {
+                            array[index + 1].focus();
+                        } else {
+                            document.querySelector('input[name="codigo1[]"]')?.focus();
+                        }
                     }
-                }
+                });
             });
-        });
 
         function sanitizeInput(input) {
             let value = input.value;
@@ -220,7 +225,7 @@
             const cod = document.querySelector('input[name="cod_proveedor"]').value;
             const select = document.getElementById('id_proveedor');
             const options = select.options;
-            
+
             for (let i = 0; i < options.length; i++) {
                 if (options[i].value === cod) {
                     select.value = cod;
@@ -242,7 +247,7 @@
         function actualizarSumaTotal() {
             totalSum = 0;
             const rows = document.querySelectorAll('#items .item');
-            
+
             rows.forEach((item, index) => {
                 const qtyInput = item.querySelector('input[name="cantidad[]"]');
                 const priceInput = item.querySelector('input[name="precio[]"]');
@@ -306,6 +311,7 @@
                     <input type="hidden" name="cmayorista[]">
                     <input type="hidden" name="configuracionv[]">
                     <input type="hidden" name="precioorig[]">
+                    <input type="hidden" name="tipo_impuesto[]">
 
                     <div class="px-1 col-medium">
                         <input type="text" name="codigo1[]" class="form-control"
@@ -394,11 +400,14 @@
                     $.ajax({
                         url: "{{ route('obtenerproducto') }}",
                         dataType: "json",
-                        data: { term: request.term },
+                        data: {
+                            term: request.term
+                        },
                         success: function(data) {
                             response($.map(data, function(p) {
                                 return {
-                                    label: p.descripcion + ' (' + Math.trunc(p.stock) + ')',
+                                    label: p.descripcion + ' (' + Math.trunc(p.stock) +
+                                        ')',
                                     value: p.descripcion,
                                     codigo: p.codigo,
                                     id: p.id
@@ -449,7 +458,7 @@
                 if (response.producto) {
                     const p = response.producto;
                     const row = $(inputRef).closest('.d-flex');
-                    
+
                     row.find('input[name="descripcion[]"]').val(p.descripcion + ' (' + Math.trunc(p.stock) + ')');
                     row.find('input[name="codigo[]"]').val(p.id);
                     row.find('input[name="codigo1[]"]').val(p.codigo);
@@ -457,9 +466,12 @@
                     row.find('input[name="iva[]"]').val(p.impuesto);
                     row.find('input[name="precio[]"]').val(p.pventa);
                     row.find('input[name="precioorig[]"]').val(p.pventa);
+                    row.find('input[name="tipo_impuesto[]"]').val(p.id_impuesto);
+                    console.log(row.find('input[name="tipo_impuesto[]"]').val());
+                    
                     row.find('input[name="pmayorista[]"]').val(p.pmayorista || 0);
                     row.find('input[name="cmayorista[]"]').val(p.cmayorista || 0);
-                    
+
                     const config = response.configuracion || {};
                     row.find('input[name="configuracionv[]"]').val(config.estado || 0);
 
@@ -485,6 +497,13 @@
         // Inicializar primer ítem
         document.addEventListener("DOMContentLoaded", function() {
             addNewItem();
+            // 🔵 PROVEEDOR POR DEFECTO
+            const proveedorDefault = 1; // <-- ID del proveedor que quieres cargar
+
+            $('#id_proveedor').val(proveedorDefault).trigger('change.select2');
+            document.getElementById('cod_proveedor').value = proveedorDefault;
+
+            actualizarNumeroDocumento();
         });
     </script>
 @endpush

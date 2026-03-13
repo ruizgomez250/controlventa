@@ -84,7 +84,7 @@ class CompraController extends Controller
                 $descripcion = $request->input('descripcion');
                 $idProductos = $request->input('codigo');
                 $precioU = $request->input('precio');
-                $tipoImpuesto = $request->input('iva');
+                $tipoImpuesto = $request->input('tipo_impuesto');
                 $total = 0;
 
                 for ($i = 0; $i < $contador; $i++) {
@@ -125,7 +125,7 @@ class CompraController extends Controller
                 DB::commit();
                 return redirect()->route('compra.index')->with('success', 'La compra se ha registrado correctamente.');
             } catch (Exception $e) {
-
+                dd($e);
                 DB::rollBack();
                 Log::error($e->getMessage());
                 return redirect()->route('compra.index')->with('error', 'Ha ocurrido un error al registrar la compra. Por favor, inténtelo de nuevo.');

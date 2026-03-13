@@ -72,6 +72,7 @@ class VentaController extends Controller
 
     public function store(Request $request)
     {
+        
         $tienePermiso = $this->permisoService->verificarPermiso('Venta', 'crear');
         if (!$tienePermiso) {
             return redirect()->route('sinpermiso');
@@ -183,8 +184,8 @@ class VentaController extends Controller
                 'ultimoId' => $ultimoId,
                 'estadov'  => $estadov,
             ]);
-        } catch (\Exception $e) {
-
+        } catch (Exception $e) {
+            dd($e);
             DB::rollBack();
             Log::error('ERROR VENTA: ' . $e->getMessage());
 
