@@ -54,7 +54,7 @@
                                             data-compra-id="{{ $compra->id }}">
                                             <i class="fa fa-eye"></i>
                                         </a> --}}
-                                        @if ($compra->estadocompra->descripcion == 'Activo')
+                                        @if ($compra->id_estado == 1)
                                             <button type="button" class="btn btn-sm btn-outline-secondary"
                                                 id="delete-button" onclick="borrarCompraCombustible({{ $compra->id }})">
                                                 <i class="fa fa-sm fa-fw fa-trash"></i>
