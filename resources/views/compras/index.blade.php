@@ -46,9 +46,8 @@
                                     <td>{{ $compra->condicion_de_compra }}</td>
                                     <td>{{ number_format($compra->total_compra, 0, '.', ',') }}</td>
                                     <td>{{ $compra->usuario->name }}</td>
-                                    <td
-                                        class="{{ $compra->estadocompra->descripcion == 'Activo' ? 'text-success' : 'text-danger' }}">
-                                        {{ $compra->estadocompra->descripcion }}
+                                    <td class="{{ $compra->id_estado == 1 ? 'text-success' : 'text-danger' }}">
+                                        {{ $compra->id_estado == 1 ? 'Activo' : 'Anulado' }}
                                     </td>
                                     <td>
                                         {{-- <a href="#" class="btn btn-sm btn-outline-secondary ver-detalle-btn"
