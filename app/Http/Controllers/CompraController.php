@@ -32,7 +32,7 @@ class CompraController extends Controller
             $heads = [
                 'ID', 'Fecha', 'Nro Factura', 'Timbrado', 'Proveedor', 'Condición de Compra', 'Monto Total', 'Usuario', 'Estado', 'Acción'
             ];
-            $cabecera = Compra_cab::with('proveedor', 'usuario', 'estadocompra')->get();
+            $cabecera = Compra_cab::with('proveedor', 'usuario')->get();
             return view('compras.index', compact('cabecera', 'heads'));
         } else {
             return view('sinpermiso.index');
