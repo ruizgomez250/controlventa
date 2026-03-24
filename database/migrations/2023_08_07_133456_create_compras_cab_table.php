@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('id_proveedor')->constrained('proveedores');            
             $table->string('condicion_de_compra',15); //compra contado credito
             $table->decimal('total_compra')->defatul(0);
-            $table->foreignId('id_estado')->constrained('opciones'); 
+            $table->integer('id_estado'); 
             $table->foreignId('id_usuario')->constrained('users'); 
             $table->timestamps();
         });
