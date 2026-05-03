@@ -382,6 +382,7 @@
 
 
                 const qtyInput = item.querySelector('input[name="cantidad[]"]');
+                const preciounit = item.querySelector('input[name="precio[]"]');
                 const priceOrigInput = item.querySelector('input[name="precioorig[]"]');
                 const cmayInput = item.querySelector('input[name="cmayorista[]"]');
                 const pmayInput = item.querySelector('input[name="pmayorista[]"]');
@@ -398,9 +399,15 @@
                 const pmay = parseFloat(pmayInput?.value) || 0;
                 const cond = parseFloat(condInput?.value) || 0;
 
-                
 
-                let price = priceOrig;
+
+                // Tomar precio ingresado manualmente
+                let price = parseFloat(preciounit?.value) || 0;
+
+                // Si está vacío o es 0 → usar precio original
+                if (price <= 0) {
+                    price = priceOrig;
+                }
 
                 if (cmay > 0 && qty >= cmay) {
                     if (cond === 0) {
@@ -410,8 +417,7 @@
                         const resto = qty % cmay;
                         price = (entero * pmay + resto * priceOrig) / qty;
                     }
-                } else {
-                }
+                } else {}
 
                 const iva = parseFloat(ivaInput.value) || 0;
 
@@ -438,40 +444,13 @@
 
 
         // --- Agregar Ítem ---
-        
+
         function addNewItem() {
             const newItem = document.createElement("div");
             newItem.classList.add("item", "px-2", "py-1");
 
             newItem.innerHTML = `
-    <style>
-        .col-fixed {
-            flex: 0 0 auto !important;
-            min-width: 120px;
-            max-width: 120px;
-        }
-        .col-small {
-            flex: 0 0 auto !important;
-            min-width: 80px;
-            max-width: 80px;
-        }
-        .col-medium {
-            flex: 0 0 auto !important;
-            min-width: 140px;
-            max-width: 140px;
-        }
-        .col-large {
-            flex: 0 0 auto !important;
-            min-width: 240px;
-            max-width: 240px;
-        }
-        .col-small input,
-        .col-fixed input,
-        .col-medium input,
-        .col-large input {
-            width: 100% !important;
-        }
-    </style>
+    
 
     <div class="d-flex flex-nowrap align-items-center py-2" style="white-space: nowrap;">
 
@@ -627,7 +606,7 @@
                                 return {
                                     label: p.descripcion + " (" + p.stock + ")",
                                     value: p
-                                    .descripcion, // ✅ ESTO EVITA EL ERROR
+                                        .descripcion, // ✅ ESTO EVITA EL ERROR
                                     codigo: p.codigo,
                                     id: p.id
                                 };

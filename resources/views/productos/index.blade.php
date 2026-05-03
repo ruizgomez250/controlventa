@@ -27,6 +27,7 @@
                         hoverable with-buttons>
                         @foreach ($producto as $row)
                             <tr>
+<<<<<<< HEAD
                                <td>
                                     @if ($row->imagen)
                                         <img src="{{ asset('storage/' . $row->imagen) }}" 
@@ -40,13 +41,16 @@
                                             style="width: 70px; height: 70px; object-fit: cover;">
                                     @endif
                                 </td>
+=======
+                               <td>{{ $loop->iteration }}</td>
+>>>>>>> sisventa
                                 <td>{{  $row->unidaddemedida->descripcion }}</td>
                                 <td>{{ $row->descripcion }}</td>
                                 <td>{{ $row->categoriaproducto?->descripcion }}</td>
                                 <td>{{ $row->stock  }}</td>
                                 <td>{{ $row->pcosto }}</td>
                                 <td>{{ $row->pventa }}</td>
-                                <td>{{ $row->impuesto }}</td>
+                                <td>{{ number_format($row->impuesto->valor, 2, ',', '.') }} %</td>
                                 <td>{{ ($row->estado === 0) ? "Inactivo" : "Activo" }}</td>
                                 <td>{{ $row->cmayorista}}</td>
                                 <td>{{ $row->pmayorista}}</td>

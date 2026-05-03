@@ -299,6 +299,23 @@ return [
 
     'menu' => [
         ['header' => 'EasyStock'],
+        [
+            'text'       => 'Impuestos',
+            'icon'       => 'fas fa-id-card',
+            'icon_color' => 'warning',
+            'classes' => 'custom-icon-box-black',
+            'content' => '<i class="fas fa-box"></i>',
+            'submenu'        => [
+                [
+                    'text' => 'Lista de Impuestos',
+                    'url'  => '/impuestos',
+                ],
+                [
+                    'text' => 'Registrar Impuestos',
+                    'url'  => '/impuestos/create',
+                ],
+            ],
+        ],
 
         [
             'text'       => 'Clientes',
@@ -354,7 +371,7 @@ return [
                     'url'  => '/producto/create',
                 ],
                 [
-                    'text' => 'QR de Productos',
+                    'text' => 'QR o Codigo de Barras',
                     'url'  => 'qrproductover',
                 ],
             ],
@@ -418,10 +435,10 @@ return [
         ],
         [
             'text'       => 'Gastos',
-            'icon'       => 'fas fa-shopping-bag',
+            'icon'       => 'fas fa-file-invoice-dollar',
             'icon_color' => 'cyan',
             'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-box"></i>',
+            'content' => '<i class="fas fa-file-invoice-dollar"></i>',
             'submenu'        => [
                 [
                     'text' => 'Lista de Gastos',
@@ -431,6 +448,23 @@ return [
                 [
                     'text' => 'Registrar Gastos',
                     'url'  => '/gasto/create',
+                ],
+            ],
+        ],
+        [
+            'text'       => 'Cheques',
+            'icon'       => 'fas fa-money-check-alt',
+            'icon_color' => 'green',
+            'classes' => 'custom-icon-box-black',
+            'content' => '<i class="fas fa-money-check-alt"></i>',
+            'submenu' => [
+                [
+                    'text' => 'Lista de Cheques',
+                    'url'  => '/cheques',
+                ],
+                [
+                    'text' => 'Registrar Cheque',
+                    'url'  => '/cheques/create',
                 ],
             ],
         ],
@@ -454,7 +488,7 @@ return [
             ],
         ],
         [
-            'text'       => 'Reportes Caja',
+            'text'       => 'Reportes',
             'icon'       => 'fas fa-list',
             'icon_color' => 'primary',
             'classes' => 'custom-icon-box-black',
@@ -464,6 +498,11 @@ return [
                     'text' => 'Cobros por Fecha',
                     'url'  => '/cajareporte/create',
 
+                ],
+                [
+                    'text' => 'Reporte de Ventas por Estado',
+                    'url'  => '/reportes/vendidos',
+                    'icon' => 'fas fa-file-invoice',
                 ],
             ],
         ],

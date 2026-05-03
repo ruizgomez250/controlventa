@@ -1,12 +1,71 @@
 @extends('adminlte::page')
 
-
-
 @section('content_header')
     <h1 class="m-0 custom-heading">Registrar Compra</h1>
 @stop
+
 @section('css')
     <link rel="stylesheet" href="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.css') }}">
+    <style>
+        /* 🔥 Contenedor que obliga al scroll sí o sí */
+        .scroll-area {
+            display: block !important;
+            width: 100% !important;
+            overflow-x: auto !important;
+            overflow-y: hidden;
+            white-space: nowrap !important;
+            min-width: 1200px;
+            border: 1px solid #ccc;
+        }
+
+        /* 🔥 Columnas fijas que no se achican */
+        .col-small {
+            width: 80px;
+            min-width: 80px;
+            max-width: 80px;
+            text-align: center;
+        }
+
+        .col-fixed {
+            width: 120px;
+            min-width: 120px;
+            max-width: 120px;
+            text-align: center;
+        }
+
+        .col-medium {
+            width: 140px;
+            min-width: 140px;
+            max-width: 140px;
+            text-align: center;
+        }
+
+        .col-large {
+            width: 240px;
+            min-width: 240px;
+            max-width: 240px;
+            text-align: center;
+        }
+
+        .header-row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: center;
+            background: #000;
+            color: #fff;
+            font-weight: bold;
+            padding: 10px 0;
+        }
+
+        /* Ajustes para los inputs dentro de las columnas */
+        .scroll-area .form-control {
+            width: 100%;
+            height: 38px;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -18,242 +77,325 @@
                         onkeypress="return event.keyCode != 13;">
                         @csrf
                         @method('POST')
-                        {{-- 'id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'id_estado','pcosto', 'pventa', 'observacion' --}}
 
-                        <div class="row">
-                            {{-- With Label --}}
-                            @php
-                                $config1 = ['format' => 'DD-MM-YYYY'];
-                            @endphp
-                            <div class="form-group">
+                        <div class="row mb-3">
+                            <div class="form-group col-md-2">
                                 <label for="fechaemision">FECHA DE EMISIÓN</label>
                                 <input type="date" class="form-control" id="fechaemision" name="fechaemision"
                                     value="{{ date('Y-m-d') }}" required>
                             </div>
 
-
                             <x-adminlte-input type="text" id="nrofactura" name="nrofactura" label="Factura Nº"
-                                fgroup-class="col-md-2" required />
+                                fgroup-class="col-md-2" value="0" required />
                             <x-adminlte-input type="text" id="timbrado" name="timbrado" label="Timbrado Nº"
-                                fgroup-class="col-md-2" required />
-                            <div class="card" style="width: 14rem;margin-top: -18px">
-                                <div class="card-body">
-                                    <label for="">CONDICIÓN DE COMPRA</label>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="condicion" id="inlineRadio1"
-                                            value="CONTADO" checked>
-                                        <label class="form-check-label" for="inlineRadio1">Contado</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="condicion" id="inlineRadio2"
-                                            value="CREDITO">
-                                        <label class="form-check-label" for="inlineRadio2">Crédito</label>
+                                fgroup-class="col-md-2" value="0" required />
+
+                            <div class="col-md-3">
+                                <div class="card" style="margin-top: -18px">
+                                    <div class="card-body">
+                                        <label>CONDICIÓN DE COMPRA</label>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="condicion" value="CONTADO"
+                                                checked>
+                                            <label class="form-check-label">Contado</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="condicion" value="CREDITO">
+                                            <label class="form-check-label">Crédito</label>
+                                        </div>
                                     </div>
                                 </div>
-
                             </div>
+
                             <x-adminlte-input type="hidden" id="proveedor_id" name="proveedor_id" />
                         </div>
-                        <div class="row">
-                            <x-adminlte-card title="Proveedor" class="text-primary">
 
-                                <div class="row">
-                                    <x-adminlte-input type="number" id="cod_proveedor" name="cod_proveedor"
-                                        onchange="cambiarCod()" placeholder="Codigo" label="COD." fgroup-class="col-md-1"
-                                        required />
-                                    <x-adminlte-select2 name="id_proveedor" id="id_proveedor" label="RAZON SOCIAL"
-                                        data-placeholder="Seleccionar un proveedor..." fgroup-class="col-md-8"
-                                        onchange="actualizarNumeroDocumento()">
-                                        <x-slot name="prependSlot">
-                                            <div class="input-group-text bg-gradient-primary">
-                                                <i class="fas fa-truck"></i>
-                                            </div>
-                                        </x-slot>
-                                        @foreach ($proveedor as $item)
-                                            <option value={{ $item->id }} data-ruc="{{ $item->ruc }}">
-                                                {{ $item->razonsocial }}</option>
-                                        @endforeach
-                                    </x-adminlte-select2>
-                                    <x-adminlte-input type="text" id="numero_documento" name="numero_documento"
-                                        placeholder="RUC" label="RUC" readonly fgroup-class="col-md-2" />
-                                </div>
-                            </x-adminlte-card>
-                        </div>
+                        <x-adminlte-card title="Proveedor" class="text-primary mb-3">
+                            <div class="row">
+                                <x-adminlte-input type="number" id="cod_proveedor" name="cod_proveedor"
+                                    onchange="cambiarCod()" placeholder="Código" label="COD." fgroup-class="col-md-1"
+                                    required />
+                                <x-adminlte-select2 name="id_proveedor" id="id_proveedor" label="RAZON SOCIAL"
+                                    data-placeholder="Seleccionar un proveedor..." fgroup-class="col-md-8"
+                                    onchange="actualizarNumeroDocumento()">
+                                    <x-slot name="prependSlot">
+                                        <div class="input-group-text bg-gradient-primary">
+                                            <i class="fas fa-truck"></i>
+                                        </div>
+                                    </x-slot>
+                                    @foreach ($proveedor as $item)
+                                        <option value="{{ $item->id }}" data-ruc="{{ $item->ruc }}">
+                                            {{ $item->razonsocial }}</option>
+                                    @endforeach
+                                </x-adminlte-select2>
+                                <x-adminlte-input type="text" id="numero_documento" name="numero_documento"
+                                    placeholder="RUC" label="RUC" readonly fgroup-class="col-md-2" />
+                            </div>
+                        </x-adminlte-card>
+
                         <hr>
 
-                        <div id="items">
-                            <div class="item" style="background-color: #343A40;">
-                                <div class="row ml-2">
-                                    <label for="" class="col-1" style="color: white;">ITEM</label>
-                                    <label for="" class="col-1" style="color: white;">UNDM</label>
-                                    <label for="" class="col-1" style="color: white;">CÓDIGO</label>
-                                    <label for="" class="col-1" style="color: white;">CANTIDAD</label>
-                                    <label for="" class="col-3" style="color: white;">DESCRIPCION</label>
-                                    <label for="" class="col-1" style="color: white;">PRECIO UNITARIO</label>
-                                    <label for="" class="col-1" style="color: white;">EXENTAS</label>
-                                    <label for="" class="col-1" style="color: white;">5%</label>
-                                    <label for="" class="col-1" style="color: white;">10%</label>
-                                </div>
+                        <!-- 🔥 CONTENEDOR QUE GARANTIZA EL SCROLL -->
+                        <div class="scroll-area">
+                            <div class="header-row">
+                                <div class="col-small">ITEM</div>
+                                <div class="col-small">UNDM</div>
+                                <div class="col-medium">CÓDIGO</div>
+                                <div class="col-fixed">CANTIDAD</div>
+                                <div class="col-large">DESCRIPCIÓN</div>
+                                <div class="col-medium">PRECIO UNIT.</div>
+                                <div class="col-fixed">EXENTAS</div>
+                                <div class="col-small">5%</div>
+                                <div class="col-small">10%</div>
+                                <div class="col-small"></div>
+                            </div>
+
+                            <div id="items"></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <button type="button" class="btn btn-primary" onclick="addNewItem()">Agregar Ítem</button>
                             </div>
                         </div>
 
-                        <button onclick="addNewItem()" class="btn btn-primary mt-2" type="button">Agregar Ítem</button>
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <h5>Suma Total: <span id="total-sum">0.00</span></h5>
+                            </div>
+                        </div>
 
-                        <!-- Agrega este elemento para mostrar la suma total -->
-                        <div>Suma Total: <span id="total-sum">0</span></div>
                         <div class="row">
-                            <div class="form-group col-md-12">
-                                <a class="btn btn-danger mx-1" style="float: right;"
-                                    href="{{ route('compra.index') }}">Cancelar</a>
-                                <x-adminlte-button class="btn-group" style="float: right;" type="submit"
-                                    label="Registrar" theme="primary" icon="fas fa-lg fa-save" />
+                            <div class="col-md-12 text-right">
+                                <a class="btn btn-danger mx-1" href="{{ route('compra.index') }}">Cancelar</a>
+                                <x-adminlte-button type="submit" label="Registrar" theme="primary"
+                                    icon="fas fa-lg fa-save" />
                             </div>
                         </div>
                     </form>
-
                 </div>
             </div>
         </div>
     </div>
-
 @stop
 
 @push('js')
     <script src="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.js') }}"></script>
     <script>
-        $('input[name="fechaemision"]').on('keydown', function(e) {
-            // Verifica si la tecla presionada es "Enter"
-            if (e.key === 'Enter') {
+        const itemsContainer = document.getElementById('items');
+        const totalSumElement = document.getElementById('total-sum');
+        let totalSum = 0;
+        let codSeleccion = '';
+
+        // Navegación con teclado
+        document.addEventListener('keydown', function(e) {
+            if (e.altKey && e.shiftKey && e.key === 'C') {
                 e.preventDefault();
-                // Enfoca en el campo de fecha
-                $('input[name="nrofactura"]').focus();
+                document.querySelector('input[name="codigo1[]"]')?.focus();
+            }
+            if (e.altKey && e.shiftKey && e.key === 'F') {
+                e.preventDefault();
+                document.getElementById('fechaemision').focus();
             }
         });
-        $('input[name="nrofactura"]').on('keydown', function(e) {
-            // Verifica si la tecla presionada es "Enter"
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                // Enfoca en el campo de fecha
-                $('input[name="timbrado"]').focus();
-            }
-        });
-        $('input[name="timbrado"]').on('keydown', function(e) {
-            // Verifica si la tecla presionada es "Enter"
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                // Enfoca en el campo de fecha
-                $('input[name="cod_proveedor"]').focus();
-            }
-        });
-        $('input[name="cod_proveedor"]').on('keydown', function(e) {
-            // Verifica si la tecla presionada es "Enter"
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                // Enfoca en el campo de fecha
-                $('input[name="codigo1[]"]').focus();
-            }
-        });
-        cambiarCod();
+
+        document.querySelectorAll(
+                'input[name="fechaemision"], input[name="nrofactura"], input[name="timbrado"], input[name="cod_proveedor"]')
+            .forEach((input, index, array) => {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (array[index + 1]) {
+                            array[index + 1].focus();
+                        } else {
+                            document.querySelector('input[name="codigo1[]"]')?.focus();
+                        }
+                    }
+                });
+            });
 
         function sanitizeInput(input) {
-            // Obtén el valor actual del campo de entrada
             let value = input.value;
-
-            // Elimina cualquier carácter que no sea un número o un punto decimal
-            value = value.replace(/[^0-9.]/g, '');
-
-            // Reemplaza comas por puntos para números decimales
-            value = value.replace(/,/g, '.');
-
-            // Actualiza el valor del campo de entrada
+            value = value.replace(/[^0-9.]/g, '').replace(/,/g, '.');
             input.value = value;
             actualizarSumaTotal();
         }
 
         function cambiarCod() {
-            // Obtener el valor del campo "cod_proveedor"
-            var nuevoCod = $('input[name="cod_proveedor"]').val();
+            const cod = document.querySelector('input[name="cod_proveedor"]').value;
+            const select = document.getElementById('id_proveedor');
+            const options = select.options;
 
-            // Buscar la opción en el select con id "id_proveedor" que tenga el nuevo código
-            var select2 = document.getElementById("id_proveedor");
-            var options = select2.options;
-
-            for (var i = 0; i < options.length; i++) {
-                var option = options[i];
-                var dataCod = option.value; // Suponiendo que el valor de la opción es el código a buscar
-
-                // Verificar si encontramos una coincidencia
-                if (dataCod === nuevoCod) {
-                    // Cambiar el valor seleccionado en el select
-                    select2.value = option.value;
-                    $('#id_proveedor').val(dataCod).trigger('change.select2');
-                    // Llamar a la función actualizarNumeroDocumento
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === cod) {
+                    select.value = cod;
+                    $('#id_proveedor').val(cod).trigger('change.select2');
                     actualizarNumeroDocumento();
-                    return; // Salir de la función después de encontrar una coincidencia
+                    return;
                 }
             }
-
-            // Si no se encontró una coincidencia, llamar a la función actualizarNumeroDocumento
             actualizarNumeroDocumento();
         }
 
         function actualizarNumeroDocumento() {
-            var select2 = document.getElementById("id_proveedor");
-            var numeroDocumentoInput = document.getElementById("numero_documento");
-            var selectedOption = select2.options[select2.selectedIndex];
-            var numeroDocumento = selectedOption.getAttribute("data-ruc");
-            numeroDocumentoInput.value = numeroDocumento;
-            var cod_proveedor = selectedOption.value;
-            document.getElementById("cod_proveedor").value = cod_proveedor;
+            const select = document.getElementById('id_proveedor');
+            const selectedOption = select.options[select.selectedIndex];
+            document.getElementById('numero_documento').value = selectedOption.getAttribute('data-ruc');
+            document.getElementById('cod_proveedor').value = selectedOption.value;
         }
-        $('#search').autocomplete({
-            minlength: 0,
-            source: function(request, response) {
-                $.ajax({
-                    url: "{{ route('obtenerproveedor') }}",
-                    contentType: "application/json",
-                    dataType: "json",
-                    data: {
-                        term: request.term
-                    },
-                    success: function(data) {
-                        var filteredData = Object.keys(data).map(function(key) {
-                            return {
-                                label: data[key].razonsocial, // Atributo que deseas mostrar
-                                value: data[key].razonsocial, // Valor seleccionado
-                                ruc: data[key].ruc,
-                                celular: data[key].celular,
 
-                                id: data[key].id,
-                            };
-                        });
-                        response(filteredData);
-                    },
-                    response: function(event, ui) {
-                        if (!ui.content.length) {
-                            $('#ruc').val('');
-                            console.log('hola');
-                        }
+        function actualizarSumaTotal() {
+            totalSum = 0;
+            const rows = document.querySelectorAll('#items .item');
+
+            rows.forEach((item, index) => {
+                const qtyInput = item.querySelector('input[name="cantidad[]"]');
+                const priceInput = item.querySelector('input[name="precio[]"]');
+                const ivaInput = item.querySelector('input[name="iva[]"]');
+                const itemInput = item.querySelector('input[name="item[]"]');
+                const exentaInput = item.querySelector('input[name="exenta[]"]');
+                const cincoInput = item.querySelector('input[name="cinco[]"]');
+                const diezInput = item.querySelector('input[name="diez[]"]');
+
+                if (!qtyInput || !priceInput || !ivaInput) return;
+
+                const qty = parseFloat(qtyInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const iva = parseFloat(ivaInput.value) || 0;
+                const subtotal = qty * price;
+
+                // Actualizar número de ítem
+                if (itemInput) itemInput.value = index + 1;
+
+                // Calcular según IVA
+                if (exentaInput && cincoInput && diezInput) {
+                    if (iva === 0) {
+                        exentaInput.value = subtotal.toFixed(2);
+                        cincoInput.value = '0';
+                        diezInput.value = '0';
+                    } else if (iva === 5) {
+                        exentaInput.value = '0';
+                        cincoInput.value = subtotal.toFixed(2);
+                        diezInput.value = '0';
+                    } else if (iva === 10) {
+                        exentaInput.value = '0';
+                        cincoInput.value = '0';
+                        diezInput.value = subtotal.toFixed(2);
                     }
-                });
-            },
-            select: function(event, ui) {
-                $('#ruc').val(ui.item.ruc);
-                $('#proveedor_id').val(ui.item.id);
+                }
 
-            }
-        });
+                totalSum += subtotal;
+            });
 
-        // Variables globales para almacenar los datos del producto seleccionado
-        let productoSeleccionado = {
-            codigo: null,
-            descripcion: null,
-            id: null
-        };
-        codSeleccion='';
-        $(document).on('focus', '.autocomplete-producto', function() {
-            $(this).autocomplete({
-                minlength: 0, // Cambiamos a 0 para que se dispare el autocompletado sin escribir
+            totalSumElement.textContent = totalSum.toFixed(2);
+        }
+
+        function addNewItem() {
+            const newItem = document.createElement("div");
+            newItem.classList.add("item", "px-2", "py-1");
+
+            newItem.innerHTML = `
+                <div class="d-flex flex-nowrap align-items-center py-2" style="white-space: nowrap;">
+                    <div class="px-1 col-small">
+                        <input type="number" name="item[]" class="form-control" value="1" readonly>
+                    </div>
+                    
+                    <div class="px-1 col-small">
+                        <input type="text" name="unidad[]" class="form-control" value="UNIDAD" required>
+                    </div>
+
+                    <input type="hidden" name="iva[]">
+                    <input type="hidden" name="codigo[]">
+                    <input type="hidden" name="productoid[]">
+                    <input type="hidden" name="pmayorista[]">
+                    <input type="hidden" name="cmayorista[]">
+                    <input type="hidden" name="configuracionv[]">
+                    <input type="hidden" name="precioorig[]">
+                    <input type="hidden" name="tipo_impuesto[]">
+
+                    <div class="px-1 col-medium">
+                        <input type="text" name="codigo1[]" class="form-control"
+                               placeholder="Código" onchange="cambiarDescripcion(this)" required>
+                    </div>
+
+                    <div class="px-1 col-fixed">
+                        <input type="text" name="cantidad[]" class="form-control"
+                               placeholder="Cantidad" required step="any" oninput="sanitizeInput(this)">
+                    </div>
+
+                    <div class="px-1 col-large">
+                        <input type="text" name="descripcion[]" class="autocomplete-producto form-control"
+                               placeholder="Descripción" required style="font-size: 12px;">
+                    </div>
+
+                    <div class="px-1 col-medium">
+                        <input type="text" name="precio[]" class="form-control"
+                               placeholder="Precio" required oninput="sanitizeInput(this)">
+                    </div>
+
+                    <div class="px-1 col-fixed">
+                        <input type="text" name="exenta[]" class="form-control"
+                               value="0" placeholder="Exenta" disabled required oninput="sanitizeInput(this)">
+                    </div>
+
+                    <div class="px-1 col-small">
+                        <input type="text" name="cinco[]" class="form-control"
+                               value="0" placeholder="5%" disabled required oninput="sanitizeInput(this)">
+                    </div>
+
+                    <div class="px-1 col-small">
+                        <input type="text" name="diez[]" class="form-control"
+                               value="0" placeholder="10%" disabled required oninput="sanitizeInput(this)">
+                    </div>
+
+                    <div class="px-1 col-small">
+                        <button type="button"
+                            class="btn btn-outline-danger btn-sm w-100"
+                            onclick="this.closest('.item').remove(); actualizarSumaTotal();">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            itemsContainer.appendChild(newItem);
+
+            // Configurar eventos de teclado
+            const codigoInput = newItem.querySelector('input[name="codigo1[]"]');
+            codigoInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    newItem.querySelector('input[name="cantidad[]"]').focus();
+                }
+            });
+
+            const cantidadInput = newItem.querySelector('input[name="cantidad[]"]');
+            cantidadInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    newItem.querySelector('input[name="descripcion[]"]').focus();
+                }
+            });
+
+            const descripcionInput = newItem.querySelector('input[name="descripcion[]"]');
+            descripcionInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    newItem.querySelector('input[name="precio[]"]').focus();
+                }
+            });
+
+            const precioInput = newItem.querySelector('input[name="precio[]"]');
+            precioInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addNewItem();
+                }
+            });
+
+            // Configurar autocomplete
+            $(descripcionInput).autocomplete({
+                minLength: 0,
                 source: function(request, response) {
                     $.ajax({
                         url: "{{ route('obtenerproducto') }}",
@@ -262,399 +404,106 @@
                             term: request.term
                         },
                         success: function(data) {
-                            var filteredData = Object.keys(data).map(function(key) {
+                            response($.map(data, function(p) {
                                 return {
-                                    label: data[key].descripcion + ' (' + data[key]
-                                        .stock + ')',
-                                    value: data[key].codigo,
-                                    codigo: data[key].codigo,
-                                    id: data[key].id,
+                                    label: p.descripcion + ' (' + Math.trunc(p.stock) +
+                                        ')',
+                                    value: p.descripcion,
+                                    codigo: p.codigo,
+                                    id: p.id
                                 };
-                            });
-
-                            response(filteredData);
+                            }));
                         }
                     });
                 },
                 select: function(event, ui) {
-
-                    // Al seleccionar, guardamos los datos del producto en las variables globales
-                    productoSeleccionado.codigo = ui.item.codigo;
-                    productoSeleccionado.descripcion = ui.item.value;
-                    productoSeleccionado.id = ui.item.id;
-
-                    // Llamar a la función para cargar datos del producto
                     traerCargarDatosProducto(ui.item.codigo, this);
-
-                    // Mover el foco al campo de cantidad
-                    $('input[name="cantidad[]"]').focus();
+                    $(this).closest('.d-flex').find('input[name="cantidad[]"]').focus();
                 },
                 focus: function(event, ui) {
-                    // Este evento se dispara al mover las flechas, actualizando el campo input
-                    $(this).val(ui.item.label); // Mostrar el valor de la opción resaltada en el input
-                    codSeleccion=ui.item.value;
-                    return false; // Evitar que jQuery autocomplete cambie el valor por defecto
+                    $(this).val(ui.item.label);
+                    codSeleccion = ui.item.codigo;
+                    return false;
                 },
-                autoFocus: true, // Activamos el enfoque automático para facilitar la navegación con teclado
-
-            }).keydown(function(event) {
-                // Capturamos el evento keydown para verificar si se presionó Enter
-                if (event.keyCode === 13) {
-                    // Si se presionó Enter
-                    if ($(this).val() === "") {
-                        // Si el campo de autocompletar está vacío
-                        $('input[name="cantidad[]"]').focus(); // Movemos el foco al campo de cantidad
-                    } else {
-                        // Si el campo no está vacío y se presionó Enter, usamos los valores guardados en las variables
-                        
-                        traerCargarDatosProducto(codSeleccion, this);
-
-                        // Opcional: Mover el foco al siguiente campo si es necesario
-                        $('input[name="cantidad[]"]').focus();
-                    }
-                }
-            });
-        });
-
-
-
-
-
-
-
-        // Script para agregar y eliminar dinámicamente ítems de compra
-        const itemsContainer = document.getElementById('items');
-        const totalSumElement = document.getElementById('total-sum');
-        let totalSum = 0;
-        addNewItem();
-        // Función para agregar un nuevo ítem de compra
-        function addNewItem() {
-
-
-            const newItem = document.createElement("div");
-            newItem.classList.add("item");
-            borrar =
-                '<button class="btn-remove btn btn-outline-danger ml-2" type="button"><i class="fa fa-trash" aria-hidden="true"></i></button>';
-            exent =
-                '<input type="text" name="exenta[]" value="0" class="form-control col-1" placeholder="Exenta" required oninput="sanitizeInput(this)">';
-            cinc =
-                '<input type="text" name="cinco[]" value="0" class="form-control col-1" placeholder="iva 5%" required oninput="sanitizeInput(this)">';
-            die =
-                '<input type="text" name="diez[]" value="0" class="form-control col-1" placeholder="iva 10%" required oninput="sanitizeInput(this)">';
-
-
-            newItem.innerHTML = `
-                <div class="row ml-1">
-                                    <input type="number" name="item[]" class="codigo_id form-control col-1"
-                                    placeholder="Código" value="1" required readonly>
-                                    <input type="text" name="unidad[]" value="UNIDAD" class="codigo_id form-control col-1"
-                                    placeholder="U. medida" value="" required >
-                                    <input type="hidden" name="iva[]" class="codigo_id form-control col-2"
-                                    placeholder="Código" value="" required readonly>
-                                    <input type="hidden" name="codigo[]" class="codigo_id form-control col-1" required>
-                                    <input type="text" name="codigo1[]" class="codigo_id form-control col-1"
-                                    placeholder="Código" onchange="cambiarDescripcion(this)" value="" required>
-                                    <input type="text" name="cantidad[]" step="any" class="form-control col-1"
-                                    placeholder="Cantidad"  value =""  required oninput="sanitizeInput(this)" >
-                                    <input type="text" name="descripcion[]" 
-                                    class="autocomplete-producto form-control col-3"
-                                    placeholder="Descripcion" 
-                                    value="" 
-                                    required 
-                                    style="font-size: 12px;" 
-                                    data-codigo="" 
-                                    data-id="" 
-                                    data-label="">
-
-                                    <input type="hidden" name="productoid[]" class="producto_id form-control col-2"
-                                        required>
-                                    <input type="text" name="precio[]" value="" class="form-control col-1" placeholder="Precio "
-                                        required oninput="sanitizeInput(this)">
-                                        ` + exent + cinc + die + `<button class="btn-remove btn btn-outline-danger ml-2" type="button"><i class="fa fa-trash" aria-hidden="true"></i></button>
-                                        
-                                </div>
-            `;
-
-
-            const codigoInput = newItem.querySelector('input[name="codigo1[]"]');
-            codigoInput.addEventListener('keydown', function(e) {
-                // Verifica si la tecla presionada es "Enter"
-                if (e.key === 'Enter') {
-                    // Evita el envío del formulario
-                    e.preventDefault();
-                    // Enfoca en el campo de producto
-                    const cantidadInput = newItem.querySelector('input[name="cantidad[]"]');
-                    cantidadInput.focus();
-                }
-            });
-            const cantidadInput = newItem.querySelector('input[name="cantidad[]"]');
-            cantidadInput.addEventListener('keydown', function(e) {
-                // Verifica si la tecla presionada es "Enter"
-                if (e.key === 'Enter') {
-                    // Evita el envío del formulario
-                    e.preventDefault();
-                    // Enfoca en el campo de producto
-                    const descripcionInput = newItem.querySelector('input[name="descripcion[]"]');
-                    descripcionInput.focus();
-                }
-            });
-            const descripcionInput = newItem.querySelector('input[name="descripcion[]"]');
-            descripcionInput.addEventListener('keydown', function(e) {
-                // Verifica si la tecla presionada es "Enter"
-                if (e.key === 'Enter') {
-                    // Evita el envío del formulario
-                    e.preventDefault();
-                    // Enfoca en el campo de producto
-                    const precioInput = newItem.querySelector('input[name="precio[]"]');
-                    precioInput.focus();
-                    precioInput.select();
-                }
-            });
-            const precioInput = newItem.querySelector('input[name="precio[]"]');
-            precioInput.addEventListener('keydown', function(e) {
-                // Verifica si la tecla presionada es "Enter"
-                if (e.key === 'Enter') {
-                    // Evita el envío del formulario
-                    e.preventDefault();
-                    // Encuentra todos los inputs siguientes después del precioInput
-                    const inputs = Array.from(newItem.querySelectorAll(
-                        'input[name="precio[]"], input[name="exenta[]"], input[name="cinco[]"], input[name="diez[]"]'
-                    ));
-                    const currentIndex = inputs.indexOf(precioInput);
-                    let nextIndex = currentIndex + 1;
-                    // Encuentra el siguiente input que no esté deshabilitado
-                    while (nextIndex < inputs.length && inputs[nextIndex].disabled) {
-                        nextIndex++;
-                    }
-                    // Si se encontró un input habilitado, enfoca en él y selecciona su contenido
-                    if (nextIndex < inputs.length) {
-                        const nextInput = inputs[nextIndex];
-                        nextInput.focus();
-                        nextInput.select();
-                    }
+                autoFocus: true
+            }).keydown(function(e) {
+                if (e.keyCode === 13 && $(this).val() !== "") {
+                    traerCargarDatosProducto(codSeleccion, this);
+                    newItem.querySelector('input[name="cantidad[]"]').focus();
                 }
             });
 
-
-            const exentaInput = newItem.querySelector('input[name="exenta[]"]');
-            exentaInput.addEventListener('keydown', function(e) {
-                // Verifica si la tecla presionada es "Enter"
-                if (e.key === 'Enter') {
-                    addNewItem();
-                }
+            // Evento input para actualizar suma total
+            newItem.querySelectorAll('input').forEach(inp => {
+                inp.addEventListener('input', actualizarSumaTotal);
             });
-            const cincoInput = newItem.querySelector('input[name="cinco[]"]');
-            cincoInput.addEventListener('keydown', function(e) {
-                // Verifica si la tecla presionada es "Enter"
-                if (e.key === 'Enter') {
-                    addNewItem();
-                }
-            });
-            const diezInput = newItem.querySelector('input[name="diez[]"]');
-            diezInput.addEventListener('keydown', function(e) {
-                // Verifica si la tecla presionada es "Enter"
-                if (e.key === 'Enter') {
-                    addNewItem();
 
-                }
-            });
-            itemsContainer.appendChild(newItem);
-
-            // Agregar el nuevo elemento al contenedor
-            itemsContainer.appendChild(newItem);
-
-            // Agregar el evento click para eliminar el ítem después de que se haya agregado al contenedor
-            // btnAddItem.addEventListener("click", addNewItem);
-            const btnRemove = newItem.querySelector(".btn-remove");
-            btnRemove.addEventListener("click", function() {
-                removeItem(newItem);
-            });
-            const priceInput = newItem.querySelector('input[name="precio[]"]');
-            priceInput.addEventListener("input", actualizarSumaTotal);
-
-            const cantiInput = newItem.querySelector('input[name="cantidad[]"]');
-            cantiInput.addEventListener("input", actualizarSumaTotal);
             actualizarSumaTotal();
-            $('input[name="codigo1[]"]').focus();
-
-
+            codigoInput.focus();
         }
 
-
-
-        function actualizarSumaTotal() {
-            totalSum = 0;
-            const priceInputs = document.getElementsByName("precio[]"); //trae todos los precios para recorrer
-            const cantidadInputs = document.getElementsByName(
-                'cantidad[]'); //trae todas las cantidades para recorrer
-            const ivaInputs = document.getElementsByName(
-                "iva[]"); //trae todos los impuestos para ver si es exenta iva 5 o iva 10
-            const exentaInputs = document.getElementsByName(
-                "exenta[]"); //trae todos los totales exentas
-            const itemInputs = document.getElementsByName(
-                "item[]"); //trae todos los totales exentas
-            const cincoInputs = document.getElementsByName(
-                "cinco[]"); //trae todos los totales cinco
-            const diezInputs = document.getElementsByName(
-                "diez[]"); //trae todos los totales diez
-            // Itera a través de los elementos utilizando un bucle for
-            itemN = 0;
-            for (let i = 0; i < priceInputs.length; i++) {
-                const input = priceInputs[i];
-                const price = parseFloat(input.value) || 0;
-
-                const cantidadV = cantidadInputs[i];
-                const cantidad = parseFloat(cantidadV.value) || 0;
-
-                const ivaV = ivaInputs[i];
-                const iva = parseFloat(ivaV.value) || 0;
-
-                itemN++;
-                const itemV = itemInputs[i];
-                itemV.value = itemN;
-
-                const exentaV = exentaInputs[i];
-
-                const cincoV = cincoInputs[i];
-
-                const diezV = diezInputs[i];
-
-                tot = cantidad * price;
-                switch (iva) {
-                    case 0:
-                        exentaV.value = tot;
-                        cincoV.value = 0;
-                        diezV.value = 0;
-                        break;
-                    case 5:
-                        exentaV.value = 0;
-                        cincoporc = 0;
-                        tot = tot + cincoporc
-                        cincoV.value = tot;
-                        diezV.value = 0;
-                        break;
-                    case 10:
-                        exentaV.value = 0;
-                        cincoV.value = 0;
-                        diezporc = 0;
-                        tot = tot + diezporc;
-                        diezV.value = tot;
-                        break;
-                    default:
-                        // Hacer algo si iva no coincide con ningún caso
-                }
-
-
-                totalSum += tot;
-            }
-
-            totalSumElement.textContent = totalSum.toFixed(2); // Mostrar la suma con dos decimales
+        function cambiarDescripcion(input) {
+            traerCargarDatosProducto(input.value, input);
         }
 
-
-
-        function removeItem(itemToRemove) {
-            itemsContainer.removeChild(itemToRemove);
-            actualizarSumaTotal();
-        }
-
-        function cambiarDescripcion(inputCodigo) {
-            var codigoValue = inputCodigo.value;
-            traerCargarDatosProducto(codigoValue, inputCodigo);
-        }
-
-        function cambiarCodigo(inputProducto) {
-
-            // Obtén el valor del producto desde el elemento actual
-            var productoId = '';
-            if ($(inputProducto).data('ui-autocomplete').selectedItem) {
-                productoId = $(inputProducto).data('ui-autocomplete').selectedItem.codigo;
-            }
-            traerCargarDatosProducto(productoId, inputProducto);
-            actualizarSumaTotal();
-
-        }
-
-        function traerCargarDatosProducto(codigoValue, inputCodigo) {
+        function traerCargarDatosProducto(codigo, inputRef) {
             const condicion = document.querySelector('input[name="condicion"]:checked').value;
-            let cantpago = 1;
-            if (condicion === 'CREDITO') {
-                cantpago = document.getElementById('cantpago').value;
-            }
-            $.ajax({
-                url: '{{ route('obtenercodproducto') }}',
-                method: 'POST',
-                data: {
-                    codigo: codigoValue,
-                    cantpago: cantpago,
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    if (response.producto && response.producto.id && response.producto.descripcion) {
-                        var producto = response.producto;
-                        var descripcion = producto.descripcion;
-                        var id = producto.id;
-                        var iva = producto.impuesto;
-                        var unidadMedida = producto.unidaddemedida.descripcion;
-                        var precio = producto.pventa;
-                        var pmayorista = producto.pmayorista;
-                        var cmayorista = producto.cmayorista;
-                        var stock = Math.trunc(producto.stock);
-                        var configuracionv = response.configuracion.estado;
-                        $(inputCodigo).closest('.row').find('input[name="descripcion[]"]').val(descripcion +
-                            '(' + stock + ')');
-                        $(inputCodigo).closest('.row').find('input[name="codigo[]"]').val(id);
-                        $(inputCodigo).closest('.row').find('input[name="unidad[]"]').val(unidadMedida);
-                        $(inputCodigo).closest('.row').find('input[name="iva[]"]').val(iva);
-                        $(inputCodigo).closest('.row').find('input[name="precio[]"]').val(precio);
-                        $(inputCodigo).closest('.row').find('input[name="codigo1[]"]').val(codigoValue);
-                        $(inputCodigo).closest('.row').find('input[name="pmayorista[]"]').val(pmayorista);
-                        $(inputCodigo).closest('.row').find('input[name="cmayorista[]"]').val(cmayorista);
-                        $(inputCodigo).closest('.row').find('input[name="configuracionv[]"]').val(
-                            configuracionv);
-                        $(inputCodigo).closest('.row').find('input[name="precioorig[]"]').val(
-                            precio);
-                        switch (iva) {
-                            case 10:
-                                $(inputCodigo).closest('.row').find('input[name="cinco[]"]').val(0);
-                                $(inputCodigo).closest('.row').find('input[name="exenta[]"]').val(0);
-                                $(inputCodigo).closest('.row').find('input[name="cinco[]"]').prop('disabled',
-                                    true);
-                                $(inputCodigo).closest('.row').find('input[name="exenta[]"]').prop('disabled',
-                                    true);
-                                break;
-                            case 5:
-                                $(inputCodigo).closest('.row').find('input[name="diez[]"]').val(0);
-                                $(inputCodigo).closest('.row').find('input[name="exenta[]"]').val(0);
-                                $(inputCodigo).closest('.row').find('input[name="diez[]"]').prop('disabled',
-                                    true);
-                                $(inputCodigo).closest('.row').find('input[name="exenta[]"]').prop('disabled',
-                                    true);
-                                break;
-                            case 0:
-                                $(inputCodigo).closest('.row').find('input[name="diez[]"]').val(0);
-                                $(inputCodigo).closest('.row').find('input[name="cinco[]"]').val(0);
-                                $(inputCodigo).closest('.row').find('input[name="diez[]"]').prop('disabled',
-                                    true);
-                                $(inputCodigo).closest('.row').find('input[name="cinco[]"]').prop('disabled',
-                                    true);
-                                break;
-                            default:
-                                // Código a ejecutar si la variable no coincide con ninguno de los casos anteriores
-                        }
+            const cantpago = condicion === 'CREDITO' ? 1 : 1; // Ajustar según necesidad
+
+            $.post("{{ route('obtenercodproducto') }}", {
+                codigo: codigo,
+                cantpago: cantpago,
+                _token: '{{ csrf_token() }}'
+            }, function(response) {
+                if (response.producto) {
+                    const p = response.producto;
+                    const row = $(inputRef).closest('.d-flex');
+
+                    row.find('input[name="descripcion[]"]').val(p.descripcion + ' (' + Math.trunc(p.stock) + ')');
+                    row.find('input[name="codigo[]"]').val(p.id);
+                    row.find('input[name="codigo1[]"]').val(p.codigo);
+                    row.find('input[name="unidad[]"]').val(p.unidaddemedida?.descripcion || 'UNIDAD');
+                    row.find('input[name="iva[]"]').val(p.impuesto);
+                    row.find('input[name="precio[]"]').val(p.pventa);
+                    row.find('input[name="precioorig[]"]').val(p.pventa);
+                    row.find('input[name="tipo_impuesto[]"]').val(p.id_impuesto);
+                    console.log(row.find('input[name="tipo_impuesto[]"]').val());
+                    
+                    row.find('input[name="pmayorista[]"]').val(p.pmayorista || 0);
+                    row.find('input[name="cmayorista[]"]').val(p.cmayorista || 0);
+
+                    const config = response.configuracion || {};
+                    row.find('input[name="configuracionv[]"]').val(config.estado || 0);
+
+                    // Habilitar/deshabilitar campos según IVA
+                    const iva = p.impuesto;
+                    if (iva === 10) {
+                        row.find('input[name="cinco[]"], input[name="exenta[]"]').prop('disabled', true).val(0);
+                        row.find('input[name="diez[]"]').prop('disabled', false);
+                    } else if (iva === 5) {
+                        row.find('input[name="diez[]"], input[name="exenta[]"]').prop('disabled', true).val(0);
+                        row.find('input[name="cinco[]"]').prop('disabled', false);
                     } else {
-                        // Maneja el caso cuando el producto no se encuentra
-                        console.error('Producto no encontrado');
+                        row.find('input[name="cinco[]"], input[name="diez[]"]').prop('disabled', true).val(0);
+                        row.find('input[name="exenta[]"]').prop('disabled', false);
                     }
-                },
-                error: function(error) {
-                    console.error('Error en la petición AJAX:', error);
                 }
+                actualizarSumaTotal();
+            }).fail(function(error) {
+                console.error('Error en la petición AJAX:', error);
             });
-            actualizarSumaTotal();
         }
 
-        // Agregar el evento click para agregar un nuevo ítem
-        //btnAddItem.addEventListener("click", addNewItem);
+        // Inicializar primer ítem
+        document.addEventListener("DOMContentLoaded", function() {
+            addNewItem();
+            // 🔵 PROVEEDOR POR DEFECTO
+            const proveedorDefault = 1; // <-- ID del proveedor que quieres cargar
+
+            $('#id_proveedor').val(proveedorDefault).trigger('change.select2');
+            document.getElementById('cod_proveedor').value = proveedorDefault;
+
+            actualizarNumeroDocumento();
+        });
     </script>
 @endpush

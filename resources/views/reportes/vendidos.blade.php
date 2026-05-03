@@ -1,0 +1,118 @@
+@extends('adminlte::page')
+
+@section('content_header')
+    <h1 class="m-0 custom-heading">Reporte de Ventas por Estado</h1>
+@stop
+
+@section('content')
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Generar Reporte de Ventas</h3>
+                    <div class="card-tools">
+                        <span class="badge badge-warning">Estado 1 = Vendido</span>
+                        <span class="badge badge-success ml-2">Estado 2 = Cobrado</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5>Reporte por Usuario</h5>
+                            <hr>
+                        </div>
+                        
+                        <div class="form-group col-md-3">
+                            <label>FECHA DESDE</label>
+                            <input type="date" class="form-control" id="desde1" value="{{ date('Y-m-d') }}">
+                        </div>
+                        
+                        <div class="form-group col-md-3">
+                            <label>FECHA HASTA</label>
+                            <input type="date" class="form-control" id="hasta1" value="{{ date('Y-m-d') }}">
+                        </div>
+                        
+                        <div class="form-group col-md-4">
+                            <label>USUARIO</label>
+                            <select class="form-control" id="idusuario">
+                                <option value="">Seleccionar usuario...</option>
+                                @foreach ($usuarios as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        <div class="form-group col-md-2">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-secondary form-control" onclick="generarPDF()">
+                                <i class="fas fa-file-pdf"></i> Generar
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5>Reporte General</h5>
+                            <hr>
+                        </div>
+                        
+                        <div class="form-group col-md-4">
+                            <label>FECHA DESDE</label>
+                            <input type="date" class="form-control" id="desde2" value="{{ date('Y-m-d') }}">
+                        </div>
+                        
+                        <div class="form-group col-md-4">
+                            <label>FECHA HASTA</label>
+                            <input type="date" class="form-control" id="hasta2" value="{{ date('Y-m-d') }}">
+                        </div>
+                        
+                        <div class="form-group col-md-4">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-secondary form-control" onclick="generarPDFsinuser()">
+                                <i class="fas fa-file-pdf"></i> Generar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@stop
+
+@push('js')
+<script>
+    function generarPDF() {
+        var desde = document.getElementById('desde1').value;
+        var hasta = document.getElementById('hasta1').value;
+        var idusuario = document.getElementById('idusuario').value;
+        
+        if (!desde || !hasta) {
+            alert('Por favor seleccione las fechas');
+            return;
+        }
+        
+        if (!idusuario) {
+            alert('Por favor seleccione un usuario');
+            return;
+        }
+        
+        var url = `{{ url('/') }}/reporteventasnuevo/${desde}/${hasta}/${idusuario}`;
+        window.open(url, '_blank');
+    }
+    
+    function generarPDFsinuser() {
+        var desde = document.getElementById('desde2').value;
+        var hasta = document.getElementById('hasta2').value;
+        
+        if (!desde || !hasta) {
+            alert('Por favor seleccione las fechas');
+            return;
+        }
+        
+        var url = `{{ url('/') }}/reporteventasnuevo/${desde}/${hasta}`;
+        window.open(url, '_blank');
+    }
+</script>
+@endpush

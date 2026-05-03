@@ -72,6 +72,7 @@ class VentaController extends Controller
 
     public function store(Request $request)
     {
+        
         $tienePermiso = $this->permisoService->verificarPermiso('Venta', 'crear');
         if (!$tienePermiso) {
             return redirect()->route('sinpermiso');
@@ -183,6 +184,7 @@ class VentaController extends Controller
                 'ultimoId' => $ultimoId,
                 'estadov'  => $estadov,
             ]);
+<<<<<<< HEAD
         } catch (\Exception $e) {
 
                 DB::rollBack();
@@ -191,6 +193,16 @@ class VentaController extends Controller
             }
         } else {
             return redirect()->route('sinpermiso');
+=======
+        } catch (Exception $e) {
+            dd($e);
+            DB::rollBack();
+            Log::error('ERROR VENTA: ' . $e->getMessage());
+
+            return redirect()
+                ->route('venta.create')
+                ->with('error', 'Ocurrió un error al registrar la venta.');
+>>>>>>> sisventa
         }
     }
 
@@ -601,7 +613,11 @@ class VentaController extends Controller
     }
     public function cargarDet(Request $request, $id)
     {
-        $producto = Producto::where('codigo', $id)->first();
+        $producto = Producto::where('codigo', $id)
+                    ->where('stock', '>', 0)
+                    ->where('tipo', 'venta')
+                    ->first();
+
 
         // Si no se encuentra el producto, retorna un error
         if (!$producto) {

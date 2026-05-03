@@ -33,8 +33,7 @@
                         @error('descripcion')
                             <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
-                        <x-adminlte-select name="impuesto" id="impuesto" label="Impuesto"
-                            fgroup-class="col-md-2"
+                        <x-adminlte-select name="id_impuesto" id="id_impuesto" label="Impuesto" fgroup-class="col-md-2"
                             label-class="text-success">
 
                             <x-slot name="prependSlot">
@@ -43,29 +42,30 @@
                                 </div>
                             </x-slot>
 
-                            @foreach ($impuestos as $impuesto)
-                                <option value="{{ $impuesto->valor }}">
-                                    {{ $impuesto->descripcion }} {{ number_format($impuesto->valor, 0, ',', '.') }} %
+                            @foreach ($impuestos as $imp)
+                                <option value="{{ $imp->id }}"
+                                    {{ old('id_impuesto', 1) == $imp->id ? 'selected' : '' }}>
+                                    {{ $imp->valor_formateado  }}% ({{ $imp->descripcion }})
                                 </option>
                             @endforeach
 
                         </x-adminlte-select>
 
+
                     </div>
 
+                    {{-- Detalle y categoría --}}
                     <div class="row">
-                        {{-- Disabled --}}
                         <x-adminlte-textarea name="detalle" label="Detalle del Producto" fgroup-class="col-md-7"
                             placeholder="Ingresar detalle del producto" label-class="text-warning">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-warning">
-                                    <i class="fas fa-lg fa-file-alt "></i>
+                                    <i class="fas fa-lg fa-file-alt"></i>
                                 </div>
                             </x-slot>
                         </x-adminlte-textarea>
 
-                        <x-adminlte-select2 name="id_categoria" id="id_categoria" label="Categoria"
-                            data-placeholder="Seleccionar una categoría..." fgroup-class="col-md-5"
+                        <x-adminlte-select2 name="id_categoria" label="Categoría" fgroup-class="col-md-5"
                             label-class="text-danger">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-red">
@@ -77,22 +77,18 @@
                                     icon="fas fa-lg fa-plus text-danger" />
                             </x-slot>
 
-
-
                             @foreach ($categoria as $item)
-                                <option value={{ $item->id }}>{{ $item->descripcion }}</option>
+                                <option value="{{ $item->id }}">{{ $item->descripcion }}</option>
                             @endforeach
                         </x-adminlte-select2>
-
                     </div>
 
+                    {{-- Stock, unidad de medida, precios y estado --}}
                     <div class="row">
                         <x-adminlte-input name="stock" type="number" label="Stock" fgroup-class="col-md-2"
                             step="any" min="0" value="0.000" />
 
-
-                        <x-adminlte-select2 name="id_medida" id="id_medida" label="Unidad Medida"
-                            data-placeholder="Seleccionar una medida..." fgroup-class="col-md-3"
+                        <x-adminlte-select2 name="id_medida" label="Unidad Medida" fgroup-class="col-md-3"
                             label-class="text-danger">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-red">
@@ -104,10 +100,8 @@
                                     data-target="#addunidmedidaModal" icon="fas fa-lg fa-plus text-danger" />
                             </x-slot>
 
-
-
                             @foreach ($medida as $item)
-                                <option value={{ $item->id }}>{{ $item->descripcion }}</option>
+                                <option value="{{ $item->id }}">{{ $item->descripcion }}</option>
                             @endforeach
                         </x-adminlte-select2>
 
@@ -121,7 +115,7 @@
 
 
                         <x-adminlte-input name="porcentaje" id="porcentaje" type="number" label="% Margen"
-                            fgroup-class="col-md-1" value="0" min="0" step="any"
+                            fgroup-class="col-md-1" value="0" min="0" max="100" step="any"
                             oninput="calcularPrecioVenta()" label-class="text-success" />
                         <x-adminlte-input name="pventa" id="pventa" type="number" label="Precio Venta"
                             fgroup-class="col-md-2" value="0" min="0"
@@ -145,38 +139,27 @@
                         </x-adminlte-select>
 
                     </div>
-                    <div class="row">
-                        <x-adminlte-input name="cmayorista" id="cmayorista" type="number"
-                            label="Cantidad Mayorista" fgroup-class="col-md-2" value="0" min="0"
-                            oninput="calcularDescuento()" />
-                        <x-adminlte-input name="pmayorista" id="pmayorista" type="number" label="Precio Mayorista"
-                            fgroup-class="col-md-2" value="0" min="0"
-                            oninput="calcularPorcentajeAumento()" />
-                        <x-adminlte-input name="dmayorista" id="dmayorista" type="number" label="Descuento"
-                            fgroup-class="col-md-2" value="0" min="0" step="any"
-                            oninput="calcularPrecioMayorista()" label-class="text-success" />
-                        <div class="col-6 rcorners2 importet">
-                            <p><strong>Margen según fórmula:</strong>(Precio Venta - Costo) / Precio Venta;</p>
 
+                    {{-- Mayorista --}}
+                    <div class="row">
+                        <x-adminlte-input name="cmayorista" type="number" label="Cantidad Mayorista"
+                            fgroup-class="col-md-2" value="0" min="0" />
+                        <x-adminlte-input name="pmayorista" type="number" label="Precio Mayorista"
+                            fgroup-class="col-md-2" value="0" min="0" />
+                        <x-adminlte-input name="dmayorista" type="number" label="Descuento" fgroup-class="col-md-2"
+                            value="0" min="0" step="any" label-class="text-success" />
+                        <div class="col-6 rcorners2 importet">
+                            <p><strong>Margen según fórmula:</strong> (Precio Venta - Costo) / Precio Venta;</p>
                             <h1 id="margenganancia" class="text-center">0 %</h1>
                         </div>
-
-
-
-
-
                     </div>
 
-
-
-
-
+                    {{-- Botones --}}
                     <div class="row">
-                        <div class="form-group col-md-12">
-                            <a class="btn btn-danger mx-1" style="float: right;"
-                                href="{{ route('producto.index') }}">Cancelar</a>
-                            <x-adminlte-button class="btn-group mx-1" style="float: right;" type="submit"
-                                label="Registrar" theme="primary" icon="fas fa-lg fa-save" />
+                        <div class="form-group col-md-12 text-right">
+                            <a class="btn btn-danger mx-1" href="{{ route('producto.index') }}">Cancelar</a>
+                            <x-adminlte-button type="submit" label="Registrar" theme="primary"
+                                icon="fas fa-lg fa-save" />
                         </div>
                     </div>
                 </form>
@@ -321,8 +304,10 @@
 @stop
 @push('js')
 <script>
+    // Obtener el mensaje de éxito o error de Laravel
     var successMessage = "{{ session('success') }}";
     var errorMessage = "{{ session('error') }}";
+    // Mostrar el mensaje de éxito o error con SweetAlert
     if (successMessage) {
         Swal.fire('Éxito', successMessage, 'success');
     } else if (errorMessage) {

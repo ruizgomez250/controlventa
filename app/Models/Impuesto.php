@@ -24,4 +24,8 @@ class Impuesto extends Model
     {
         return number_format($this->valor, 2, ',', '.');
     }
+    public function productos()
+    {
+        return $this->hasMany(Producto::class, 'id_impuesto');
+    }
 }

@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Helpers\NumberToWords;
+use App\Models\Caja;
+use App\Models\User;
 use App\services\PermisoService;
+use DateTime;
 use TCPDF;
 
 class ReporteVentaController extends Controller
@@ -90,4 +93,5 @@ class ReporteVentaController extends Controller
             return redirect()->route('sinpermiso');
         }
     }
+    
 }

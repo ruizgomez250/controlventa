@@ -49,7 +49,7 @@ class NumberToWords
      * @var array
      */
     private $centenas = [
-        'CIENTO ',
+        'CIENTO ', 
         'DOSCIENTOS ',
         'TRESCIENTOS ',
         'CUATROCIENTOS ',

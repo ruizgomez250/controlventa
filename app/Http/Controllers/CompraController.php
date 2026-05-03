@@ -32,7 +32,7 @@ class CompraController extends Controller
             $heads = [
                 'ID', 'Fecha', 'Nro Factura', 'Timbrado', 'Proveedor', 'Condición de Compra', 'Monto Total', 'Usuario', 'Estado', 'Acción'
             ];
-            $cabecera = Compra_cab::with('proveedor', 'usuario', 'estadocompra')->get();
+            $cabecera = Compra_cab::with('proveedor', 'usuario')->get();
             return view('compras.index', compact('cabecera', 'heads'));
         } else {
             return view('sinpermiso.index');
@@ -84,7 +84,7 @@ class CompraController extends Controller
                 $descripcion = $request->input('descripcion');
                 $idProductos = $request->input('codigo');
                 $precioU = $request->input('precio');
-                $tipoImpuesto = $request->input('iva');
+                $tipoImpuesto = $request->input('tipo_impuesto');
                 $total = 0;
 
                 for ($i = 0; $i < $contador; $i++) {
@@ -125,7 +125,7 @@ class CompraController extends Controller
                 DB::commit();
                 return redirect()->route('compra.index')->with('success', 'La compra se ha registrado correctamente.');
             } catch (Exception $e) {
-
+                dd($e);
                 DB::rollBack();
                 Log::error($e->getMessage());
                 return redirect()->route('compra.index')->with('error', 'Ha ocurrido un error al registrar la compra. Por favor, inténtelo de nuevo.');

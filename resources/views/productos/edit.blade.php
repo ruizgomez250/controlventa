@@ -37,7 +37,7 @@
                             <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
                         
-                        <x-adminlte-select name="impuesto" id="impuesto" label="Impuesto" fgroup-class="col-md-2"
+                        <x-adminlte-select name="id_impuesto" id="id_impuesto" label="Impuesto" fgroup-class="col-md-2"
                             label-class="text-success">
 
                             <x-slot name="prependSlot">
@@ -46,10 +46,10 @@
                                 </div>
                             </x-slot>
 
-                            @foreach ($impuestos as $impuesto)
-                                <option value="{{ $impuesto->valor }}"
-                                    {{ old('impuesto', $producto->impuesto) == $impuesto->valor ? 'selected' : '' }}>
-                                    {{ $impuesto->descripcion }} {{ number_format($impuesto->valor, 0, ',', '.') }} %
+                            @foreach ($impuestos as $imp)
+                                <option value="{{ $imp->id }}"
+                                    {{ old('id_impuesto', 1) == $imp->id ? 'selected' : '' }}>
+                                    {{ $imp->valor_formateado  }}% ({{ $imp->descripcion }})
                                 </option>
                             @endforeach
 

@@ -10,6 +10,7 @@ use App\Http\Controllers\AutocompleteController;
 use App\Http\Controllers\CajaReporteController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ChangePasswordController;
+use App\Http\Controllers\ChequeController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\ProductoreporteController;
@@ -18,7 +19,7 @@ use App\Http\Controllers\TablaPorcentajeController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ImpuestoController;
-use App\Http\Controllers\ProductoreporteController;
+use App\Http\Controllers\ReporteVentaNuevoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('/producto', ProductoController::class);
     Route::get('/qrproductover', [ProductoController::class, 'createReporte'])->name('qrproductover');
     Route::get('/qrproducto/{id}', [ProductoController::class, 'qrproducto'])->name('qrproducto');
+    Route::get('/barcodeproducto/{id}', [ProductoController::class, 'barcodeproducto'])->name('barcodeproducto');
     Route::resource('/compra', CompraController::class);
     Route::resource('/venta', VentaController::class);
 
@@ -71,6 +73,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('/cajareporte', CajaReporteController::class);
     Route::resource('/rol', RolController::class);
     Route::resource('/configuracion', ConfiguracionController::class);
+    Route::get('/reportes/vendidos', [ReporteVentaNuevoController::class, 'index'])->name('reportes.vendidos');
+Route::get('/reporteventasnuevo/{fechadesde}/{fechahasta}/{idusuario?}', [ReporteVentaNuevoController::class, 'generarReporte']);
 
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
@@ -100,6 +104,7 @@ Route::post('/autocomplete/obtenercodtemporal',  [ProductoController::class, 'de
 Route::get('/create', function () {
     return view('create');
 });
+Route::resource('cheques', ChequeController::class);
 //Route::post('/guardar-categoria', [CrearCategoriaComponent::class, 'store'])->name('guardar-categoria');
 
 
