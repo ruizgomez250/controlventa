@@ -368,7 +368,7 @@ return [
                     'url'  => '/producto/create',
                 ],
                 [
-                    'text' => 'QR de Productos',
+                    'text' => 'QR o Codigo de Barras',
                     'url'  => 'qrproductover',
                 ],
             ],
@@ -485,7 +485,7 @@ return [
             ],
         ],
         [
-            'text'       => 'Reportes Caja',
+            'text'       => 'Reportes',
             'icon'       => 'fas fa-list',
             'icon_color' => 'primary',
             'classes' => 'custom-icon-box-black',
@@ -495,6 +495,11 @@ return [
                     'text' => 'Cobros por Fecha',
                     'url'  => '/cajareporte/create',
 
+                ],
+                [
+                    'text' => 'Reporte de Ventas por Estado',
+                    'url'  => '/reportes/vendidos',
+                    'icon' => 'fas fa-file-invoice',
                 ],
             ],
         ],

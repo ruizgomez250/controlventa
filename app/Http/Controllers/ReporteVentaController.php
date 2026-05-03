@@ -93,4 +93,5 @@ class ReporteVentaController extends Controller
             return redirect()->route('sinpermiso');
         }
     }
+    
 }

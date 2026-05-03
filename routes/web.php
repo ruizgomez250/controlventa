@@ -19,6 +19,7 @@ use App\Http\Controllers\VentaController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ImpuestoController;
 use App\Http\Controllers\ProductoreporteController;
+use App\Http\Controllers\ReporteVentaNuevoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('/producto', ProductoController::class);
     Route::get('/qrproductover', [ProductoController::class, 'createReporte'])->name('qrproductover');
     Route::get('/qrproducto/{id}', [ProductoController::class, 'qrproducto'])->name('qrproducto');
+    Route::get('/barcodeproducto/{id}', [ProductoController::class, 'barcodeproducto'])->name('barcodeproducto');
     Route::resource('/compra', CompraController::class);
     Route::resource('/venta', VentaController::class);
 
@@ -71,6 +73,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('/cajareporte', CajaReporteController::class);
     Route::resource('/rol', RolController::class);
     Route::resource('/configuracion', ConfiguracionController::class);
+    Route::get('/reportes/vendidos', [ReporteVentaNuevoController::class, 'index'])->name('reportes.vendidos');
+Route::get('/reporteventasnuevo/{fechadesde}/{fechahasta}/{idusuario?}', [ReporteVentaNuevoController::class, 'generarReporte']);
 
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');

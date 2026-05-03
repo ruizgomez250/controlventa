@@ -426,4 +426,71 @@ class ProductoController extends Controller
             return redirect()->route('sinpermiso');
         }
     }
+    public function barcodeproducto(int $id)
+    {
+        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
+
+        if ($tienePermiso) {
+
+            $producto = Producto::findOrFail($id);
+
+            $codigo = $producto->codigo;
+
+            // Crear PDF
+            $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+
+            $pdf->SetMargins(10, 10, 10);
+            $pdf->SetAutoPageBreak(false, 10);
+            $pdf->AddPage();
+
+            // Título
+            $pdf->SetFont('helvetica', 'B', 12);
+            $pdf->Cell(0, 6, 'Codigo de Barras ' . $producto->descripcion, 0, 1, 'C');
+
+            $pdf->SetFont('helvetica', '', 10);
+
+            // Configuración del código de barras
+            $style = [
+                'position' => '',
+                'align' => 'C',
+                'stretch' => false,
+                'fitwidth' => true,
+                'cellfitalign' => '',
+                'border' => false,
+                'hpadding' => 'auto',
+                'vpadding' => 'auto',
+                'fgcolor' => [0, 0, 0],
+                'bgcolor' => false,
+                'text' => true, // muestra el número abajo
+                'font' => 'helvetica',
+                'fontsize' => 8,
+                'stretchtext' => 4
+            ];
+
+            // Tamaño del código
+            $barcodeWidth = 50;
+            $barcodeHeight = 20;
+
+            $x = 10;
+            $y = 20;
+
+            while ($y < 280) {
+                while ($x < 190) {
+
+                    // Generar código de barras (C128)
+                    $pdf->write1DBarcode($codigo, 'C128', $x, $y, $barcodeWidth, $barcodeHeight, 0.4, $style, 'N');
+
+                    $x += $barcodeWidth + 10;
+                }
+
+                $x = 10;
+                $y += $barcodeHeight + 15;
+            }
+
+            $pdf->Output('producto_barcode.pdf', 'I');
+            exit;
+        } else {
+            return redirect()->route('sinpermiso');
+        }
+    }
 }
