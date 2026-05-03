@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Helpers\NumberToWords;
+use App\helpers\NumberToWords;
 use App\Models\Venta;
 use App\Models\User;
 use App\services\PermisoService;
