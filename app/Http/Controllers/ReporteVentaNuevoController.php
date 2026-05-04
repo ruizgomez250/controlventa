@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\helpers\NumberToWords;
 use App\Models\Venta;
 use App\Models\User;
-use App\services\PermisoService;
-use DateTime;
 use TCPDF;
 
 class ReporteVentaNuevoController extends Controller
