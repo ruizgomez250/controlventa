@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\NumberToWords;
 use App\Models\Venta;
 use App\Models\User;
 use TCPDF;
@@ -129,10 +128,9 @@ class ReporteVentaNuevoController extends Controller
         $pdf->Cell(50, 7, $ventas->count() . ' ventas', 0, 1, 'L');
 
         // Total en letras
-        $formatter = new NumberToWords();
         $pdf->Ln(5);
         $pdf->SetFont('helvetica', 'I', 8);
-        $pdf->Cell(0, 5, '( ' . $formatter->toWords($totalGeneral, 0) . ' )', 0, 1, 'C');
+        $pdf->Cell(0, 5, '( ' .$totalGeneral . ' )', 0, 1, 'C');
 
         $pdf->Output('reporteventas.pdf', 'I');
         exit;
