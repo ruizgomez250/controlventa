@@ -1,9 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use App\Helper\NumberToWords;
-use App\helpers\NumberToWords as HelpersNumberToWords;
 use App\Models\Venta;
 use App\Models\User;
 use TCPDF;
