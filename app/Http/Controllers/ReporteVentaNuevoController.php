@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\helpers\NumberToWords;
+use App\Helper\NumberToWords;
 use App\Models\Venta;
 use App\Models\User;
 use TCPDF;
