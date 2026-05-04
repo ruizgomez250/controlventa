@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Helpers\NumberToWords;
 use App\Models\Caja;
 use App\Models\User;
+use App\Models\Venta;
 use App\services\PermisoService;
 use DateTime;
 use TCPDF;
