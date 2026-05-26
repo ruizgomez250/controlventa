@@ -19,6 +19,8 @@ use App\Http\Controllers\TablaPorcentajeController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ImpuestoController;
+use App\Http\Controllers\ProductoreporteController;
+use App\Http\Controllers\ReporteVentaController;
 use App\Http\Controllers\ReporteVentaNuevoController;
 
 /*
@@ -74,7 +76,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('/rol', RolController::class);
     Route::resource('/configuracion', ConfiguracionController::class);
     Route::get('/reportes/vendidos', [ReporteVentaNuevoController::class, 'index'])->name('reportes.vendidos');
-Route::get('/reporteventasnuevo/{fechadesde}/{fechahasta}/{idusuario?}', [ReporteVentaNuevoController::class, 'generarReporte']);
+Route::get('/reporteventasnuevo/{fechadesde}/{fechahasta}/{idusuario?}', [ReporteVentaController::class, 'generarReporte']);
 
     Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
