@@ -19,7 +19,6 @@ use App\Http\Controllers\TablaPorcentajeController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ImpuestoController;
-use App\Http\Controllers\ProductoreporteController;
 use App\Http\Controllers\ReporteVentaController;
 use App\Http\Controllers\ReporteVentaNuevoController;
 
