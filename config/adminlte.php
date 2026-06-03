@@ -72,11 +72,11 @@ return [
     */
 
     'logo' => '<b></b>',
-    'logo_img' => 'vendor/adminlte/dist/img/e.png',
+    'logo_img' => 'images/easystock.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
-    'logo_img_alt' => 'Admin Logo',
+    'logo_img_alt' => 'EasyStock',
 
     /*
     |--------------------------------------------------------------------------
@@ -94,8 +94,8 @@ return [
     'auth_logo' => [
         'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/e.png.',
-            'alt' => 'Auth Logo',
+            'path' => 'images/easystock.png',
+            'alt' => 'EasyStock',
             'class' => '',
             'width' => 180,
             'height' => 180,
@@ -298,122 +298,48 @@ return [
     */
 
     'menu' => [
-        ['header' => 'EasyStock'],
+        ['header' => 'Gestión Comercial'],
         [
-            'text'       => 'Impuestos',
-            'icon'       => 'fas fa-id-card',
-            'icon_color' => 'warning',
-            'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-box"></i>',
-            'submenu'        => [
-                [
-                    'text' => 'Lista de Impuestos',
-                    'url'  => '/impuestos',
-                ],
-                [
-                    'text' => 'Registrar Impuestos',
-                    'url'  => '/impuestos/create',
-                ],
+            'text'       => 'Productos',
+            'icon'       => 'fas fa-box',
+            'icon_color' => 'orange',
+            'classes'    => 'custom-icon-box-black',
+            'submenu'    => [
+                ['text' => 'Lista de Productos',  'url' => '/producto'],
+                ['text' => 'Registrar Productos', 'url' => '/producto/create'],
+                ['text' => 'QR / Código Barras',  'url' => 'qrproductover'],
             ],
         ],
-
         [
             'text'       => 'Clientes',
-            'icon'       => 'fas fa-id-card',
-            'icon_color' => 'warning',
-            'topnav_right' =>true,
-            'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-box"></i>',
-            'submenu'        => [
-                [
-                    'text' => 'Lista de Clientes',
-                    'url'  => '/cliente',
-                ],
-                [
-                    'text' => 'Registrar Cliente',
-                    'url'  => '/cliente/create',
-                ],
+            'icon'       => 'fas fa-users',
+            'icon_color' => 'primary',
+            'classes'    => 'custom-icon-box-black',
+            'submenu'    => [
+                ['text' => 'Lista de Clientes',  'url' => '/cliente'],
+                ['text' => 'Registrar Cliente',  'url' => '/cliente/create'],
             ],
         ],
-
         [
             'text'       => 'Proveedores',
             'icon'       => 'fas fa-truck',
             'icon_color' => 'danger',
-            'topnav_right' =>true,
-            'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-box"></i>',
-            'submenu'        => [
-                [
-                    'text' => 'Lista de Proveedores',
-                    'url'  => '/proveedor',
-                ],
-                [
-                    'text' => 'Registrar Proveedor',
-                    'url'  => '/proveedor/create',
-                ],
+            'classes'    => 'custom-icon-box-black',
+            'submenu'    => [
+                ['text' => 'Lista de Proveedores',  'url' => '/proveedor'],
+                ['text' => 'Registrar Proveedor',   'url' => '/proveedor/create'],
             ],
         ],
 
-        [
-            'text'       => 'Productos',
-            'icon'       => 'fas fa-box',
-            'classes' => 'custom-icon-box-black',
-            'topnav_right' =>true,
-            'content' => '<i class="fas fa-box"></i>',
-            'submenu'        => [
-                [
-                    'text' => 'Lista de Productos',
-                    'url'  => '/producto',
-                ],
-                [
-                    'text' => 'Registrar Productos',
-                    'url'  => '/producto/create',
-                ],
-                [
-                    'text' => 'QR o Codigo de Barras',
-                    'url'  => 'qrproductover',
-                ],
-            ],
-        ],
-        // [
-        //     'text'       => 'Tabla Porcentajes',
-        //     'icon'       => 'fas fa-chart-bar',
-        //     'icon_color' => 'warning',
-        //     'classes' => 'custom-icon-box-black',
-        //     'content' => '<i class="fas fa-chart-bar"></i>',
-        //     'submenu'        => [
-        //         [
-        //             'text' => 'Lista de Porcentajes',
-        //             'url'  => '/tablaporc',
-        //         ],
-        //         [
-        //             'text' => 'Lista Porcentajes',
-        //             'url'  => '/tablaporc/index',
-        //         ],
-        //         [
-        //             'text' => 'Registrar Porcentaje',
-        //             'url'  => '/tablaporc/create',
-        //         ],
-
-        //     ],
-        // ],
+        ['header' => 'Movimientos'],
         [
             'text'       => 'Compras',
             'icon'       => 'fas fa-shopping-bag',
             'icon_color' => 'cyan',
-            'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-box"></i>',
-            'submenu'        => [
-                [
-                    'text' => 'Lista de Compras',
-                    'url'  => '/compra',
-
-                ],
-                [
-                    'text' => 'Registrar Compra',
-                    'url'  => '/compra/create',
-                ],
+            'classes'    => 'custom-icon-box-black',
+            'submenu'    => [
+                ['text' => 'Lista de Compras',   'url' => '/compra'],
+                ['text' => 'Registrar Compra',   'url' => '/compra/create'],
             ],
         ],
         [
@@ -421,130 +347,97 @@ return [
             'icon'       => 'fas fa-money-check-alt',
             'icon_color' => 'success',
             'classes'    => 'custom-icon-box-black',
-            'content'    => '<i class="fas fa-box"></i>',
             'submenu'    => [
-                [
-                    'text' => 'Lista de Ventas',
-                    'url'  => '/venta',
-                ],
-                [
-                    'text' => 'Registrar Ventas',
-                    'url'  => '/venta/create',
-                ],
+                ['text' => 'Lista de Ventas',   'url' => '/venta'],
+                ['text' => 'Registrar Venta',   'url' => '/venta/create'],
             ],
         ],
         [
             'text'       => 'Gastos',
             'icon'       => 'fas fa-file-invoice-dollar',
             'icon_color' => 'cyan',
-            'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-file-invoice-dollar"></i>',
-            'submenu'        => [
-                [
-                    'text' => 'Lista de Gastos',
-                    'url'  => '/gasto',
-
-                ],
-                [
-                    'text' => 'Registrar Gastos',
-                    'url'  => '/gasto/create',
-                ],
+            'classes'    => 'custom-icon-box-black',
+            'submenu'    => [
+                ['text' => 'Lista de Gastos',   'url' => '/gasto'],
+                ['text' => 'Registrar Gastos',  'url' => '/gasto/create'],
             ],
         ],
         [
             'text'       => 'Cheques',
-            'icon'       => 'fas fa-money-check-alt',
+            'icon'       => 'fas fa-money-check',
             'icon_color' => 'green',
-            'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-money-check-alt"></i>',
-            'submenu' => [
-                [
-                    'text' => 'Lista de Cheques',
-                    'url'  => '/cheques',
-                ],
-                [
-                    'text' => 'Registrar Cheque',
-                    'url'  => '/cheques/create',
-                ],
+            'classes'    => 'custom-icon-box-black',
+            'submenu'    => [
+                ['text' => 'Lista de Cheques',   'url' => '/cheques'],
+                ['text' => 'Registrar Cheque',   'url' => '/cheques/create'],
             ],
         ],
+
+        ['header' => 'Caja'],
         [
-            'text'       => 'Caja',
+            'text'       => 'Cobranzas',
             'icon'       => 'fas fa-cash-register',
             'icon_color' => 'primary',
-            'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-box"></i>',
-            'submenu'        => [
-                [
-                    'text' => 'Ventas a Cobrar',
-                    'url'  => '/caja',
-
-                ],
-                [
-                    'text' => 'Cobrados',
-                    'url'  => '/caja/cobrado',
-
-                ],
+            'classes'    => 'custom-icon-box-black',
+            'submenu'    => [
+                ['text' => 'Ventas a Cobrar',  'url' => '/caja'],
+                ['text' => 'Cobrados',         'url' => '/caja/cobrado'],
             ],
         ],
+
+        ['header' => 'Reportes'],
         [
             'text'       => 'Reportes',
-            'icon'       => 'fas fa-list',
-            'icon_color' => 'primary',
-            'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-box"></i>',
-            'submenu'        => [
-                [
-                    'text' => 'Cobros por Fecha',
-                    'url'  => '/cajareporte/create',
+            'icon'       => 'fas fa-chart-bar',
+            'icon_color' => 'purple',
+            'classes'    => 'custom-icon-box-black',
+            'submenu'    => [
+                ['text' => 'Cobros por Fecha',           'url' => '/cajareporte/create'],
+                ['text' => 'Ventas por Estado',          'url' => '/reportes/vendidos', 'icon' => 'fas fa-file-invoice'],
+            ],
+        ],
 
-                ],
-                [
-                    'text' => 'Reporte de Ventas por Estado',
-                    'url'  => '/reportes/vendidos',
-                    'icon' => 'fas fa-file-invoice',
-                ],
+        ['header' => 'Administración'],
+        [
+            'text'       => 'Impuestos',
+            'icon'       => 'fas fa-percent',
+            'icon_color' => 'warning',
+            'classes'    => 'custom-icon-box-black',
+            'submenu'    => [
+                ['text' => 'Lista de Impuestos',   'url' => '/impuestos'],
+                ['text' => 'Registrar Impuesto',   'url' => '/impuestos/create'],
             ],
         ],
         [
-            'text'       => 'Asignar Roles',
+            'text'       => 'Roles',
             'icon'       => 'fas fa-user-tag',
             'icon_color' => 'primary',
-            'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-box"></i>',
-            'submenu'        => [
-                [
-                    'text' => 'Ver/Asignar',
-                    'url'  => '/rol',
-
-                ],
+            'classes'    => 'custom-icon-box-black',
+            'submenu'    => [
+                ['text' => 'Ver / Asignar',  'url' => '/rol'],
             ],
         ],
+        [
+            'text'       => 'Configuración',
+            'url'        => '/configuracion',
+            'icon'       => 'fas fa-cogs',
+            'icon_color' => 'secondary',
+            'classes'    => 'custom-icon-box-black',
+        ],
+
         ['header' => 'account_settings'],
         [
-            'text' => 'profile',
-            'url'  => 'profile',
-            'icon' => 'fas fa-fw fa-user',
+            'text'    => 'profile',
+            'url'     => 'profile',
+            'icon'    => 'fas fa-fw fa-user',
             'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-box"></i>',
         ],
         [
-            'text' => 'change_password',
-            'url'  => 'profile/edit',
-            'icon' => 'fas fa-fw fa-lock',
+            'text'    => 'change_password',
+            'url'     => 'profile/edit',
+            'icon'    => 'fas fa-fw fa-lock',
             'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-box"></i>',
         ],
-        [
-            'text' => 'Configuracion',
-            'url'  => '/configuracion',
-            'icon' => 'fas fa-fw fa-cogs', // Icono de engranaje
-            'classes' => 'custom-icon-box-black',
-            'content' => '<i class="fas fa-cogs"></i>',
-        ],
-
-
-
     ],
 
 

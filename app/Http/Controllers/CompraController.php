@@ -89,19 +89,7 @@ class CompraController extends Controller
 
                 for ($i = 0; $i < $contador; $i++) {
 
-                    $montoTotParc = 0;
-                    switch ($tipoImpuesto[$i]) {
-                        case 0:
-                            $montoTotParc = $request->input('exenta')[$i];
-                            break;
-                        case 5:
-                            $montoTotParc = $request->input('cinco')[$i];
-                            break;
-                        case 10:
-                            $montoTotParc = $request->input('diez')[$i];
-                            break;
-                        default:
-                    }
+                    $montoTotParc = $request->input('total')[$i];
 
                     $total = $total + $montoTotParc;
                     $detalle = new Compra_det();

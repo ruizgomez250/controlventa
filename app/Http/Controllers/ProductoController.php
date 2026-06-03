@@ -35,12 +35,6 @@ class ProductoController extends Controller
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
         if ($tienePermiso) {
-<<<<<<< HEAD
-            $producto = Producto::all()->sortBy("descripcion");
-            $heads = [
-                'Imagen',
-=======
-            //obtenemos los datos
             $producto = Producto::with([
                 'impuesto',
                 'unidaddemedida',
@@ -49,11 +43,8 @@ class ProductoController extends Controller
                 ->orderBy('id', 'desc')
                 ->get();
 
-
-            //asignar cabecera datatable
             $heads = [
                 'N°',
->>>>>>> sisventa
                 'Unidad M.',
                 'Descripción',
                 'Categoría',
@@ -97,25 +88,11 @@ class ProductoController extends Controller
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'crear');
 
-<<<<<<< HEAD
-        if (!$tienePermiso) {
-            return view('sinpermiso.index');
-        }
-
-        try {
-            // Normalizar estado
-            $estado = $request->input('estado', null);
-            $estado = $estado !== null ? ($estado ? "1" : "0") : "0";
-            $request->merge(['estado' => $estado]);
-
-=======
         if ($tienePermiso) {
             try {
-                // Normalizar estado
                 $estado = $request->input('estado', null);
                 $estado = $estado !== null ? ($estado ? "1" : "0") : "0";
                 $request->merge(['estado' => $estado]);
->>>>>>> sisventa
                 // Validaciones
                 $request->validate([
                     'descripcion'   => 'required|string|max:255',
@@ -188,11 +165,7 @@ class ProductoController extends Controller
             $headcat = ['Descripción', 'Acción'];
             $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
             $medida = Opcion::where('id_dominio', 5)->orderBy('descripcion')->get();
-<<<<<<< HEAD
-            return view('productos.edit', ['headcat' => $headcat, 'categoria' => $categoria, 'producto' => $producto, 'medida' => $medida, 'qrCode' => $qrCode]);
-=======
             return view('productos.edit', ['headcat' => $headcat, 'categoria' => $categoria, 'producto' => $producto, 'medida' => $medida, 'qrCode' => $qrCode, 'impuestos' => $impuestos]);
->>>>>>> sisventa
         } else {
             return view('sinpermiso.index');
         }
@@ -206,7 +179,6 @@ class ProductoController extends Controller
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'editar');
         if (!$tienePermiso) return redirect()->route('sinpermiso');
 
-<<<<<<< HEAD
         $estado = $request->input('estado', null);
         $estado = $estado !== null ? ($estado ? "1" : "0") : "0";
         $request->merge(['estado' => $estado]);
@@ -215,24 +187,16 @@ class ProductoController extends Controller
             'descripcion'   => 'required|string|max:255',
             'id_categoria'  => 'required|exists:opciones,id',
             'id_medida'     => 'required|exists:opciones,id',
+            'id_impuesto'   => 'required|exists:impuestos,id',
             'imagen'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // ✅ Si se carga una nueva imagen
         if ($request->hasFile('imagen')) {
             if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
                 Storage::disk('public')->delete($producto->imagen);
             }
             $path = $request->file('imagen')->store('productos', 'public');
             $validated['imagen'] = $path;
-=======
-            // Actualizar el valor del parámetro "estado" en la solicitud
-            $request->merge(['estado' => $estado]);
-            $producto->update($request->all());
-            return redirect()->route('producto.index')->with('success', 'Producto actualizado exitosamente');;
-        } else {
-            return redirect()->route('sinpermiso')->with('error', 'Error al actualizar el producto: ');
->>>>>>> sisventa
         }
 
         $producto->update($validated);
@@ -467,7 +431,7 @@ class ProductoController extends Controller
             return redirect()->route('sinpermiso');
         }
     }
-<<<<<<< HEAD
+
 
     public function indexl()
     {
@@ -475,7 +439,6 @@ class ProductoController extends Controller
             ->select('id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'stock', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'impuesto', 'imagen')
             ->get()
             ->map(function ($producto) {
-                // Convertimos los campos numéricos a enteros (sin decimales)
                 $producto->stock = (int) $producto->stock;
                 $producto->pcosto = (int) round($producto->pcosto);
                 $producto->pventa = (int) round($producto->pventa);
@@ -487,8 +450,6 @@ class ProductoController extends Controller
         return response()->json($productos);
     }
 
-
-    // Obtener un producto específico
     public function showl($id)
     {
         $producto = Producto::with(['categoriaproducto', 'unidaddemedida'])
@@ -496,7 +457,8 @@ class ProductoController extends Controller
             ->findOrFail($id);
 
         return response()->json($producto);
-=======
+    }
+
     public function barcodeproducto(int $id)
     {
         $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
@@ -507,20 +469,17 @@ class ProductoController extends Controller
 
             $codigo = $producto->codigo;
 
-            // Crear PDF
             $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
 
             $pdf->SetMargins(10, 10, 10);
             $pdf->SetAutoPageBreak(false, 10);
             $pdf->AddPage();
 
-            // Título
             $pdf->SetFont('helvetica', 'B', 12);
             $pdf->Cell(0, 6, 'Codigo de Barras ' . $producto->descripcion, 0, 1, 'C');
 
             $pdf->SetFont('helvetica', '', 10);
 
-            // Configuración del código de barras
             $style = [
                 'position' => '',
                 'align' => 'C',
@@ -532,13 +491,12 @@ class ProductoController extends Controller
                 'vpadding' => 'auto',
                 'fgcolor' => [0, 0, 0],
                 'bgcolor' => false,
-                'text' => true, // muestra el número abajo
+                'text' => true,
                 'font' => 'helvetica',
                 'fontsize' => 8,
                 'stretchtext' => 4
             ];
 
-            // Tamaño del código
             $barcodeWidth = 50;
             $barcodeHeight = 20;
 
@@ -547,10 +505,7 @@ class ProductoController extends Controller
 
             while ($y < 280) {
                 while ($x < 190) {
-
-                    // Generar código de barras (C128)
                     $pdf->write1DBarcode($codigo, 'C128', $x, $y, $barcodeWidth, $barcodeHeight, 0.4, $style, 'N');
-
                     $x += $barcodeWidth + 10;
                 }
 
@@ -563,6 +518,5 @@ class ProductoController extends Controller
         } else {
             return redirect()->route('sinpermiso');
         }
->>>>>>> sisventa
     }
 }

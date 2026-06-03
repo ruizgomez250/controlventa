@@ -15,7 +15,8 @@
             overflow-y: hidden;
             white-space: nowrap !important;
             min-width: 1200px;
-            border: 1px solid #ccc;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
         }
 
         /* 🔥 Columnas fijas que no se achican */
@@ -52,10 +53,11 @@
             flex-direction: row;
             flex-wrap: nowrap;
             align-items: center;
-            background: #000;
+            background: #0d6efd;
             color: #fff;
             font-weight: bold;
             padding: 10px 0;
+            border-radius: 12px 12px 0 0;
         }
 
         /* Ajustes para los inputs dentro de las columnas */
@@ -144,9 +146,8 @@
                                 <div class="col-fixed">CANTIDAD</div>
                                 <div class="col-large">DESCRIPCIÓN</div>
                                 <div class="col-medium">PRECIO UNIT.</div>
-                                <div class="col-fixed">EXENTAS</div>
-                                <div class="col-small">5%</div>
-                                <div class="col-small">10%</div>
+                                <div class="col-fixed">PRECIO TOTAL</div>
+                                <div class="col-small">IVA</div>
                                 <div class="col-small"></div>
                             </div>
 
@@ -185,7 +186,6 @@
         const itemsContainer = document.getElementById('items');
         const totalSumElement = document.getElementById('total-sum');
         let totalSum = 0;
-        let codSeleccion = '';
 
         // Navegación con teclado
         document.addEventListener('keydown', function(e) {
@@ -253,9 +253,8 @@
                 const priceInput = item.querySelector('input[name="precio[]"]');
                 const ivaInput = item.querySelector('input[name="iva[]"]');
                 const itemInput = item.querySelector('input[name="item[]"]');
-                const exentaInput = item.querySelector('input[name="exenta[]"]');
-                const cincoInput = item.querySelector('input[name="cinco[]"]');
-                const diezInput = item.querySelector('input[name="diez[]"]');
+                const totalInput = item.querySelector('input[name="total[]"]');
+                const taxBadge = item.querySelector('.tax-badge');
 
                 if (!qtyInput || !priceInput || !ivaInput) return;
 
@@ -267,22 +266,9 @@
                 // Actualizar número de ítem
                 if (itemInput) itemInput.value = index + 1;
 
-                // Calcular según IVA
-                if (exentaInput && cincoInput && diezInput) {
-                    if (iva === 0) {
-                        exentaInput.value = subtotal.toFixed(2);
-                        cincoInput.value = '0';
-                        diezInput.value = '0';
-                    } else if (iva === 5) {
-                        exentaInput.value = '0';
-                        cincoInput.value = subtotal.toFixed(2);
-                        diezInput.value = '0';
-                    } else if (iva === 10) {
-                        exentaInput.value = '0';
-                        cincoInput.value = '0';
-                        diezInput.value = subtotal.toFixed(2);
-                    }
-                }
+                // Actualizar total y badge de IVA
+                if (totalInput) totalInput.value = subtotal.toFixed(2);
+                if (taxBadge) taxBadge.textContent = iva + '%';
 
                 totalSum += subtotal;
             });
@@ -334,18 +320,12 @@
                     </div>
 
                     <div class="px-1 col-fixed">
-                        <input type="text" name="exenta[]" class="form-control"
-                               value="0" placeholder="Exenta" disabled required oninput="sanitizeInput(this)">
+                        <input type="text" name="total[]" class="form-control"
+                               value="0" placeholder="Total" readonly>
                     </div>
 
-                    <div class="px-1 col-small">
-                        <input type="text" name="cinco[]" class="form-control"
-                               value="0" placeholder="5%" disabled required oninput="sanitizeInput(this)">
-                    </div>
-
-                    <div class="px-1 col-small">
-                        <input type="text" name="diez[]" class="form-control"
-                               value="0" placeholder="10%" disabled required oninput="sanitizeInput(this)">
+                    <div class="px-1 col-small text-center">
+                        <span class="badge bg-info tax-badge" style="font-size:13px; padding:8px 6px; display:inline-block; width:100%;">0%</span>
                     </div>
 
                     <div class="px-1 col-small">
@@ -393,47 +373,6 @@
                 }
             });
 
-            // Configurar autocomplete
-            $(descripcionInput).autocomplete({
-                minLength: 0,
-                source: function(request, response) {
-                    $.ajax({
-                        url: "{{ route('obtenerproducto') }}",
-                        dataType: "json",
-                        data: {
-                            term: request.term
-                        },
-                        success: function(data) {
-                            response($.map(data, function(p) {
-                                return {
-                                    label: p.descripcion + ' (' + Math.trunc(p.stock) +
-                                        ')',
-                                    value: p.descripcion,
-                                    codigo: p.codigo,
-                                    id: p.id
-                                };
-                            }));
-                        }
-                    });
-                },
-                select: function(event, ui) {
-                    traerCargarDatosProducto(ui.item.codigo, this);
-                    $(this).closest('.d-flex').find('input[name="cantidad[]"]').focus();
-                },
-                focus: function(event, ui) {
-                    $(this).val(ui.item.label);
-                    codSeleccion = ui.item.codigo;
-                    return false;
-                },
-                autoFocus: true
-            }).keydown(function(e) {
-                if (e.keyCode === 13 && $(this).val() !== "") {
-                    traerCargarDatosProducto(codSeleccion, this);
-                    newItem.querySelector('input[name="cantidad[]"]').focus();
-                }
-            });
-
-            // Evento input para actualizar suma total
             newItem.querySelectorAll('input').forEach(inp => {
                 inp.addEventListener('input', actualizarSumaTotal);
             });
@@ -474,25 +413,45 @@
 
                     const config = response.configuracion || {};
                     row.find('input[name="configuracionv[]"]').val(config.estado || 0);
-
-                    // Habilitar/deshabilitar campos según IVA
-                    const iva = p.impuesto;
-                    if (iva === 10) {
-                        row.find('input[name="cinco[]"], input[name="exenta[]"]').prop('disabled', true).val(0);
-                        row.find('input[name="diez[]"]').prop('disabled', false);
-                    } else if (iva === 5) {
-                        row.find('input[name="diez[]"], input[name="exenta[]"]').prop('disabled', true).val(0);
-                        row.find('input[name="cinco[]"]').prop('disabled', false);
-                    } else {
-                        row.find('input[name="cinco[]"], input[name="diez[]"]').prop('disabled', true).val(0);
-                        row.find('input[name="exenta[]"]').prop('disabled', false);
-                    }
                 }
                 actualizarSumaTotal();
             }).fail(function(error) {
                 console.error('Error en la petición AJAX:', error);
             });
         }
+
+        // Autocomplete con event delegation (funciona en items agregados dinámicamente)
+        $(document).on('focus', '.autocomplete-producto', function() {
+            if ($(this).data("ui-autocomplete")) return;
+
+            $(this).autocomplete({
+                minLength: 0,
+                source: function(request, response) {
+                    $.ajax({
+                        url: "{{ route('obtenerproducto') }}",
+                        dataType: "json",
+                        data: {
+                            term: request.term
+                        },
+                        success: function(data) {
+                            response($.map(data, function(p) {
+                                return {
+                                    label: p.descripcion + ' (' + Math.trunc(p.stock) + ')',
+                                    value: p.descripcion,
+                                    codigo: p.codigo,
+                                    id: p.id
+                                };
+                            }));
+                        }
+                    });
+                },
+                select: function(event, ui) {
+                    traerCargarDatosProducto(ui.item.codigo, this);
+                    $(this).closest('.d-flex').find('input[name="cantidad[]"]').focus();
+                },
+                autoFocus: true
+            });
+        });
 
         // Inicializar primer ítem
         document.addEventListener("DOMContentLoaded", function() {

@@ -154,8 +154,8 @@
                         overflow-y: hidden;
                         white-space: nowrap !important;
                         min-width: 1200px;
-                        /* Ajustar según suma de columnas */
-                        border: 1px solid #ccc;
+                        border: 1px solid #dee2e6;
+                        border-radius: 12px;
                     }
 
                     /* 🔥 Columnas fijas que no se achican */
@@ -192,10 +192,11 @@
                         flex-direction: row;
                         flex-wrap: nowrap;
                         align-items: center;
-                        background: #000;
+                        background: #0d6efd;
                         color: #fff;
                         font-weight: bold;
                         padding: 10px 0;
+                        border-radius: 12px 12px 0 0;
                     }
                 </style>
 
@@ -209,9 +210,8 @@
                         <div class="col-large">DESCRIPCIÓN</div>
                         <div class="col-fixed">CANTIDAD</div>
                         <div class="col-medium">PRECIO UNIT.</div>
-                        <div class="col-fixed">EXENTAS</div>
-                        <div class="col-small">5%</div>
-                        <div class="col-small">10%</div>
+                        <div class="col-fixed">PRECIO TOTAL</div>
+                        <div class="col-small">IVA</div>
                         <div class="col-small"></div>
                     </div>
 
@@ -370,17 +370,11 @@
         }
 
         function actualizarSumaTotal() {
-
-            console.clear(); // limpia la consola cada vez
             totalSum = 0;
 
-            const rows = document.querySelectorAll('#items .item'); // ✅ selector correcto
-
-            let itemN = 0;
+            const rows = document.querySelectorAll('#items .item');
 
             rows.forEach((item, index) => {
-
-
                 const qtyInput = item.querySelector('input[name="cantidad[]"]');
                 const preciounit = item.querySelector('input[name="precio[]"]');
                 const priceOrigInput = item.querySelector('input[name="precioorig[]"]');
@@ -388,10 +382,11 @@
                 const pmayInput = item.querySelector('input[name="pmayorista[]"]');
                 const condInput = item.querySelector('input[name="condicionv[]"]');
                 const ivaInput = item.querySelector('input[name="iva[]"]');
+                const itemInput = item.querySelector('input[name="item[]"]');
+                const totalInput = item.querySelector('input[name="total[]"]');
+                const taxBadge = item.querySelector('.tax-badge');
 
-                if (!qtyInput || !priceOrigInput || !ivaInput) {
-                    return;
-                }
+                if (!qtyInput || !priceOrigInput || !ivaInput) return;
 
                 const qty = parseFloat(qtyInput.value) || 0;
                 const priceOrig = parseFloat(priceOrigInput.value) || 0;
@@ -399,12 +394,8 @@
                 const pmay = parseFloat(pmayInput?.value) || 0;
                 const cond = parseFloat(condInput?.value) || 0;
 
-
-
-                // Tomar precio ingresado manualmente
                 let price = parseFloat(preciounit?.value) || 0;
 
-                // Si está vacío o es 0 → usar precio original
                 if (price <= 0) {
                     price = priceOrig;
                 }
@@ -417,26 +408,20 @@
                         const resto = qty % cmay;
                         price = (entero * pmay + resto * priceOrig) / qty;
                     }
-                } else {}
+                }
 
                 const iva = parseFloat(ivaInput.value) || 0;
-
                 const subtotal = qty * price;
 
-                let exenta = 0,
-                    cinco = 0,
-                    diez = 0;
+                let total = subtotal;
+                if (iva === 5) total = subtotal * 1.05;
+                else if (iva === 10) total = subtotal * 1.10;
 
-                if (iva === 0) exenta = subtotal;
-                else if (iva === 5) cinco = subtotal * 1.05;
-                else if (iva === 10) diez = subtotal * 1.10;
+                if (itemInput) itemInput.value = index + 1;
+                if (totalInput) totalInput.value = total.toFixed(2);
+                if (taxBadge) taxBadge.textContent = iva + '%';
 
-                item.querySelector('input[name="item[]"]').value = ++itemN;
-                item.querySelector('input[name="exenta[]"]').value = exenta.toFixed(2);
-                item.querySelector('input[name="cinco[]"]').value = cinco.toFixed(2);
-                item.querySelector('input[name="diez[]"]').value = diez.toFixed(2);
-
-                totalSum += (exenta + cinco + diez);
+                totalSum += total;
             });
 
             totalSumElement.textContent = totalSum.toFixed(2);
@@ -491,18 +476,12 @@
         </div>
 
         <div class="px-1 col-fixed">
-            <input type="text" name="exenta[]" class="form-control"
-                   value="0" placeholder="Exenta" disabled required oninput="sanitizeInput(this)">
+            <input type="text" name="total[]" class="form-control"
+                   value="0" placeholder="Total" readonly>
         </div>
 
-        <div class="px-1 col-small">
-            <input type="text" name="cinco[]" class="form-control"
-                   value="0" placeholder="5%" disabled required oninput="sanitizeInput(this)">
-        </div>
-
-        <div class="px-1 col-small">
-            <input type="text" name="diez[]" class="form-control"
-                   value="0" placeholder="10%" disabled required oninput="sanitizeInput(this)">
+        <div class="px-1 col-small text-center">
+            <span class="badge bg-info tax-badge" style="font-size:13px; padding:8px 6px; display:inline-block; width:100%;">0%</span>
         </div>
 
         <div class="px-1 col-small">
@@ -529,26 +508,6 @@
 
             newItem.querySelectorAll('input').forEach(inp => {
                 inp.addEventListener('input', actualizarSumaTotal);
-                if (inp.name === 'descripcion[]') {
-                    $(inp).autocomplete({
-                        source: function(request, response) {
-                            $.getJSON("{{ route('obtenerproducto') }}", {
-                                term: request.term
-                            }, data => {
-                                response(Object.values(data).map(p => ({
-                                    label: `${p.descripcion} (${p.stock})`,
-                                    value: p.descripcion,
-                                    codigo: p.codigo,
-                                    id: p.id
-                                })));
-                            });
-                        },
-                        select: function(e, ui) {
-                            traerCargarDatosProducto(ui.item.codigo, this);
-                            $(this).closest('.d-flex').find('input[name="cantidad[]"]').focus();
-                        }
-                    });
-                }
             });
 
             newItem.querySelector('input[name="cantidad[]"]').addEventListener('keydown', e => {
@@ -559,14 +518,12 @@
                 }
             });
 
-            ['precio[]', 'exenta[]', 'cinco[]', 'diez[]'].forEach(name => {
-                const inp = newItem.querySelector(`input[name="${name}"]`);
-                inp.addEventListener('keydown', e => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addNewItem();
-                    }
-                });
+            const precioEnter = newItem.querySelector('input[name="precio[]"]');
+            precioEnter.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addNewItem();
+                }
             });
 
             actualizarSumaTotal();
@@ -656,18 +613,6 @@
                     row.find('input[name="pmayorista[]"]').val(p.pmayorista || 0);
                     row.find('input[name="cmayorista[]"]').val(p.cmayorista || 0);
                     row.find('input[name="condicionv[]"]').val(response.configuracion?.estado || 0);
-
-                    const iva = p.impuesto;
-                    if (iva === 10) {
-                        row.find('input[name="cinco[]"], input[name="exenta[]"]').prop('disabled', true).val(0);
-                        row.find('input[name="diez[]"]').prop('disabled', false);
-                    } else if (iva === 5) {
-                        row.find('input[name="diez[]"], input[name="exenta[]"]').prop('disabled', true).val(0);
-                        row.find('input[name="cinco[]"]').prop('disabled', false);
-                    } else {
-                        row.find('input[name="cinco[]"], input[name="diez[]"]').prop('disabled', true).val(0);
-                        row.find('input[name="exenta[]"]').prop('disabled', false);
-                    }
                 }
                 actualizarSumaTotal();
             });

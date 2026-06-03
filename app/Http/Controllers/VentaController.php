@@ -107,9 +107,6 @@ class VentaController extends Controller
             $idProductos  = $request->input('codigo', []);
             $precioU      = $request->input('precio', []);
             $tipoImpuesto = $request->input('iva', []);
-            $exenta       = $request->input('exenta', []);
-            $cinco        = $request->input('cinco', []);
-            $diez         = $request->input('diez', []);
 
             $contador = count($idProductos);
             $total = 0;
@@ -117,19 +114,7 @@ class VentaController extends Controller
             // ✅ DETALLE DE VENTA
             for ($i = 0; $i < $contador; $i++) {
 
-                $montoTotParc = 0;
-
-                switch ((int)$tipoImpuesto[$i]) {
-                    case 0:
-                        $montoTotParc = floatval($exenta[$i] ?? 0);
-                        break;
-                    case 5:
-                        $montoTotParc = floatval($cinco[$i] ?? 0);
-                        break;
-                    case 10:
-                        $montoTotParc = floatval($diez[$i] ?? 0);
-                        break;
-                }
+                $montoTotParc = floatval($request->input('total')[$i] ?? 0);
 
                 $total += $montoTotParc;
 
@@ -184,25 +169,10 @@ class VentaController extends Controller
                 'ultimoId' => $ultimoId,
                 'estadov'  => $estadov,
             ]);
-<<<<<<< HEAD
         } catch (\Exception $e) {
-
-                DB::rollBack();
-                Log::error($e->getMessage());
-                return redirect()->route('venta.create')->with('error', 'Ha ocurrido un error al registrar la compra. Por favor, inténtelo de nuevo.');
-            }
-        } else {
-            return redirect()->route('sinpermiso');
-=======
-        } catch (Exception $e) {
-            dd($e);
             DB::rollBack();
-            Log::error('ERROR VENTA: ' . $e->getMessage());
-
-            return redirect()
-                ->route('venta.create')
-                ->with('error', 'Ocurrió un error al registrar la venta.');
->>>>>>> sisventa
+            Log::error($e->getMessage());
+            return redirect()->route('venta.create')->with('error', 'Ha ocurrido un error al registrar la compra. Por favor, inténtelo de nuevo.');
         }
     }
 

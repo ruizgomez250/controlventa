@@ -9,11 +9,7 @@ class Producto extends Model
 {
     use HasFactory;
     protected $table = "productos"; //le personalizo el nombre a la tabla
-<<<<<<< HEAD
-    protected  $fillable = ['id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'stock', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'impuesto', 'imagen'];
-=======
-    protected  $fillable = ['id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'stock', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'id_impuesto', 'pmayorista', 'cmayorista', 'dmayorista','tipo'];
->>>>>>> sisventa
+    protected $fillable = ['id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'stock', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'impuesto', 'imagen', 'id_impuesto', 'pmayorista', 'cmayorista', 'dmayorista', 'tipo'];
 
     public function categoriaproducto()
     {
@@ -25,7 +21,6 @@ class Producto extends Model
     {
         return $this->belongsTo(Opcion::class, 'id_medida');
     }
-<<<<<<< HEAD
     protected $appends = ['imagen_url'];
 
     public function getImagenUrlAttribute()
@@ -33,10 +28,10 @@ class Producto extends Model
         return $this->imagen
             ? asset('storage/' . $this->imagen)
             : asset('images/default.png');
-=======
+    }
+
     public function impuesto()
     {
         return $this->belongsTo(Impuesto::class, 'id_impuesto');
->>>>>>> sisventa
     }
 }
