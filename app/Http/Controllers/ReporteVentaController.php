@@ -97,7 +97,6 @@ class ReporteVentaController extends Controller
      function generarReporte($fechadesde, $fechahasta, $idusuario = null)
     {
 
-        // Consultar ventas
         if (is_null($idusuario)) {
             $ventas = Venta::with(['usuario', 'cliente'])
                 ->where('fecha_emision', '>=', $fechadesde)
