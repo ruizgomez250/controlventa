@@ -37,7 +37,7 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         },
-        "files":["app/helpers/helpers.php"]
+        "files":["app/Helpers/helpers.php"]
 
     },
     "autoload-dev": {
