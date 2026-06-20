@@ -14,8 +14,8 @@ use Illuminate\Http\Request;
 use TCPDF;
 use App\Helpers\NumberToWords;
 use App\Models\Configuracion;
+use App\Models\TablaPorcentaje;
 use App\Models\TemporalVentaDetalle;
-use App\services\PermisoService;
 use DragonCode\Contracts\Cashier\Auth\Auth;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
 use Illuminate\Support\Facades\DB;
@@ -24,19 +24,11 @@ use Illuminate\Support\Facades\Log;
 
 class VentaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    protected $permisoService;
-
-    public function __construct(PermisoService $permisoService)
-    {
-        $this->permisoService = $permisoService;
-    }
     public function index()
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Venta', 'leer');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('venta leer')) {
+            return view('sinpermiso.index');
+        }
             $heads = [
                 'ID',
                 'Fecha',
@@ -51,30 +43,24 @@ class VentaController extends Controller
             ];
             $cabecera = Venta::with('cliente', 'usuario')->get();
             return view('ventas.index', compact('cabecera', 'heads'));
-        } else {
-            return view('sinpermiso.index');
-        }
     }
 
 
     public function create()
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Venta', 'crear');
-        if ($tienePermiso) {
-            $clientes = Cliente::where('estado', 1)->get();
-            $configuracionQR = Configuracion::where('descripcion', 'qr')->first();
-            return view('ventas.create', compact('clientes', 'configuracionQR'));
-        } else {
+        if (!auth()->user()->can('venta crear')) {
             return view('sinpermiso.index');
         }
+        $clientes = Cliente::where('estado', 1)->get();
+        $configuracionQR = Configuracion::where('descripcion', 'qr')->first();
+        $porcentajes = TablaPorcentaje::where('estado', 1)->get()->keyBy('cuota');
+        return view('ventas.create', compact('clientes', 'configuracionQR', 'porcentajes'));
     }
 
 
     public function store(Request $request)
     {
-        
-        $tienePermiso = $this->permisoService->verificarPermiso('Venta', 'crear');
-        if (!$tienePermiso) {
+        if (!auth()->user()->can('venta crear')) {
             return redirect()->route('sinpermiso');
         }
 
@@ -178,8 +164,9 @@ class VentaController extends Controller
 
     public function destroy(string $id)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Venta', 'borrar');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('venta borrar')) {
+            return redirect()->route('sinpermiso');
+        }
             try {
                 DB::beginTransaction();
 
@@ -217,33 +204,26 @@ class VentaController extends Controller
                 Log::error($e->getMessage());
                 return redirect()->route('venta.index')->with('error', 'Ha ocurrido un error al registrar la compra. Por favor, inténtelo de nuevo.');
             }
-        } else {
-            return redirect()->route('sinpermiso');
-        }
     }
     public function getDetalles($id)
-
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Venta', 'leer');
-        $tienePermiso1 = $this->permisoService->verificarPermiso('Caja', 'leer');
-        if ($tienePermiso || $tienePermiso1) {
-            $detalles = VentaDetalle::where('id_venta', $id)
-                ->with(['producto', 'producto.unidaddemedida'])
-                ->get();
-            $sumaMontos = Caja::where('id_venta', $id)->sum('monto');
-            return response()->json([
-                'detalles' => $detalles,
-                'sumaMontos' => $sumaMontos
-            ]);
-        } else {
+        if (!auth()->user()->can('venta leer') && !auth()->user()->can('caja leer')) {
             return redirect()->route('sinpermiso');
         }
+        $detalles = VentaDetalle::where('id_venta', $id)
+            ->with(['producto', 'producto.unidaddemedida'])
+            ->get();
+        $sumaMontos = Caja::where('id_venta', $id)->sum('monto');
+        return response()->json([
+            'detalles' => $detalles,
+            'sumaMontos' => $sumaMontos
+        ]);
     }
     public function pagarCuota(string $id, string $fecha)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'crear');
-
-        if ($tienePermiso) {
+        if (!auth()->user()->can('caja crear')) {
+            return redirect()->route('sinpermiso');
+        }
             try {
                 DB::beginTransaction();
 
@@ -300,17 +280,14 @@ class VentaController extends Controller
                 return response()->json(['ventaycuotas' => $ventaycuotas, 'idcaja' => $caja->id, 'success' => 'Cuota pagada en forma exitosa.'], 200);
             } catch (Exception $e) {
                 DB::rollBack();
-                // Aquí puedes manejar el error como desees, por ejemplo, registrándolo o mostrando un mensaje al usuario.
                 return response()->json(['error' => 'Ha ocurrido un error al procesar la operación.'], 500);
             }
-        } else {
-            return redirect()->route('sinpermiso');
-        }
     }
     public function pagarMonto(string $id, float $montoabonado, float $descuento)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'crear');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('caja crear')) {
+            return redirect()->route('sinpermiso');
+        }
             try {
 
                 DB::beginTransaction();
@@ -353,18 +330,14 @@ class VentaController extends Controller
                 return response()->json(['caja' => $caja->id, 'success' => 'Cuota pagada en forma exitosa.'], 200);
             } catch (Exception $e) {
                 DB::rollBack();
-                // Aquí puedes manejar el error como desees, por ejemplo, registrándolo o mostrando un mensaje al usuario.
                 return response()->json(['error' => 'Ha ocurrido un error al procesar la operación.'], 500);
             }
-        } else {
-            return redirect()->route('sinpermiso');
-        }
     }
     public function getCuotas($id)
-
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'leer');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('caja leer')) {
+            return redirect()->route('sinpermiso');
+        }
             $idVenta = $id;
 
             $ventaycuotas = DB::table('ventas as v')
@@ -387,14 +360,12 @@ class VentaController extends Controller
                 ->where('v.id', $idVenta)
                 ->get();
             return response()->json($ventaycuotas);
-        } else {
-            return redirect()->route('sinpermiso');
-        }
     }
     public function getMontos($id)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'leer');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('caja leer')) {
+            return redirect()->route('sinpermiso');
+        }
             $idUsuarioLogueado = auth()->user()->id;
 
             // Obtener todas las cajas del usuario logueado
@@ -403,14 +374,12 @@ class VentaController extends Controller
                 ->get();
 
             return response()->json($cajas);
-        } else {
-            return redirect()->route('sinpermiso');
-        }
     }
     public function indexCaja()
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'leer');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('caja leer')) {
+            return view('sinpermiso.index');
+        }
             $heads = [
                 'ID',
                 'Fecha',
@@ -427,14 +396,12 @@ class VentaController extends Controller
                 ->whereIn('estado', [1, 4])
                 ->get();
             return view('caja.index', compact('cabecera'));
-        } else {
-            return view('sinpermiso.index');
-        }
     }
     public function indexCobradosCaja(Request $request)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'leer');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('caja leer')) {
+            return view('sinpermiso.index');
+        }
             $fecha = $request->input('fecha');
             if ($fecha == null) {
                 // Aquí puedes agregar lógica adicional según sea necesario para manejar el filtro de fecha
@@ -461,15 +428,13 @@ class VentaController extends Controller
                 ->whereDate('cajas.fecha_cobro', $fecha)
                 ->get();
             return view('caja.cobrado', compact('cabecera', 'fecha'));
-        } else {
-            return view('sinpermiso.index');
-        }
     }
 
     public function generarFactura($id)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'leer');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('caja leer')) {
+            return redirect()->route('sinpermiso');
+        }
             $pagare = Pagare::find($id);
             $cantPagosRealizados = Pagare::where('id', '<=', $id)
                 ->where('id_venta', $pagare->id_venta)
@@ -522,14 +487,12 @@ class VentaController extends Controller
             $pdf->Cell(0, 10, 'GRACIAS POR TU PAGO!!!', 0, 1, 'C');
             $pdf->Output('ordendecompra.pdf', 'I');
             exit;
-        } else {
-            return redirect()->route('sinpermiso');
-        }
     }
     public function generarFacturaMonto($id)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Caja', 'leer');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('caja leer')) {
+            return redirect()->route('sinpermiso');
+        }
             $caja = Caja::find($id);
             if (!$caja) {
                 abort(404, 'Pago no encontrado');
@@ -577,9 +540,6 @@ class VentaController extends Controller
             $pdf->Cell(0, 10, 'GRACIAS POR TU PAGO!!!', 0, 1, 'C');
             $pdf->Output('ordendecompra.pdf', 'I');
             exit;
-        } else {
-            return redirect()->route('sinpermiso');
-        }
     }
     public function cargarDet(Request $request, $id)
     {

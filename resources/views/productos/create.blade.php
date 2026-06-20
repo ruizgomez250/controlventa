@@ -140,14 +140,37 @@
 
                     </div>
 
-                    {{-- Mayorista --}}
+                    {{-- Precios Mayoristas por Tramos --}}
+                    <div class="card card-outline card-info mt-3">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-layer-group"></i> Precios Mayoristas por Tramos</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">Define precios especiales según la cantidad comprada. El sistema usará automáticamente el tramo que corresponda.</p>
+                            <table class="table table-sm table-bordered" id="tierTable">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="width:40px;">#</th>
+                                        <th>Desde Cantidad</th>
+                                        <th>Precio Unitario Gs.</th>
+                                        <th style="width:50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tierBody"></tbody>
+                            </table>
+                            <button type="button" class="btn btn-success btn-sm mt-2" onclick="addTierRow()">
+                                <i class="fas fa-plus"></i> Agregar Tramo
+                            </button>
+                            <small class="text-muted ml-2">Ej: Desde 12 → 5.000, Desde 50 → 4.500</small>
+                        </div>
+                    </div>
+
                     <div class="row">
-                        <x-adminlte-input name="cmayorista" type="number" label="Cantidad Mayorista"
-                            fgroup-class="col-md-2" value="0" min="0" />
-                        <x-adminlte-input name="pmayorista" type="number" label="Precio Mayorista"
-                            fgroup-class="col-md-2" value="0" min="0" />
-                        <x-adminlte-input name="dmayorista" type="number" label="Descuento" fgroup-class="col-md-2"
-                            value="0" min="0" step="any" label-class="text-success" />
                         <div class="col-6 rcorners2 importet">
                             <p><strong>Margen según fórmula:</strong> (Precio Venta - Costo) / Precio Venta;</p>
                             <h1 id="margenganancia" class="text-center">0 %</h1>
@@ -335,58 +358,38 @@
 
             document.getElementById('porcentaje').value = 0;
         }
-        calcularDescuento();
     }
 
     function calcularPrecioVenta() {
-        // Obtén los valores de precio de costo y porcentaje
         var pcosto = parseFloat(document.getElementById('pcosto').value);
         var porcentaje = parseFloat(document.getElementById('porcentaje').value);
 
-        // Verifica si el porcentaje ingresado es mayor a 0
-        const margenGananciaElement = document.getElementById('margenganancia');
-        margenGananciaElement.textContent = margenGanancia + '0 %';
-
         if (porcentaje > 0) {
-            // Calcula el precio de venta
             var pventa = pcosto * (1 + porcentaje / 100);
-
-            // Muestra el resultado en el campo de precio de venta
             document.getElementById('pventa').value = pventa.toFixed(2);
-
-
-
-            // Muestra el resultado en el campo de porcentaje
-            document.getElementById('porcentaje').value = porcentajeAumento.toFixed(2);
-            const margenGananciaElement = document.getElementById('margenganancia');
-            margenGananciaElement.textContent = margenGanancia + ' %';
         } else {
-            // Si el porcentaje es 0 o negativo, establece el precio de venta en 0
             document.getElementById('pventa').value = 0;
         }
     }
 
-    function calcularDescuento() {
-        // Obtén los valores de precio de costo y precio de venta
-        var cantidad = parseFloat(document.getElementById('cmayorista').value);
-        var pventa = parseFloat(document.getElementById('pventa').value);
-        var pmayorista = parseFloat(document.getElementById('pmayorista').value);
-        var total = cantidad * pventa;
-        var resultado = total - pmayorista;
-        // Si uno de los valores es 0, establece el porcentaje en 0
-        document.getElementById('dmayorista').value = resultado;
-
+    let tierCounter = 0;
+    function addTierRow(cantidad, precio) {
+        tierCounter++;
+        var row = '<tr id="tierRow' + tierCounter + '">' +
+            '<td class="text-center align-middle">' + tierCounter + '</td>' +
+            '<td><input type="number" name="tier_cantidad[]" class="form-control form-control-sm" value="' + (cantidad || '') + '" min="1" placeholder="Ej: 12" required></td>' +
+            '<td><input type="number" name="tier_precio[]" class="form-control form-control-sm" value="' + (precio || '') + '" min="0" placeholder="Precio unitario" required></td>' +
+            '<td class="text-center align-middle">' +
+            '<button type="button" class="btn btn-danger btn-sm" onclick="this.closest(\'tr\').remove(); renumerarTiers();"><i class="fa fa-trash"></i></button>' +
+            '</td>' +
+            '</tr>';
+        $('#tierBody').append(row);
     }
 
-    function calcularPrecioMayorista() {
-        // Obtén los valores de precio de costo y porcentaje
-        var descuento = parseFloat(document.getElementById('dmayorista').value);
-        var cantidad = parseFloat(document.getElementById('cmayorista').value);
-        var pventa = parseFloat(document.getElementById('pventa').value);
-        var total = cantidad * pventa;
-        var resultado = total - descuento;
-
-        document.getElementById('pmayorista').value = resultado;
+    function renumerarTiers() {
+        $('#tierBody tr').each(function(i) {
+            $(this).find('td:first').text(i + 1);
+        });
     }
     // Obtén una referencia a la tabla DataTable
 

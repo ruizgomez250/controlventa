@@ -15,24 +15,33 @@
 
         <!-- Modal Fechas de Pago -->
         <div class="modal fade" id="modalPagare">
-            <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title">Guardar las fechas de los pagos</h4>
+                    <div class="modal-header bg-success text-white">
+                        <h4 class="modal-title"><i class="fa fa-calendar-alt"></i> Cuotas del Crédito</h4>
+                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                     </div>
-                    <div class="modal-body d-flex justify-content-center align-items-center">
+                    <div class="modal-body">
+                        <div class="alert alert-info mb-3">
+                            <i class="fa fa-info-circle"></i> Las fechas se generan automáticamente. Puede editarlas directamente.
+                            <strong>Recargo: <span id="recargoLabel">0</span>%</strong> |
+                            <strong>Total c/recargo: <span id="totalConRecargo">0</span> Gs.</strong> |
+                            <strong>Monto por cuota: <span id="montoPorCuota">0</span> Gs.</strong>
+                        </div>
                         <table id="tblpagare" class="table table-striped table-bordered">
-                            <thead>
+                            <thead class="thead-dark">
                                 <tr>
-                                    <th>Cuota</th>
-                                    <th>Fecha Pago</th>
+                                    <th class="text-center" style="width:80px;">N° Cuota</th>
+                                    <th>Fecha de Pago</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
                         </table>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-default" type="button" data-dismiss="modal">Cerrar</button>
+                        <button class="btn btn-success" type="button" data-dismiss="modal">
+                            <i class="fa fa-check"></i> Confirmar Fechas
+                        </button>
                     </div>
                 </div>
             </div>
@@ -111,7 +120,12 @@
                     </div>
 
                     <x-adminlte-input type="number" id="cantpago" name="cantpago" fgroup-class="col-md-1"
-                        value="1" min="1" style="display:none;" />
+                        value="1" min="1" style="display:none;" onchange="actualizarPorcentajeCuota()" oninput="actualizarPorcentajeCuota()" />
+                    <div class="col-md-2 d-flex align-items-end" id="porcentajeDisplay" style="display:none;">
+                        <span class="badge badge-info" style="font-size:14px; padding:8px 12px;">
+                            <i class="fas fa-percentage"></i> Recargo: <span id="porcentajeLabel">0</span>%
+                        </span>
+                    </div>
                     <div class="col-md-2 d-flex align-items-end">
                         <a data-toggle="modal" id="fechasButton" href="#modalPagare" style="display:none;">
                             <button class="btn btn-success" type="button" onclick="cargarPag()">
@@ -278,14 +292,41 @@
         let totalSum = 0;
         let inputgeneral = null;
 
+        var porcentajesData = @json($porcentajes->map(function($item) {
+            return ['cuota' => $item->cuota, 'porcentaje' => $item->porcentaje];
+        })->values());
+
+        function obtenerPorcentaje(cantpago) {
+            for (var i = 0; i < porcentajesData.length; i++) {
+                if (porcentajesData[i].cuota == cantpago) {
+                    return porcentajesData[i].porcentaje;
+                }
+            }
+            return 0;
+        }
+
+        function actualizarPorcentajeCuota() {
+            var cantpago = parseInt(document.getElementById("cantpago").value) || 1;
+            var pct = obtenerPorcentaje(cantpago);
+            document.getElementById("porcentajeLabel").textContent = pct;
+            if (pct > 0) {
+                document.getElementById("porcentajeDisplay").style.display = "flex";
+            } else {
+                document.getElementById("porcentajeDisplay").style.display = "none";
+            }
+            actualizarSumaTotal();
+        }
+
         function mostrarOpc() {
             document.getElementById("cantpago").style.display = "block";
             document.getElementById("fechasButton").style.display = "inline";
+            actualizarPorcentajeCuota();
         }
 
         function ocultarOpc() {
             document.getElementById("cantpago").style.display = "none";
             document.getElementById("fechasButton").style.display = "none";
+            document.getElementById("porcentajeDisplay").style.display = "none";
         }
 
         document.addEventListener('keydown', e => {
@@ -301,72 +342,61 @@
             if (m < 10) m = '0' + m;
             if (d < 10) d = '0' + d;
             var fech = y + "-" + m + "-" + d;
-            var cantp = document.getElementById("cantpago").value;
-            var contAux = 1;
-            var valor = [];
+            var cantp = parseInt(document.getElementById("cantpago").value) || 1;
+            var total = parseFloat(document.getElementById('total-sum').textContent) || 0;
+            var pct = obtenerPorcentaje(cantp);
+            var montoCuota = total / cantp;
+            document.getElementById('recargoLabel').textContent = pct;
+            document.getElementById('totalConRecargo').textContent = total.toFixed(2);
+            document.getElementById('montoPorCuota').textContent = montoCuota.toFixed(2);
 
-            // Agregar la primera fecha actual
-            var fecha = '<tr class="filas" id="fila0">' +
-                '<td><input type="date" onchange="cambiarsiguientesfechas(0)" name="fechP[]" value="' + fech + '"></td>' +
+            // Limpiar tabla
+            var tbody = $('#tblpagare tbody');
+            tbody.empty();
+
+            // Agregar la primera fecha (hoy)
+            var row1 = '<tr class="filas" id="fila0">' +
+                '<td class="text-center font-weight-bold">1</td>' +
+                '<td><input type="date" class="form-control" onchange="cambiarsiguientesfechas(0)" name="fechP[]" value="' + fech + '"></td>' +
                 '</tr>';
-            var book = new datosA(contAux, fecha);
-            valor.push(book);
-            contAux++;
+            tbody.append(row1);
 
-            // Agregar las siguientes fechas
+            // Agregar las siguientes fechas (cada una +1 mes)
             for (let index = 1; index < cantp; index++) {
-                // Incrementar el mes
                 m++;
-                if (m > 12) {
-                    m = 1;
-                    y++;
-                }
-                // Formatear el mes y año
+                if (m > 12) { m = 1; y++; }
                 var mm = (m < 10) ? '0' + m : m;
                 var yy = y;
-                // Crear la fecha
                 var nextFech = yy + "-" + mm + "-" + d;
-                fecha = '<tr class="filas" id="fila' + index + '">' +
-                    '<td><input type="date" onchange="cambiarsiguientesfechas(' + index + ')" name="fechP[]"  id="fechP' +
-                    index + '" value="' +
-                    nextFech +
-                    '"></td>' +
+                var row = '<tr class="filas" id="fila' + index + '">' +
+                    '<td class="text-center font-weight-bold">' + (index + 1) + '</td>' +
+                    '<td><input type="date" class="form-control" onchange="cambiarsiguientesfechas(' + index + ')" name="fechP[]" id="fechP' +
+                    index + '" value="' + nextFech + '"></td>' +
                     '</tr>';
-                book = new datosA(contAux, fecha);
-                valor.push(book);
-                contAux++;
+                tbody.append(row);
             }
-
-            $('#tblpagare').DataTable({
-                paging: false,
-                searching: false,
-                info: false,
-                data: valor,
-                "bDestroy": true,
-                columns: [{
-                        title: "Pago",
-                        data: "num"
-                    },
-                    {
-                        title: "Fecha",
-                        data: "fecha"
-                    }
-                ]
-            });
-
-
-
+        }
+        function cambiarsiguientesfechas(index) {
+            var filas = document.querySelectorAll('#tblpagare tbody .filas');
+            var fechaBase = filas[index].querySelector('input[type="date"]').value;
+            if (!fechaBase) return;
+            var parts = fechaBase.split('-');
+            var y = parseInt(parts[0]);
+            var m = parseInt(parts[1]);
+            var d = parseInt(parts[2]);
+            for (var i = index + 1; i < filas.length; i++) {
+                m++;
+                if (m > 12) { m = 1; y++; }
+                var mm = (m < 10) ? '0' + m : m;
+                var dd = (d < 10) ? '0' + d : d;
+                filas[i].querySelector('input[type="date"]').value = y + '-' + mm + '-' + dd;
+            }
         }
         cambiarCod();
         // --- Funciones de validación y cálculo ---
         function sanitizeInput(input) {
             input.value = input.value.replace(/[^0-9.]/g, '').replace(/,/g, '.');
             actualizarSumaTotal();
-        }
-
-        function datosA(num, fecha) {
-            this.num = num;
-            this.fecha = fecha;
         }
 
         function actualizarSumaTotal() {
@@ -378,9 +408,7 @@
                 const qtyInput = item.querySelector('input[name="cantidad[]"]');
                 const preciounit = item.querySelector('input[name="precio[]"]');
                 const priceOrigInput = item.querySelector('input[name="precioorig[]"]');
-                const cmayInput = item.querySelector('input[name="cmayorista[]"]');
-                const pmayInput = item.querySelector('input[name="pmayorista[]"]');
-                const condInput = item.querySelector('input[name="condicionv[]"]');
+                const tiersInput = item.querySelector('input[name="precio_tiers[]"]');
                 const ivaInput = item.querySelector('input[name="iva[]"]');
                 const itemInput = item.querySelector('input[name="item[]"]');
                 const totalInput = item.querySelector('input[name="total[]"]');
@@ -390,9 +418,6 @@
 
                 const qty = parseFloat(qtyInput.value) || 0;
                 const priceOrig = parseFloat(priceOrigInput.value) || 0;
-                const cmay = parseFloat(cmayInput?.value) || 0;
-                const pmay = parseFloat(pmayInput?.value) || 0;
-                const cond = parseFloat(condInput?.value) || 0;
 
                 let price = parseFloat(preciounit?.value) || 0;
 
@@ -400,13 +425,25 @@
                     price = priceOrig;
                 }
 
-                if (cmay > 0 && qty >= cmay) {
-                    if (cond === 0) {
-                        price = pmay / cmay;
-                    } else {
-                        const entero = Math.floor(qty / cmay);
-                        const resto = qty % cmay;
-                        price = (entero * pmay + resto * priceOrig) / qty;
+                // Aplicar precio por tramo mayorista
+                if (tiersInput?.value) {
+                    try {
+                        const tiers = JSON.parse(tiersInput.value);
+                        if (Array.isArray(tiers) && tiers.length > 0) {
+                            // Ordenar por cantidad_desde ascendente
+                            tiers.sort((a, b) => a.cantidad_desde - b.cantidad_desde);
+                            let tierPrice = null;
+                            for (const t of tiers) {
+                                if (qty >= t.cantidad_desde) {
+                                    tierPrice = t.precio_unitario;
+                                }
+                            }
+                            if (tierPrice !== null) {
+                                price = tierPrice;
+                            }
+                        }
+                    } catch (e) {
+                        // ignore invalid JSON
                     }
                 }
 
@@ -447,9 +484,7 @@
             <input type="text" name="unidad[]" class="form-control" value="UNIDAD" required>
         </div>
 
-        <input type="hidden" name="pmayorista[]">
-        <input type="hidden" name="cmayorista[]">
-        <input type="hidden" name="condicionv[]">
+        <input type="hidden" name="precio_tiers[]">
         <input type="hidden" name="precioorig[]">
         <input type="hidden" name="iva[]">
         <input type="hidden" name="codigo[]">
@@ -610,9 +645,7 @@
                     row.find('input[name="iva[]"]').val(p.impuesto);
                     row.find('input[name="precio[]"]').val(p.pventa);
                     row.find('input[name="precioorig[]"]').val(p.pventa);
-                    row.find('input[name="pmayorista[]"]').val(p.pmayorista || 0);
-                    row.find('input[name="cmayorista[]"]').val(p.cmayorista || 0);
-                    row.find('input[name="condicionv[]"]').val(response.configuracion?.estado || 0);
+                    row.find('input[name="precio_tiers[]"]').val(JSON.stringify(p.precio_tiers || []));
                 }
                 actualizarSumaTotal();
             });

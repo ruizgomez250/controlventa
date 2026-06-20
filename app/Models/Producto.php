@@ -34,4 +34,9 @@ class Producto extends Model
     {
         return $this->belongsTo(Impuesto::class, 'id_impuesto');
     }
+
+    public function precioTiers()
+    {
+        return $this->hasMany(ProductoPrecioTier::class, 'id_producto')->orderBy('cantidad_desde');
+    }
 }

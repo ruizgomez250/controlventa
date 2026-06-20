@@ -1,12 +1,65 @@
 @extends('adminlte::page')
 
-
-
 @section('content_header')
-    <h1 class="m-0 custom-heading">Permisos de Usuarios</h1>
+    <h1 class="m-0 custom-heading">
+        <i class="fas fa-shield-alt"></i> Permisos de Usuarios
+    </h1>
 @stop
+
 @section('css')
-    <link rel="stylesheet" href="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.css') }}">
+    <style>
+        .permission-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fff;
+            transition: box-shadow 0.2s;
+        }
+        .permission-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .permission-card h5 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+            font-weight: 600;
+        }
+        .permission-card .form-check {
+            margin-bottom: 6px;
+        }
+        .permission-card .form-check-label {
+            cursor: pointer;
+            user-select: none;
+        }
+        .select-all-link {
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: #007bff;
+            margin-left: 5px;
+        }
+        .select-all-link:hover {
+            text-decoration: underline;
+        }
+        .badge-count {
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+        #permisos-container {
+            display: none;
+        }
+        .user-info-bar {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .permiso-checkbox:checked {
+            accent-color: #28a745;
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -14,188 +67,205 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    {{-- 'id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'id_estado','pcosto', 'pventa', 'observacion' --}}
-
-
-
-
-
-                    <div class="row">
-                        {{-- With Label --}}
-
-
-
-                        <x-adminlte-select2 name="idusuario" id="idusuario" label="USUARIOS" fgroup-class="col-md-4">
+                    <div class="row align-items-end">
+                        <x-adminlte-select2 name="idusuario" id="idusuario" label="Seleccionar Usuario" fgroup-class="col-md-5">
                             <x-slot name="prependSlot">
-                                <div class="input-group-text bg-gradient-secondary">
+                                <div class="input-group-text bg-gradient-info">
                                     <i class="fas fa-user"></i>
                                 </div>
                             </x-slot>
+                            <option value="">-- Seleccione un usuario --</option>
                             @foreach ($usuarios as $item)
-                                <option value={{ $item->id }}>{{ $item->name }}</option>
+                                <option value="{{ $item->id }}">{{ $item->name }} ({{ $item->email }})</option>
                             @endforeach
                         </x-adminlte-select2>
-                        <button class="btn btn-secondary" style="float: right;" onclick="mostrarPermisos()">Asignar Roles</button>
-
-
-
+                        <div class="col-md-2 mb-3">
+                            <button class="btn btn-info" onclick="cargarPermisos()" id="btnCargar">
+                                <i class="fas fa-sync"></i> Cargar Permisos
+                            </button>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <button class="btn btn-success" data-toggle="modal" data-target="#crearPermisoModal">
+                                <i class="fas fa-plus"></i> Crear Permiso
+                            </button>
+                        </div>
                     </div>
-
-                    <hr>
-
-
-
-                    <!-- Agrega este elemento para mostrar la suma total -->
-
-                    </form>
-
                 </div>
             </div>
         </div>
     </div>
-    <x-adminlte-modal id="permisosModal" title="Permisos del Usuario" theme="light" size="lg">
-        <div>
-            <form method="POST" action="{{ route('rol.store') }}">
-                @csrf
-                <div class="row">
-                    <input type="hidden" name="id_usuario" id="id_usuario">
-                    <div class="col-6">
-                        <h5 class="custom-heading">Cliente</h5>
-                        <label><input type="checkbox" name="permisos[cliente_leer]" id="cliente_leer"> Leer</label>
-                        <label><input type="checkbox" name="permisos[cliente_borrar]" id="cliente_borrar"> Borrar</label>
-                        <label><input type="checkbox" name="permisos[cliente_crear]" id="cliente_crear"> Crear</label>
-                        <label><input type="checkbox" name="permisos[cliente_editar]" id="cliente_editar"> Editar</label>
+
+    {{-- Modal Crear Permiso --}}
+    <div class="modal fade" id="crearPermisoModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form id="crearPermisoForm">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-plus-circle"></i> Crear Nuevo Permiso</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
                     </div>
-                    <div class="col-6">
-                        <h5 class="custom-heading">Proveedor</h5>
-                        <label><input type="checkbox" name="permisos[proveedor_leer]" id="proveedor_leer"> Leer</label>
-                        <label><input type="checkbox" name="permisos[proveedor_borrar]" id="proveedor_borrar">
-                            Borrar</label>
-                        <label><input type="checkbox" name="permisos[proveedor_crear]" id="proveedor_crear"> Crear</label>
-                        <label><input type="checkbox" name="permisos[proveedor_editar]" id="proveedor_editar">
-                            Editar</label>
+                    <div class="modal-body">
+                        <p class="text-muted">Crea un permiso nuevo para que aparezca en la lista y pueda asignarse a los usuarios.</p>
+                        <x-adminlte-input name="nombre" id="nombrePermiso" label="Nombre del Permiso" placeholder="Ej: tabla_porcentaje leer" />
                     </div>
-                    <div class="col-6">
-                        <h5 class="custom-heading">Producto</h5>
-                        <label><input type="checkbox" name="permisos[producto_leer]" id="producto_leer"> Leer</label>
-                        <label><input type="checkbox" name="permisos[producto_borrar]" id="producto_borrar"> Borrar</label>
-                        <label><input type="checkbox" name="permisos[producto_crear]" id="producto_crear"> Crear</label>
-                        <label><input type="checkbox" name="permisos[producto_editar]" id="producto_editar"> Editar</label>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
                     </div>
-                    <div class="col-6">
-                        <h5 class="custom-heading">Compra</h5>
-                        <label><input type="checkbox" name="permisos[compra_leer]" id="compra_leer"> Leer</label>
-                        <label><input type="checkbox" name="permisos[compra_borrar]" id="compra_borrar"> Borrar</label>
-                        <label><input type="checkbox" name="permisos[compra_crear]" id="compra_crear"> Crear</label>
-                        <label><input type="checkbox" name="permisos[compra_editar]" id="compra_editar"> Editar</label>
-                    </div>
-                    <div class="col-6">
-                        <h5 class="custom-heading">Venta</h5>
-                        <label><input type="checkbox" name="permisos[venta_leer]" id="venta_leer"> Leer</label>
-                        <label><input type="checkbox" name="permisos[venta_borrar]" id="venta_borrar"> Borrar</label>
-                        <label><input type="checkbox" name="permisos[venta_crear]" id="venta_crear"> Crear</label>
-                        <label><input type="checkbox" name="permisos[venta_editar]" id="venta_editar"> Editar</label>
-                    </div>
-                    <div class="col-6">
-                        <h5 class="custom-heading">Caja</h5>
-                        <label><input type="checkbox" name="permisos[caja_leer]" id="caja_leer"> Leer</label>
-                        <label><input type="checkbox" name="permisos[caja_borrar]" id="caja_borrar"> Borrar</label>
-                        <label><input type="checkbox" name="permisos[caja_crear]" id="caja_crear"> Crear</label>
-                        <label><input type="checkbox" name="permisos[caja_editar]" id="caja_editar"> Editar</label>
-                    </div>
-                    <div class="col-6">
-                        <h5 class="custom-heading">Reporte Caja</h5>
-                        <label><input type="checkbox" name="permisos[cajareporte_leer]" id="cajareporte_leer"> Leer</label>
-                        <label><input type="checkbox" name="permisos[cajareporte_borrar]" id="cajareporte_borrar"> Borrar</label>
-                        <label><input type="checkbox" name="permisos[cajareporte_crear]" id="cajareporte_crear"> Crear</label>
-                        <label><input type="checkbox" name="permisos[cajareporte_editar]" id="cajareporte_editar"> Editar</label>
-                    </div>
-                    <div class="col-6">
-                        <h5 class="custom-heading">Reportes</h5>
-                        <label><input type="checkbox" name="permisos[reporte_leer]" id="reporte_leer"> Leer</label>
-                        <label><input type="checkbox" name="permisos[reporte_borrar]" id="reporte_borrar"> Borrar</label>
-                        <label><input type="checkbox" name="permisos[reporte_crear]" id="reporte_crear"> Crear</label>
-                        <label><input type="checkbox" name="permisos[reporte_editar]" id="reporte_editar"> Editar</label>
-                    </div>
-                    <div class="col-6">
-                        <h5 class="custom-heading">Roles</h5>
-                        <label><input type="checkbox" name="permisos[rol_leer]" id="rol_leer"> Leer</label>
-                        <label><input type="checkbox" name="permisos[rol_borrar]" id="rol_borrar"> Borrar</label>
-                        <label><input type="checkbox" name="permisos[rol_crear]" id="rol_crear"> Crear</label>
-                        <label><input type="checkbox" name="permisos[rol_editar]" id="rol_editar"> Editar</label>
-                    </div>
-                    <div class="col-6">
-                        <h5 class="custom-heading">Configuracion</h5>
-                        <label><input type="checkbox" name="permisos[configuracion_leer]" id="configuracion_leer">Modificar</label>
-                    </div>
-                    
-                </div>
-                <button class="btn btn-primary" type="submit">Guardar</button>
-            </form>
+                </form>
+            </div>
         </div>
-    </x-adminlte-modal>
+    </div>
+
+    <div id="permisos-container">
+        <div class="user-info-bar" id="userInfoBar">
+            <i class="fas fa-user-circle"></i>
+            <strong>Usuario:</strong> <span id="userNameDisplay"></span>
+            <span class="badge badge-info ml-2" id="permCountDisplay">0 permisos</span>
+        </div>
+
+        <form method="POST" action="{{ route('rol.store') }}" id="permisosForm">
+            @csrf
+            <input type="hidden" name="id_usuario" id="id_usuario">
+
+            <div class="row">
+                @foreach ($permissionGroups as $model => $actions)
+                    <div class="col-md-6">
+                        <div class="permission-card">
+                            <h5>
+                                <i class="fas fa-cube"></i> {{ $displayNames[$model] ?? ucfirst($model) }}
+                                <a class="select-all-link" onclick="toggleGroup('{{ $model }}', true)">
+                                    <i class="fas fa-check-circle"></i> Todo
+                                </a>
+                                <a class="select-all-link" onclick="toggleGroup('{{ $model }}', false)">
+                                    <i class="fas fa-times-circle"></i> Nada
+                                </a>
+                                <span class="badge badge-light badge-count" id="count_{{ $model }}">0/{{ count($actions) }}</span>
+                            </h5>
+                            <div class="row">
+                                @foreach ($actions as $action)
+                                    @php
+                                        $permName = $model . ' ' . $action;
+                                        $inputId = $model . '_' . $action;
+                                    @endphp
+                                    <div class="col-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input permiso-checkbox group-{{ $model }}"
+                                                   type="checkbox"
+                                                   name="permisos[]"
+                                                   value="{{ $permName }}"
+                                                   id="{{ $inputId }}"
+                                                   onchange="updateCount('{{ $model }}')">
+                                            <label class="form-check-label" for="{{ $inputId }}">
+                                                <i class="fas {{ $actionIcons[$action] ?? 'fa-check' }} text-{{ $actionColors[$action] ?? 'secondary' }}"></i>
+                                                {{ $actionLabels[$action] ?? $action }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-12 text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Guardar Permisos
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
 @stop
 
 @push('js')
-    <script src="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.js') }}"></script>
     <script>
-        function mostrarPermisos() {
-            var checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(function(checkbox) {
-                checkbox.checked = false;
-            });
+        function cargarPermisos() {
+            var userId = document.getElementById('idusuario').value;
+            if (!userId) {
+                Swal.fire('Atención', 'Seleccione un usuario primero.', 'warning');
+                return;
+            }
 
-            userId = document.getElementById('idusuario').value;
-            // Usando getElementById
-            document.getElementById('id_usuario').value=userId;
+            document.getElementById('id_usuario').value = userId;
+            var allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            allCheckboxes.forEach(function(cb) { cb.checked = false; });
 
-            
+            var userName = document.querySelector('#idusuario option:checked').text;
+            document.getElementById('userNameDisplay').textContent = userName;
 
             $.ajax({
                 url: 'getroles/' + userId,
                 method: 'GET',
                 success: function(response) {
-                    if (response.length != 0) {
-                        response.forEach(function(permisos) {
-                            modelo = permisos.nombre_modelo;
-                            modeloMinusc = modelo.toLowerCase();
-
-                            // Verifica cada permiso y marca el checkbox correspondiente
-                            if (permisos.leer == 1) {
-                                nombre = modeloMinusc + '_leer';
-                                var checkbox = document.getElementById(nombre);
-                                checkbox.checked = true;
-                            }
-                            if (permisos.borrar == 1) {
-                                nombre = modeloMinusc + '_borrar';
-                                var checkbox = document.getElementById(nombre);
-                                checkbox.checked = true;
-                            }
-                            if (permisos.crear == 1) {
-                                nombre = modeloMinusc + '_crear';
-                                var checkbox = document.getElementById(nombre);
-                                checkbox.checked = true;
-                            }
-                            if (permisos.editar == 1) {
-                                nombre = modeloMinusc + '_editar';
-                                var checkbox = document.getElementById(nombre);
-                                checkbox.checked = true;
-                            }
-                        });
-                    }
-                    $('#detalleModal').modal('show');
+                    response.forEach(function(permName) {
+                        var inputId = permName.replace(' ', '_');
+                        var checkbox = document.getElementById(inputId);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                    var modelNames = @json(array_keys($permissionGroups));
+                    modelNames.forEach(function(m) { updateCount(m); });
+                    document.getElementById('permisos-container').style.display = 'block';
+                    updatePermCount();
+                    $('#permisos-container').hide().fadeIn(300);
                 },
                 error: function() {
-                    console.log('Error al obtener detalles de la compra');
+                    Swal.fire('Error', 'No se pudieron cargar los permisos.', 'error');
                 }
             });
-            $('#permisosModal').modal('show');
         }
-        // Mostrar el mensaje de éxito o error con SweetAlert
-        if (typeof successMessage !== 'undefined' && successMessage) {
-            Swal.fire('Éxito', successMessage, 'success');
-        } else if (typeof errorMessage !== 'undefined' && errorMessage) {
-            Swal.fire('Error', errorMessage, 'error');
+
+        function toggleGroup(group, state) {
+            var checkboxes = document.querySelectorAll('.group-' + group);
+            checkboxes.forEach(function(cb) { cb.checked = state; });
+            updateCount(group);
+            updatePermCount();
         }
+
+        function updateCount(group) {
+            var checkboxes = document.querySelectorAll('.group-' + group);
+            var checked = 0;
+            checkboxes.forEach(function(cb) { if (cb.checked) checked++; });
+            var total = checkboxes.length;
+            document.getElementById('count_' + group).textContent = checked + '/' + total;
+        }
+
+        function updatePermCount() {
+            var allCheckboxes = document.querySelectorAll('input[name="permisos[]"]');
+            var checked = 0;
+            allCheckboxes.forEach(function(cb) { if (cb.checked) checked++; });
+            document.getElementById('permCountDisplay').textContent = checked + ' permisos';
+        }
+
+        $(document).ready(function() {
+            var successMessage = '{{ session('success') }}';
+            var errorMessage = '{{ session('error') }}';
+            if (successMessage) {
+                Swal.fire('Éxito', successMessage, 'success');
+            } else if (errorMessage) {
+                Swal.fire('Error', errorMessage, 'error');
+            }
+        });
+
+        $('#crearPermisoForm').on('submit', function(e) {
+            e.preventDefault();
+            var btn = $(this).find('button[type="submit"]');
+            btn.prop('disabled', true);
+            $.post('{{ route("permisos.crear") }}', $(this).serialize(), function(res) {
+                $('#crearPermisoModal').modal('hide');
+                $('#crearPermisoForm')[0].reset();
+                Swal.fire('Éxito', res.success, 'success');
+            }).fail(function(xhr) {
+                var msg = xhr.responseJSON?.error || xhr.responseJSON?.errors?.nombre?.[0] || 'Error al crear permiso';
+                Swal.fire('Error', msg, 'error');
+            }).always(function() {
+                btn.prop('disabled', false);
+            });
+        });
     </script>
 @endpush

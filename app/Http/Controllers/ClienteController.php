@@ -9,45 +9,36 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use App\Models\Cliente;
 use App\Models\Opcion;
-use App\services\PermisoService;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Exception;
 
 class ClienteController extends Controller
 {
-    protected $permisoService;
-
-    public function __construct(PermisoService $permisoService)
-    {
-        $this->permisoService = $permisoService;
-    }
     public function index(): View
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Cliente', 'leer');
-        if ($tienePermiso) {
-            try {
-                $cliente = Cliente::all();
-                if ($cliente->isEmpty()) {
-                    $cliente = collect();
-                } else {
-                    $cliente = $cliente->sortBy("Razón Social");
-                }
-                $heads = [
-                    'ID',
-                    'Razón Social',
-                    'RUC',
-                    'Correo',
-                    'Teléfono',
-                    'Estado',
-                    'Acción'
-                ];
-                return view('clientes.index', ['clientes' => $cliente, 'heads' => $heads]);
-            } catch (Exception $e) {
-                return view('clientes.index')->with('message', 'No se pudo completar la operación.');
-            }
-        } else {
+        if (!auth()->user()->can('cliente leer')) {
             return view('sinpermiso.index');
+        }
+        try {
+            $cliente = Cliente::all();
+            if ($cliente->isEmpty()) {
+                $cliente = collect();
+            } else {
+                $cliente = $cliente->sortBy("Razón Social");
+            }
+            $heads = [
+                'ID',
+                'Razón Social',
+                'RUC',
+                'Correo',
+                'Teléfono',
+                'Estado',
+                'Acción'
+            ];
+            return view('clientes.index', ['clientes' => $cliente, 'heads' => $heads]);
+        } catch (Exception $e) {
+            return view('clientes.index')->with('message', 'No se pudo completar la operación.');
         }
     }
     public function indexA()
@@ -90,61 +81,55 @@ class ClienteController extends Controller
 
     public function getClientes(string $id)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Cliente', 'editar');
-        if ($tienePermiso) {
-            try {
-                $clientes = Cliente::findOrFail($id);
-                // cuando es una lista: $clienteFormat = clienteresource::collection($clientes);
-                /*cuando es un solo registro*/
-                $response = [
-                    'status' => 200, // 200 para éxito
-                    'data' =>  $clientes,
-                ];
-            } catch (\Exception $e) {
-                $response = [
-                    'status' => 500, // 500 para error
-                    'error' => $e->getMessage(),
-                ];
-            }
-
-            return response()->json($response);
-        } else {
+        if (!auth()->user()->can('cliente editar')) {
             return view('sinpermiso.index');
         }
+        try {
+            $clientes = Cliente::findOrFail($id);
+            // cuando es una lista: $clienteFormat = clienteresource::collection($clientes);
+            /*cuando es un solo registro*/
+            $response = [
+                'status' => 200, // 200 para éxito
+                'data' =>  $clientes,
+            ];
+        } catch (\Exception $e) {
+            $response = [
+                'status' => 500, // 500 para error
+                'error' => $e->getMessage(),
+            ];
+        }
+
+        return response()->json($response);
     }
 
     public function create(): View
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Cliente', 'crear');
-        if ($tienePermiso) {
-            try {
-                $opcion = Opcion::where('id_dominio', 1)->get();
-                return view('clientes.create', ['opcion' => $opcion]);
-            } catch (Exception $e) {
-                return view('clientes.index')->with('message', 'No se pudo completar la operación.');
-            }
-        } else {
+        if (!auth()->user()->can('cliente crear')) {
             return view('sinpermiso.index');
+        }
+        try {
+            $opcion = Opcion::where('id_dominio', 1)->get();
+            return view('clientes.create', ['opcion' => $opcion]);
+        } catch (Exception $e) {
+            return view('clientes.index')->with('message', 'No se pudo completar la operación.');
         }
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Cliente', 'crear');
-        if ($tienePermiso) {
-            try {
-                $request->validate(['razonsocial' => 'required']);
-
-                Cliente::create($request->all());
-
-                return redirect()->route('cliente.create')->with('success', 'Operación exitosa');
-            } catch (ValidationException $e) {
-                return redirect()->route('cliente.create')->withErrors($e->validator)->withInput();
-            } catch (Exception $e) {
-                return redirect()->route('cliente.create')->with('error', 'No se pudo completar la operación.');
-            }
-        } else {
+        if (!auth()->user()->can('cliente crear')) {
             return redirect()->route('sinpermiso');
+        }
+        try {
+            $request->validate(['razonsocial' => 'required']);
+
+            Cliente::create($request->all());
+
+            return redirect()->route('cliente.create')->with('success', 'Operación exitosa');
+        } catch (ValidationException $e) {
+            return redirect()->route('cliente.create')->withErrors($e->validator)->withInput();
+        } catch (Exception $e) {
+            return redirect()->route('cliente.create')->with('error', 'No se pudo completar la operación.');
         }
     }
 
@@ -201,62 +186,54 @@ class ClienteController extends Controller
 
     public function edit(Cliente $cliente): View
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Cliente', 'editar');
-        if ($tienePermiso) {
-            try {
-                $opcion = Opcion::where('id_dominio', 1)->get();
-                return view('clientes.edit', ['opcion' => $opcion, 'cli' => $cliente]);
-            } catch (Exception $e) {
-                return view('clientes.index')->with('message', 'No se pudo completar la operación.');
-            }
-        } else {
+        if (!auth()->user()->can('cliente editar')) {
             return view('sinpermiso.index');
+        }
+        try {
+            $opcion = Opcion::where('id_dominio', 1)->get();
+            return view('clientes.edit', ['opcion' => $opcion, 'cli' => $cliente]);
+        } catch (Exception $e) {
+            return view('clientes.index')->with('message', 'No se pudo completar la operación.');
         }
     }
 
     public function update(Request $request, Cliente $cliente): RedirectResponse
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Cliente', 'editar');
-        if ($tienePermiso) {
-            try {
-                $cliente->update($request->all());
-                return redirect()->route('cliente.index')->with('success', 'Operación exitosa');
-            } catch (Exception $e) {
-                return redirect()->route('cliente.index')->with('error', 'no se pudo completar la operacion!!');
-            }
-        } else {
+        if (!auth()->user()->can('cliente editar')) {
             return redirect()->route('sinpermiso');
+        }
+        try {
+            $cliente->update($request->all());
+            return redirect()->route('cliente.index')->with('success', 'Operación exitosa');
+        } catch (Exception $e) {
+            return redirect()->route('cliente.index')->with('error', 'no se pudo completar la operacion!!');
         }
     }
 
     public function destroy(Cliente $cliente): RedirectResponse
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Cliente', 'borrar');
-        if ($tienePermiso) {
-            try {
-                $cliente->delete();
-                return redirect()->route('cliente.index')->with('success', 'Operación exitosa');
-            } catch (Exception $e) {
-                return redirect()->route('cliente.index')->with('error', 'No se pudo completar la operación.');
-            }
-        } else {
+        if (!auth()->user()->can('cliente borrar')) {
             return redirect()->route('sinpermiso');
+        }
+        try {
+            $cliente->delete();
+            return redirect()->route('cliente.index')->with('success', 'Operación exitosa');
+        } catch (Exception $e) {
+            return redirect()->route('cliente.index')->with('error', 'No se pudo completar la operación.');
         }
     }
 
 
     public function guardar(Request $request)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Cliente', 'crear');
-        if ($tienePermiso) {
-            Cliente::create($request->all());
-            // Retorna una respuesta JSON con código de respuesta HTTP 201
-            return response()->json([
-                'message' => 'Cliente creado correctamente',
-                'success' => 'success',
-            ], 201);
-        } else {
+        if (!auth()->user()->can('cliente crear')) {
             return view('sinpermiso.index');
         }
+        Cliente::create($request->all());
+        // Retorna una respuesta JSON con código de respuesta HTTP 201
+        return response()->json([
+            'message' => 'Cliente creado correctamente',
+            'success' => 'success',
+        ], 201);
     }
 }

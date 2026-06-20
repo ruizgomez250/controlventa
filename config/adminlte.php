@@ -304,10 +304,11 @@ return [
             'icon'       => 'fas fa-box',
             'icon_color' => 'orange',
             'classes'    => 'custom-icon-box-black',
+            'can'        => 'producto leer',
             'submenu'    => [
-                ['text' => 'Lista de Productos',  'url' => '/producto'],
-                ['text' => 'Registrar Productos', 'url' => '/producto/create'],
-                ['text' => 'QR / Código Barras',  'url' => 'qrproductover'],
+                ['text' => 'Lista de Productos',  'url' => '/producto',  'can' => 'producto leer'],
+                ['text' => 'Registrar Productos', 'url' => '/producto/create', 'can' => 'producto crear'],
+                ['text' => 'QR / Código Barras',  'url' => 'qrproductover', 'can' => 'producto leer'],
             ],
         ],
         [
@@ -315,9 +316,10 @@ return [
             'icon'       => 'fas fa-users',
             'icon_color' => 'primary',
             'classes'    => 'custom-icon-box-black',
+            'can'        => 'cliente leer',
             'submenu'    => [
-                ['text' => 'Lista de Clientes',  'url' => '/cliente'],
-                ['text' => 'Registrar Cliente',  'url' => '/cliente/create'],
+                ['text' => 'Lista de Clientes',  'url' => '/cliente', 'can' => 'cliente leer'],
+                ['text' => 'Registrar Cliente',  'url' => '/cliente/create', 'can' => 'cliente crear'],
             ],
         ],
         [
@@ -325,9 +327,10 @@ return [
             'icon'       => 'fas fa-truck',
             'icon_color' => 'danger',
             'classes'    => 'custom-icon-box-black',
+            'can'        => 'proveedor leer',
             'submenu'    => [
-                ['text' => 'Lista de Proveedores',  'url' => '/proveedor'],
-                ['text' => 'Registrar Proveedor',   'url' => '/proveedor/create'],
+                ['text' => 'Lista de Proveedores',  'url' => '/proveedor', 'can' => 'proveedor leer'],
+                ['text' => 'Registrar Proveedor',   'url' => '/proveedor/create', 'can' => 'proveedor crear'],
             ],
         ],
 
@@ -337,9 +340,10 @@ return [
             'icon'       => 'fas fa-shopping-bag',
             'icon_color' => 'cyan',
             'classes'    => 'custom-icon-box-black',
+            'can'        => 'compra leer',
             'submenu'    => [
-                ['text' => 'Lista de Compras',   'url' => '/compra'],
-                ['text' => 'Registrar Compra',   'url' => '/compra/create'],
+                ['text' => 'Lista de Compras',   'url' => '/compra', 'can' => 'compra leer'],
+                ['text' => 'Registrar Compra',   'url' => '/compra/create', 'can' => 'compra crear'],
             ],
         ],
         [
@@ -347,9 +351,10 @@ return [
             'icon'       => 'fas fa-money-check-alt',
             'icon_color' => 'success',
             'classes'    => 'custom-icon-box-black',
+            'can'        => 'venta leer',
             'submenu'    => [
-                ['text' => 'Lista de Ventas',   'url' => '/venta'],
-                ['text' => 'Registrar Venta',   'url' => '/venta/create'],
+                ['text' => 'Lista de Ventas',   'url' => '/venta', 'can' => 'venta leer'],
+                ['text' => 'Registrar Venta',   'url' => '/venta/create', 'can' => 'venta crear'],
             ],
         ],
         [
@@ -357,9 +362,10 @@ return [
             'icon'       => 'fas fa-file-invoice-dollar',
             'icon_color' => 'cyan',
             'classes'    => 'custom-icon-box-black',
+            'can'        => 'gasto leer',
             'submenu'    => [
-                ['text' => 'Lista de Gastos',   'url' => '/gasto'],
-                ['text' => 'Registrar Gastos',  'url' => '/gasto/create'],
+                ['text' => 'Lista de Gastos',   'url' => '/gasto', 'can' => 'gasto leer'],
+                ['text' => 'Registrar Gastos',  'url' => '/gasto/create', 'can' => 'gasto crear'],
             ],
         ],
         [
@@ -367,9 +373,10 @@ return [
             'icon'       => 'fas fa-money-check',
             'icon_color' => 'green',
             'classes'    => 'custom-icon-box-black',
+            'can'        => 'cheque leer',
             'submenu'    => [
-                ['text' => 'Lista de Cheques',   'url' => '/cheques'],
-                ['text' => 'Registrar Cheque',   'url' => '/cheques/create'],
+                ['text' => 'Lista de Cheques',   'url' => '/cheques', 'can' => 'cheque leer'],
+                ['text' => 'Registrar Cheque',   'url' => '/cheques/create', 'can' => 'cheque crear'],
             ],
         ],
 
@@ -379,9 +386,11 @@ return [
             'icon'       => 'fas fa-cash-register',
             'icon_color' => 'primary',
             'classes'    => 'custom-icon-box-black',
+            'can'        => 'caja leer',
             'submenu'    => [
-                ['text' => 'Ventas a Cobrar',  'url' => '/caja'],
-                ['text' => 'Cobrados',         'url' => '/caja/cobrado'],
+                ['text' => 'Ventas a Cobrar',  'url' => '/caja', 'can' => 'caja leer'],
+                ['text' => 'Compras a Pagar',  'url' => '/caja/compras', 'can' => 'caja leer'],
+                ['text' => 'Cobrados',         'url' => '/caja/cobrado', 'can' => 'caja leer'],
             ],
         ],
 
@@ -392,8 +401,8 @@ return [
             'icon_color' => 'purple',
             'classes'    => 'custom-icon-box-black',
             'submenu'    => [
-                ['text' => 'Cobros por Fecha',           'url' => '/cajareporte/create'],
-                ['text' => 'Ventas por Estado',          'url' => '/reportes/vendidos', 'icon' => 'fas fa-file-invoice'],
+                ['text' => 'Cobros por Fecha',           'url' => '/cajareporte/create', 'can' => 'cajareporte leer'],
+                ['text' => 'Ventas por Estado',          'url' => '/reportes/vendidos', 'icon' => 'fas fa-file-invoice', 'can' => 'venta leer'],
             ],
         ],
 
@@ -404,8 +413,19 @@ return [
             'icon_color' => 'warning',
             'classes'    => 'custom-icon-box-black',
             'submenu'    => [
-                ['text' => 'Lista de Impuestos',   'url' => '/impuestos'],
-                ['text' => 'Registrar Impuesto',   'url' => '/impuestos/create'],
+                ['text' => 'Lista de Impuestos',   'url' => '/impuestos','can'  => 'tabla_porcentaje leer'],
+                ['text' => 'Registrar Impuesto',   'url' => '/impuestos/create','can'  => 'tabla_porcentaje modificar'],
+            ],
+        ],
+        [
+            'text'       => '% por Cuota',
+            'icon'       => 'fas fa-percentage',
+            'icon_color' => 'info',
+            'classes'    => 'custom-icon-box-black',
+            'can'        => 'tabla_porcentaje leer',
+            'submenu'    => [
+                ['text' => 'Lista de % por Cuota',   'url' => '/tablaporc', 'can' => 'tabla_porcentaje leer'],
+                ['text' => 'Nuevo % por Cuota',      'url' => '/tablaporc/create', 'can' => 'tabla_porcentaje modificar'],
             ],
         ],
         [
@@ -413,8 +433,9 @@ return [
             'icon'       => 'fas fa-user-tag',
             'icon_color' => 'primary',
             'classes'    => 'custom-icon-box-black',
+            'can'        => 'rol leer',
             'submenu'    => [
-                ['text' => 'Ver / Asignar',  'url' => '/rol'],
+                ['text' => 'Ver / Asignar',  'url' => '/rol', 'can' => 'rol leer'],
             ],
         ],
         [
@@ -423,6 +444,7 @@ return [
             'icon'       => 'fas fa-cogs',
             'icon_color' => 'secondary',
             'classes'    => 'custom-icon-box-black',
+            'can'        => 'configuracion modificar',
         ],
 
         ['header' => 'account_settings'],

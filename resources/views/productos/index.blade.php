@@ -36,9 +36,17 @@
                                 <td>{{ $row->pventa }}</td>
                                 <td>{{ number_format($row->impuesto->valor, 2, ',', '.') }} %</td>
                                 <td>{{ ($row->estado === 0) ? "Inactivo" : "Activo" }}</td>
-                                <td>{{ $row->cmayorista}}</td>
-                                <td>{{ $row->pmayorista}}</td>
-                                <td>{{ $row->dmayorista}}</td>
+                                <td>
+                                    @if ($row->precioTiers->count() > 0)
+                                        <small>
+                                            @foreach ($row->precioTiers as $tier)
+                                                {{ $tier->cantidad_desde }}+: {{ number_format($tier->precio_unitario, 0, ',', '.') }}<br>
+                                            @endforeach
+                                        </small>
+                                    @else
+                                        <small class="text-muted">—</small>
+                                    @endif
+                                </td>
                                 <td style="float:right;">
 
 

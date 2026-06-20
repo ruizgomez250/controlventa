@@ -19,6 +19,7 @@
         "milon/barcode": "^10.0",
         "realrashid/sweet-alert": "^7.0",
         "simplesoftwareio/simple-qrcode": "^4.2",
+        "spatie/laravel-permission": "6.0",
         "tecnickcom/tcpdf": "^6.6"
     },
     "require-dev": {

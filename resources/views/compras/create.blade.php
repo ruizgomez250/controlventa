@@ -71,113 +71,148 @@
 @endsection
 
 @section('content')
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <form action="{{ route('compra.store') }}" method="post" autocomplete="off"
-                        onkeypress="return event.keyCode != 13;">
-                        @csrf
-                        @method('POST')
+    <form action="{{ route('compra.store') }}" method="post" autocomplete="off" onkeypress="return event.keyCode != 13;">
+        @csrf
+        @method('POST')
 
-                        <div class="row mb-3">
-                            <div class="form-group col-md-2">
-                                <label for="fechaemision">FECHA DE EMISIÓN</label>
-                                <input type="date" class="form-control" id="fechaemision" name="fechaemision"
-                                    value="{{ date('Y-m-d') }}" required>
-                            </div>
-
-                            <x-adminlte-input type="text" id="nrofactura" name="nrofactura" label="Factura Nº"
-                                fgroup-class="col-md-2" value="0" required />
-                            <x-adminlte-input type="text" id="timbrado" name="timbrado" label="Timbrado Nº"
-                                fgroup-class="col-md-2" value="0" required />
-
-                            <div class="col-md-3">
-                                <div class="card" style="margin-top: -18px">
-                                    <div class="card-body">
-                                        <label>CONDICIÓN DE COMPRA</label>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="condicion" value="CONTADO"
-                                                checked>
-                                            <label class="form-check-label">Contado</label>
-                                        </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="condicion" value="CREDITO">
-                                            <label class="form-check-label">Crédito</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <x-adminlte-input type="hidden" id="proveedor_id" name="proveedor_id" />
+        <!-- Modal Fechas de Pago -->
+        <div class="modal fade" id="modalPagare">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h4 class="modal-title"><i class="fa fa-calendar-alt"></i> Cuotas del Crédito</h4>
+                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info mb-3">
+                            <i class="fa fa-info-circle"></i> Las fechas se generan automáticamente. Puede editarlas directamente.
+                            <strong>Monto por cuota: <span id="montoPorCuota">0</span> Gs.</strong>
                         </div>
-
-                        <x-adminlte-card title="Proveedor" class="text-primary mb-3">
-                            <div class="row">
-                                <x-adminlte-input type="number" id="cod_proveedor" name="cod_proveedor"
-                                    onchange="cambiarCod()" placeholder="Código" label="COD." fgroup-class="col-md-1"
-                                    required />
-                                <x-adminlte-select2 name="id_proveedor" id="id_proveedor" label="RAZON SOCIAL"
-                                    data-placeholder="Seleccionar un proveedor..." fgroup-class="col-md-8"
-                                    onchange="actualizarNumeroDocumento()">
-                                    <x-slot name="prependSlot">
-                                        <div class="input-group-text bg-gradient-primary">
-                                            <i class="fas fa-truck"></i>
-                                        </div>
-                                    </x-slot>
-                                    @foreach ($proveedor as $item)
-                                        <option value="{{ $item->id }}" data-ruc="{{ $item->ruc }}">
-                                            {{ $item->razonsocial }}</option>
-                                    @endforeach
-                                </x-adminlte-select2>
-                                <x-adminlte-input type="text" id="numero_documento" name="numero_documento"
-                                    placeholder="RUC" label="RUC" readonly fgroup-class="col-md-2" />
-                            </div>
-                        </x-adminlte-card>
-
-                        <hr>
-
-                        <!-- 🔥 CONTENEDOR QUE GARANTIZA EL SCROLL -->
-                        <div class="scroll-area">
-                            <div class="header-row">
-                                <div class="col-small">ITEM</div>
-                                <div class="col-small">UNDM</div>
-                                <div class="col-medium">CÓDIGO</div>
-                                <div class="col-fixed">CANTIDAD</div>
-                                <div class="col-large">DESCRIPCIÓN</div>
-                                <div class="col-medium">PRECIO UNIT.</div>
-                                <div class="col-fixed">PRECIO TOTAL</div>
-                                <div class="col-small">IVA</div>
-                                <div class="col-small"></div>
-                            </div>
-
-                            <div id="items"></div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <button type="button" class="btn btn-primary" onclick="addNewItem()">Agregar Ítem</button>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-12">
-                                <h5>Suma Total: <span id="total-sum">0.00</span></h5>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-12 text-right">
-                                <a class="btn btn-danger mx-1" href="{{ route('compra.index') }}">Cancelar</a>
-                                <x-adminlte-button type="submit" label="Registrar" theme="primary"
-                                    icon="fas fa-lg fa-save" />
-                            </div>
-                        </div>
-                    </form>
+                        <table id="tblpagare" class="table table-striped table-bordered">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th class="text-center" style="width:80px;">N° Cuota</th>
+                                    <th>Fecha de Pago</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-success" type="button" data-dismiss="modal">
+                            <i class="fa fa-check"></i> Confirmar Fechas
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="form-group col-md-2">
+                        <label for="fechaemision">FECHA DE EMISIÓN (alt+shift+f)</label>
+                        <input type="date" class="form-control" id="fechaemision" name="fechaemision"
+                            value="{{ date('Y-m-d') }}" required>
+                    </div>
+
+                    <x-adminlte-input type="text" id="nrofactura" name="nrofactura" label="Factura Nº"
+                        fgroup-class="col-md-2" value="0" required />
+                    <x-adminlte-input type="text" id="timbrado" name="timbrado" label="Timbrado Nº"
+                        fgroup-class="col-md-2" value="0" required />
+
+                    <div class="col-md-3">
+                        <div class="card" style="margin-top: -18px">
+                            <div class="card-body">
+                                <label>CONDICIÓN DE COMPRA</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="condicion" value="CONTADO"
+                                        onchange="ocultarOpc()" checked>
+                                    <label class="form-check-label">Contado</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="condicion" value="CREDITO"
+                                        onchange="mostrarOpc()">
+                                    <label class="form-check-label">Crédito</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <x-adminlte-input type="number" id="cantpago" name="cantpago" fgroup-class="col-md-1"
+                        value="1" min="1" style="display:none;" />
+                    <div class="col-md-2 d-flex align-items-end">
+                        <a data-toggle="modal" id="fechasButton" href="#modalPagare" style="display:none;">
+                            <button class="btn btn-success" type="button" onclick="cargarPag()">
+                                <i class="fa fa-plus-circle"></i> Fechas Pagos
+                            </button>
+                        </a>
+                    </div>
+                </div>
+
+                <x-adminlte-card title="Proveedor" class="text-primary mb-3">
+                    <div class="row">
+                        <x-adminlte-input type="number" id="cod_proveedor" name="cod_proveedor"
+                            onchange="cambiarCod()" placeholder="Código" label="COD." fgroup-class="col-md-1"
+                            required />
+                        <x-adminlte-select2 name="id_proveedor" id="id_proveedor" label="RAZON SOCIAL"
+                            data-placeholder="Seleccionar un proveedor..." fgroup-class="col-md-7"
+                            onchange="actualizarNumeroDocumento()">
+                            <x-slot name="prependSlot">
+                                <div class="input-group-text bg-gradient-primary">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                            </x-slot>
+                            @foreach ($proveedor as $item)
+                                <option value="{{ $item->id }}" data-ruc="{{ $item->ruc }}">
+                                    {{ $item->razonsocial }}</option>
+                            @endforeach
+                        </x-adminlte-select2>
+                        <x-adminlte-input type="text" id="numero_documento" name="numero_documento"
+                            placeholder="RUC" label="RUC" readonly fgroup-class="col-md-1" />
+                    </div>
+                </x-adminlte-card>
+
+                <hr>
+
+                <!-- 🔥 CONTENEDOR QUE GARANTIZA EL SCROLL -->
+                <div class="scroll-area">
+                    <div class="header-row">
+                        <div class="col-small">ITEM</div>
+                        <div class="col-small">UNDM</div>
+                        <div class="col-medium">CÓDIGO</div>
+                        <div class="col-fixed">CANTIDAD</div>
+                        <div class="col-large">DESCRIPCIÓN</div>
+                        <div class="col-medium">PRECIO UNIT.</div>
+                        <div class="col-fixed">PRECIO TOTAL</div>
+                        <div class="col-small">IVA</div>
+                        <div class="col-small"></div>
+                    </div>
+
+                    <div id="items"></div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <button type="button" class="btn btn-primary" onclick="addNewItem()">Agregar Ítem</button>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <h5>Suma Total: <span id="total-sum">0.00</span></h5>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                        <a class="btn btn-danger mx-1" href="{{ route('compra.index') }}">Cancelar</a>
+                        <x-adminlte-button type="submit" label="Registrar" theme="primary" icon="fas fa-lg fa-save" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 @stop
 
 @push('js')
@@ -186,6 +221,70 @@
         const itemsContainer = document.getElementById('items');
         const totalSumElement = document.getElementById('total-sum');
         let totalSum = 0;
+
+        function mostrarOpc() {
+            document.getElementById("cantpago").style.display = "block";
+            document.getElementById("fechasButton").style.display = "inline";
+        }
+
+        function ocultarOpc() {
+            document.getElementById("cantpago").style.display = "none";
+            document.getElementById("fechasButton").style.display = "none";
+        }
+
+        function cargarPag() {
+            var n = new Date();
+            var y = n.getFullYear();
+            var m = n.getMonth() + 1;
+            var d = n.getDate();
+            if (m < 10) m = '0' + m;
+            if (d < 10) d = '0' + d;
+            var fech = y + "-" + m + "-" + d;
+            var cantp = parseInt(document.getElementById("cantpago").value) || 1;
+            var total = parseFloat(document.getElementById('total-sum').textContent) || 0;
+            var montoCuota = total / cantp;
+            document.getElementById('montoPorCuota').textContent = montoCuota.toFixed(2);
+
+            var tbody = $('#tblpagare tbody');
+            tbody.empty();
+
+            var row1 = '<tr class="filas" id="fila0">' +
+                '<td class="text-center font-weight-bold">1</td>' +
+                '<td><input type="date" class="form-control" onchange="cambiarsiguientesfechas(0)" name="fechP[]" value="' + fech + '"></td>' +
+                '</tr>';
+            tbody.append(row1);
+
+            for (let index = 1; index < cantp; index++) {
+                m++;
+                if (m > 12) { m = 1; y++; }
+                var mm = (m < 10) ? '0' + m : m;
+                var yy = y;
+                var nextFech = yy + "-" + mm + "-" + d;
+                var row = '<tr class="filas" id="fila' + index + '">' +
+                    '<td class="text-center font-weight-bold">' + (index + 1) + '</td>' +
+                    '<td><input type="date" class="form-control" onchange="cambiarsiguientesfechas(' + index + ')" name="fechP[]" id="fechP' +
+                    index + '" value="' + nextFech + '"></td>' +
+                    '</tr>';
+                tbody.append(row);
+            }
+        }
+
+        function cambiarsiguientesfechas(index) {
+            var filas = document.querySelectorAll('#tblpagare tbody .filas');
+            var fechaBase = filas[index].querySelector('input[type="date"]').value;
+            if (!fechaBase) return;
+            var parts = fechaBase.split('-');
+            var y = parseInt(parts[0]);
+            var m = parseInt(parts[1]);
+            var d = parseInt(parts[2]);
+            for (var i = index + 1; i < filas.length; i++) {
+                m++;
+                if (m > 12) { m = 1; y++; }
+                var mm = (m < 10) ? '0' + m : m;
+                var dd = (d < 10) ? '0' + d : d;
+                filas[i].querySelector('input[type="date"]').value = y + '-' + mm + '-' + dd;
+            }
+        }
 
         // Navegación con teclado
         document.addEventListener('keydown', function(e) {
@@ -293,9 +392,6 @@
                     <input type="hidden" name="iva[]">
                     <input type="hidden" name="codigo[]">
                     <input type="hidden" name="productoid[]">
-                    <input type="hidden" name="pmayorista[]">
-                    <input type="hidden" name="cmayorista[]">
-                    <input type="hidden" name="configuracionv[]">
                     <input type="hidden" name="precioorig[]">
                     <input type="hidden" name="tipo_impuesto[]">
 
@@ -407,12 +503,7 @@
                     row.find('input[name="precioorig[]"]').val(p.pventa);
                     row.find('input[name="tipo_impuesto[]"]').val(p.id_impuesto);
                     console.log(row.find('input[name="tipo_impuesto[]"]').val());
-                    
-                    row.find('input[name="pmayorista[]"]').val(p.pmayorista || 0);
-                    row.find('input[name="cmayorista[]"]').val(p.cmayorista || 0);
 
-                    const config = response.configuracion || {};
-                    row.find('input[name="configuracionv[]"]').val(config.estado || 0);
                 }
                 actualizarSumaTotal();
             }).fail(function(error) {

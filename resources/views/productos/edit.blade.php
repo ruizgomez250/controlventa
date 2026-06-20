@@ -147,22 +147,44 @@
                             @endforeach
                         </x-adminlte-select> --}}
                     </div>
-                    <div class="row">
-                        <x-adminlte-input name="cmayorista" id="cmayorista" type="number"
-                            value="{{ $producto->cmayorista }}" label="Cantidad Mayorista" fgroup-class="col-md-2"
-                            min="0" oninput="calcularDescuento()" />
-                        <x-adminlte-input name="pmayorista" id="pmayorista" type="number" label="Precio Mayorista"
-                            value="{{ $producto->pmayorista }}" fgroup-class="col-md-2" min="0"
-                            oninput="calcularPorcentajeAumento()" />
-                        <x-adminlte-input name="dmayorista" id="dmayorista" type="number" label="Descuento"
-                            value="{{ $producto->dmayorista }}" fgroup-class="col-md-2" min="0"
-                            step="any" oninput="calcularPrecioMayorista()" label-class="text-success" />
-
-
-
-
-
-
+                    {{-- Precios Mayoristas por Tramos --}}
+                    <div class="card card-outline card-info mt-3">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-layer-group"></i> Precios Mayoristas por Tramos</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">Define precios especiales según la cantidad comprada.</p>
+                            <table class="table table-sm table-bordered" id="tierTable">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="width:40px;">#</th>
+                                        <th>Desde Cantidad</th>
+                                        <th>Precio Unitario Gs.</th>
+                                        <th style="width:50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tierBody">
+                                    @foreach ($producto->precioTiers as $tier)
+                                        <tr>
+                                            <td class="text-center align-middle">{{ $loop->iteration }}</td>
+                                            <td><input type="number" name="tier_cantidad[]" class="form-control form-control-sm" value="{{ $tier->cantidad_desde }}" min="1" required></td>
+                                            <td><input type="number" name="tier_precio[]" class="form-control form-control-sm" value="{{ $tier->precio_unitario }}" min="0" required></td>
+                                            <td class="text-center align-middle">
+                                                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); renumerarTiers();"><i class="fa fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <button type="button" class="btn btn-success btn-sm mt-2" onclick="addTierRow()">
+                                <i class="fas fa-plus"></i> Agregar Tramo
+                            </button>
+                        </div>
                     </div>
 
                     <div class="mt-3 col-4">
@@ -355,7 +377,6 @@
             // Si uno de los valores es 0, establece el porcentaje en 0
             document.getElementById('porcentaje').value = 0;
         }
-        calcularDescuento();
     }
 
     function calcularPrecioVenta() {
@@ -376,27 +397,24 @@
         }
     }
 
-    function calcularDescuento() {
-        // Obtén los valores de precio de costo y precio de venta
-        var cantidad = parseFloat(document.getElementById('cmayorista').value);
-        var pventa = parseFloat(document.getElementById('pventa').value);
-        var pmayorista = parseFloat(document.getElementById('pmayorista').value);
-        var total = cantidad * pventa;
-        var resultado = total - pmayorista;
-        // Si uno de los valores es 0, establece el porcentaje en 0
-        document.getElementById('dmayorista').value = resultado;
-
+    let tierCounter = {{ $producto->precioTiers->count() }};
+    function addTierRow(cantidad, precio) {
+        tierCounter++;
+        var row = '<tr id="tierRow' + tierCounter + '">' +
+            '<td class="text-center align-middle">' + tierCounter + '</td>' +
+            '<td><input type="number" name="tier_cantidad[]" class="form-control form-control-sm" value="' + (cantidad || '') + '" min="1" placeholder="Ej: 12" required></td>' +
+            '<td><input type="number" name="tier_precio[]" class="form-control form-control-sm" value="' + (precio || '') + '" min="0" placeholder="Precio unitario" required></td>' +
+            '<td class="text-center align-middle">' +
+            '<button type="button" class="btn btn-danger btn-sm" onclick="this.closest(\'tr\').remove(); renumerarTiers();"><i class="fa fa-trash"></i></button>' +
+            '</td>' +
+            '</tr>';
+        $('#tierBody').append(row);
     }
 
-    function calcularPrecioMayorista() {
-        // Obtén los valores de precio de costo y porcentaje
-        var descuento = parseFloat(document.getElementById('dmayorista').value);
-        var cantidad = parseFloat(document.getElementById('cmayorista').value);
-        var pventa = parseFloat(document.getElementById('pventa').value);
-        var total = cantidad * pventa;
-        var resultado = total - descuento;
-
-        document.getElementById('pmayorista').value = resultado;
+    function renumerarTiers() {
+        $('#tierBody tr').each(function(i) {
+            $(this).find('td:first').text(i + 1);
+        });
     }
     // Obtén una referencia a la tabla DataTable
 

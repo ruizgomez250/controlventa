@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Configuracion;
 use App\Models\Impuesto;
 use App\Models\Producto;
+use App\Models\ProductoPrecioTier;
 use App\Models\Opcion;
 use App\Models\TablaPorcentaje;
 use App\Models\TemporalVentaDetalle;
-use App\services\PermisoService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -22,23 +22,16 @@ use TCPDF;
 
 class ProductoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    protected $permisoService;
-
-    public function __construct(PermisoService $permisoService)
-    {
-        $this->permisoService = $permisoService;
-    }
     public function index(): View
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('producto leer')) {
+            return view('sinpermiso.index');
+        }
             $producto = Producto::with([
                 'impuesto',
                 'unidaddemedida',
-                'categoriaproducto'
+                'categoriaproducto',
+                'precioTiers'
             ])
                 ->orderBy('id', 'desc')
                 ->get();
@@ -53,14 +46,10 @@ class ProductoController extends Controller
                 'P. Venta',
                 'Impuesto',
                 'Estado',
-                'Cantidad Mayorista',
-                'Precio May.',
-                'Descuento May.',
+                'Tramos Mayorista',
                 'Acción'
             ];
             return view('productos.index', compact('producto', 'heads'));
-        }
-        return view('sinpermiso.index');
     }
 
     /**
@@ -68,17 +57,14 @@ class ProductoController extends Controller
      */
     public function create()
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'crear');
-        if ($tienePermiso) {
-            $headcat = ['Descripción', 'Acción'];
-            $impuestos = Impuesto::all();
-            $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
-            $medida = Opcion::where('id_dominio', 5)->orderBy('id')->get();
-            return view('productos.create', ['medida' => $medida, 'categoria' => $categoria, 'impuestos' => $impuestos, 'headcat' => $headcat]);
-        } else {
+        if (!auth()->user()->can('producto crear')) {
             return view('sinpermiso.index');
         }
-        return view('sinpermiso.index');
+        $headcat = ['Descripción', 'Acción'];
+        $impuestos = Impuesto::all();
+        $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
+        $medida = Opcion::where('id_dominio', 5)->orderBy('id')->get();
+        return view('productos.create', ['medida' => $medida, 'categoria' => $categoria, 'impuestos' => $impuestos, 'headcat' => $headcat]);
     }
 
     /**
@@ -86,31 +72,38 @@ class ProductoController extends Controller
      */
     public function store(Request $request)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'crear');
-
-        if ($tienePermiso) {
-            try {
-                $estado = $request->input('estado', null);
-                $estado = $estado !== null ? ($estado ? "1" : "0") : "0";
-                $request->merge(['estado' => $estado]);
-                // Validaciones
-                $request->validate([
-                    'descripcion'   => 'required|string|max:255',
-                    'id_categoria'  => 'required|exists:opciones,id',
-                    'id_medida'     => 'required|exists:opciones,id',
-                    'id_impuesto'   => 'required|exists:impuestos,id',
-                ]);
-                // Crear el producto
-                Producto::create($request->all());
-                // Redirigir con mensaje de éxito
-                return redirect()->route('producto.index')->with('success', 'Producto creado exitosamente');
-            } catch (Exception $e) {
-                dd($e);
-                // Manejo de errores
-                return redirect()->back()->with('error', 'Error al crear el producto: ' . $e->getMessage());
-            }
-        } else {
+        if (!auth()->user()->can('producto crear')) {
             return view('sinpermiso.index');
+        }
+        try {
+            $estado = $request->input('estado', null);
+            $estado = $estado !== null ? ($estado ? "1" : "0") : "0";
+            $request->merge(['estado' => $estado]);
+            $request->validate([
+                'descripcion'   => 'required|string|max:255',
+                'id_categoria'  => 'required|exists:opciones,id',
+                'id_medida'     => 'required|exists:opciones,id',
+                'id_impuesto'   => 'required|exists:impuestos,id',
+            ]);
+            $producto = Producto::create($request->all());
+
+            if ($request->has('tier_cantidad')) {
+                foreach ($request->tier_cantidad as $i => $cantidad) {
+                    if (isset($request->tier_precio[$i]) && $cantidad > 0) {
+                        ProductoPrecioTier::create([
+                            'id_producto' => $producto->id,
+                            'cantidad_desde' => $cantidad,
+                            'precio_unitario' => $request->tier_precio[$i],
+                            'orden' => $i,
+                        ]);
+                    }
+                }
+            }
+
+            return redirect()->route('producto.index')->with('success', 'Producto creado exitosamente');
+        } catch (Exception $e) {
+            dd($e);
+            return redirect()->back()->with('error', 'Error al crear el producto: ' . $e->getMessage());
         }
     }
 
@@ -131,8 +124,9 @@ class ProductoController extends Controller
      */
     public function edit(Producto $producto)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'editar');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('producto editar')) {
+            return view('sinpermiso.index');
+        }
             $iniFilePath = public_path('config.ini');
 
             // Verificar si el archivo existe antes de intentar leerlo
@@ -165,10 +159,9 @@ class ProductoController extends Controller
             $headcat = ['Descripción', 'Acción'];
             $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
             $medida = Opcion::where('id_dominio', 5)->orderBy('descripcion')->get();
+            $impuestos = Impuesto::all();
+            $producto->load('precioTiers');
             return view('productos.edit', ['headcat' => $headcat, 'categoria' => $categoria, 'producto' => $producto, 'medida' => $medida, 'qrCode' => $qrCode, 'impuestos' => $impuestos]);
-        } else {
-            return view('sinpermiso.index');
-        }
     }
 
     /**
@@ -176,8 +169,9 @@ class ProductoController extends Controller
      */
     public function update(Request $request, Producto $producto): RedirectResponse
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'editar');
-        if (!$tienePermiso) return redirect()->route('sinpermiso');
+        if (!auth()->user()->can('producto editar')) {
+            return redirect()->route('sinpermiso');
+        }
 
         $estado = $request->input('estado', null);
         $estado = $estado !== null ? ($estado ? "1" : "0") : "0";
@@ -201,6 +195,20 @@ class ProductoController extends Controller
 
         $producto->update($validated);
 
+        $producto->precioTiers()->delete();
+        if ($request->has('tier_cantidad')) {
+            foreach ($request->tier_cantidad as $i => $cantidad) {
+                if (isset($request->tier_precio[$i]) && $cantidad > 0) {
+                    ProductoPrecioTier::create([
+                        'id_producto' => $producto->id,
+                        'cantidad_desde' => $cantidad,
+                        'precio_unitario' => $request->tier_precio[$i],
+                        'orden' => $i,
+                    ]);
+                }
+            }
+        }
+
         return redirect()->route('producto.index')->with('success', 'Producto actualizado correctamente.');
     }
 
@@ -209,8 +217,9 @@ class ProductoController extends Controller
      */
     public function destroy(Producto $producto)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'borrar');
-        if (!$tienePermiso) return redirect()->route('sinpermiso');
+        if (!auth()->user()->can('producto borrar')) {
+            return redirect()->route('sinpermiso');
+        }
 
         try {
             // ✅ eliminar imagen si existe
@@ -226,62 +235,48 @@ class ProductoController extends Controller
     }
     public function verifcod(Request $request)
     {
-
-        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
-        if ($tienePermiso) {
-            try {
-                // Obtén el código enviado por AJAX
-                $codigo = $request->input('codigo');
-                $cantpago = $request->input('cantpago');
-
-                // Busca el producto en la base de datos por el código
-                $producto = Producto::with('unidaddemedida')->where('codigo', $codigo)->first();
-                $configuracion = Configuracion::firstOrNew(
-                    ['descripcion' => 'condicionv'], // Condiciones de búsqueda
-                    ['estado' => 0] // Valores por defecto si no se encuentra
-                );
-
-                // Si la configuración fue creada (no encontrada en la base de datos), la guardamos
-                if (!$configuracion->exists) {
-                    $configuracion->save();
-                }
-                // Verifica si se encontró un producto
-                if ($producto) {
-                    if ($cantpago > 1) {
-                        $tablaPorcentaje = TablaPorcentaje::where('cuota', $cantpago)
-                            ->where('estado', 1)
-                            ->first();
-
-                        // Verificar si se encontró el registro
-                        if ($tablaPorcentaje) {
-                            $precioVentaContado = $producto->pventa;
-                            $porcentajeRecargo = $tablaPorcentaje->porcentaje;
-                            $precio = $precioVentaContado * (1 + $porcentajeRecargo / 100);
-                            $producto->pventa = $precio;
-                        }
-                    }
-                    // Devuelve los datos del producto en formato JSON
-                    return response()->json([
-                        'producto' => $producto,
-                        'configuracion' => $configuracion
-                    ]);
-                } else {
-                    // Si no se encuentra, devuelve un array vacío
-                    return response()->json([]);
-                }
-            } catch (\Exception $e) {
-                // Maneja la excepción, puedes registrarla, mostrar un mensaje de error o realizar alguna otra acción necesaria
-                return response()->json(['error' => $e->getMessage()], 500);
-            }
-        } else {
+        if (!auth()->user()->can('producto leer')) {
             return redirect()->route('sinpermiso');
+        }
+        try {
+            $codigo = $request->input('codigo');
+            $cantpago = $request->input('cantpago');
+            $producto = Producto::with(['unidaddemedida', 'precioTiers'])->where('codigo', $codigo)->first();
+            $configuracion = Configuracion::firstOrNew(
+                ['descripcion' => 'condicionv'],
+                ['estado' => 0]
+            );
+            if (!$configuracion->exists) {
+                $configuracion->save();
+            }
+            if ($producto) {
+                if ($cantpago > 1) {
+                    $tablaPorcentaje = TablaPorcentaje::where('cuota', $cantpago)
+                        ->where('estado', 1)
+                        ->first();
+                    if ($tablaPorcentaje) {
+                        $precioVentaContado = $producto->pventa;
+                        $porcentajeRecargo = $tablaPorcentaje->porcentaje;
+                        $precio = $precioVentaContado * (1 + $porcentajeRecargo / 100);
+                        $producto->pventa = $precio;
+                    }
+                }
+                return response()->json([
+                    'producto' => $producto,
+                    'configuracion' => $configuracion
+                ]);
+            } else {
+                return response()->json([]);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
     public function desdetemporal(Request $request)
     {
-
-        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('producto leer')) {
+            return redirect()->route('sinpermiso');
+        }
             try {
                 // Obtén el código enviado por AJAX
                 $cantpago = $request->input('cantpago');
@@ -290,7 +285,7 @@ class ProductoController extends Controller
                     ->where('user_id', $idUsuarioLogueado)
                     ->first();
                 if ($temporales) {
-                    $producto = Producto::with('unidaddemedida')->where('id', $temporales->producto_id)->first();
+                    $producto = Producto::with(['unidaddemedida', 'precioTiers'])->where('id', $temporales->producto_id)->first();
                     $temporales->delete();
                     //dd($producto);
                     $configuracion = Configuracion::firstOrNew(
@@ -328,27 +323,22 @@ class ProductoController extends Controller
                     }
                 }
             } catch (\Exception $e) {
-                // Maneja la excepción, puedes registrarla, mostrar un mensaje de error o realizar alguna otra acción necesaria
                 return response()->json(['error' => $e->getMessage()], 500);
             }
-        } else {
-            return redirect()->route('sinpermiso');
-        }
     }
     public function createReporte()
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
-        if ($tienePermiso) {
-            $productos = Producto::where('estado', 1)->get();
-            return view('productos.qr', compact('productos'));
-        } else {
+        if (!auth()->user()->can('producto leer')) {
             return view('sinpermiso.index');
         }
+        $productos = Producto::where('estado', 1)->get();
+        return view('productos.qr', compact('productos'));
     }
     public function qrproducto(int $id)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
-        if ($tienePermiso) {
+        if (!auth()->user()->can('producto leer')) {
+            return redirect()->route('sinpermiso');
+        }
 
             $iniFilePath = public_path('config.ini');
 
@@ -427,9 +417,6 @@ class ProductoController extends Controller
             // Salida del PDF
             $pdf->Output('producto_qr.pdf', 'I');
             exit;
-        } else {
-            return redirect()->route('sinpermiso');
-        }
     }
 
 
@@ -461,9 +448,9 @@ class ProductoController extends Controller
 
     public function barcodeproducto(int $id)
     {
-        $tienePermiso = $this->permisoService->verificarPermiso('Producto', 'leer');
-
-        if ($tienePermiso) {
+        if (!auth()->user()->can('producto leer')) {
+            return redirect()->route('sinpermiso');
+        }
 
             $producto = Producto::findOrFail($id);
 
@@ -515,8 +502,5 @@ class ProductoController extends Controller
 
             $pdf->Output('producto_barcode.pdf', 'I');
             exit;
-        } else {
-            return redirect()->route('sinpermiso');
-        }
     }
 }

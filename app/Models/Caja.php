@@ -12,18 +12,22 @@ class Caja extends Model
         'id_usuario',
         'fecha_cobro',
         'id_venta',
+        'id_compra',
         'monto',
     ];
 
-    // Relación con el modelo User
     public function usuario()
     {
         return $this->belongsTo(User::class, 'id_usuario');
     }
 
-    // Relación con el modelo Venta
     public function venta()
     {
         return $this->belongsTo(Venta::class, 'id_venta');
+    }
+
+    public function compra()
+    {
+        return $this->belongsTo(Compra_cab::class, 'id_compra');
     }
 }
