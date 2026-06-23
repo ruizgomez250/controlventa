@@ -7,6 +7,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -57,6 +59,7 @@ class RolController extends Controller
             'cheque' => 'Cheque',
             'tabla_porcentaje' => 'Tabla Porcentaje',
             'configuracion' => 'Configuración',
+            'empresa' => 'Empresa',
         ];
 
         foreach ($allPermissions as $permName) {
@@ -99,6 +102,39 @@ class RolController extends Controller
         $user->syncPermissions($permisos);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
         return redirect()->route('rol.index')->with('success', 'Permisos actualizados exitosamente.');
+    }
+
+    public function createUser(): View
+    {
+        if (!auth()->user()->can('rol crear')) {
+            return view('sinpermiso.index');
+        }
+        return view('roles.create-user');
+    }
+
+    public function storeUser(Request $request): RedirectResponse
+    {
+        if (!auth()->user()->can('rol crear')) {
+            return view('sinpermiso.index');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        return redirect()->route('rol.index')->with('success', "Usuario {$user->name} creado exitosamente.");
     }
 
     public function storePermission(Request $request): JsonResponse

@@ -175,7 +175,7 @@ return [
     |
     */
 
-    'classes_auth_card' => 'card-outline card-purple',
+    'classes_auth_card' => 'card-outline card-primary',
     'classes_auth_header' => '',
     'classes_auth_body' => '',
     'classes_auth_footer' => '',
@@ -202,7 +202,7 @@ return [
     'classes_content' => '',
     'classes_sidebar' => 'sidebar-dark-primary elevation-4',
     'classes_sidebar_nav' => '',
-    'classes_topnav' => 'navbar-white navbar-light',
+    'classes_topnav' => 'navbar-dark',
     'classes_topnav_nav' => 'navbar-expand',
     'classes_topnav_container' => 'container',
 
@@ -429,13 +429,14 @@ return [
             ],
         ],
         [
-            'text'       => 'Roles',
-            'icon'       => 'fas fa-user-tag',
+            'text'       => 'Usuarios y Roles',
+            'icon'       => 'fas fa-users-cog',
             'icon_color' => 'primary',
             'classes'    => 'custom-icon-box-black',
             'can'        => 'rol leer',
             'submenu'    => [
-                ['text' => 'Ver / Asignar',  'url' => '/rol', 'can' => 'rol leer'],
+                ['text' => 'Ver / Asignar Permisos',  'url' => '/rol', 'can' => 'rol leer'],
+                ['text' => 'Crear Usuario',            'url' => '/rol/crear-usuario', 'can' => 'rol crear'],
             ],
         ],
         [

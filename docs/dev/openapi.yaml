@@ -1,0 +1,366 @@
+openapi: "3.0.3"
+info:
+  title: EasyStock API
+  description: API REST para integración con sistemas externos
+  version: 1.0.0
+  contact:
+    email: soporte@easystock.com
+
+servers:
+  - url: https://{tenant}.easystock.com/api
+    variables:
+      tenant:
+        default: demo
+        description: Subdominio del tenant
+
+paths:
+  /productos:
+    get:
+      summary: Lista todos los productos
+      tags: [Productos]
+      responses:
+        "200":
+          description: Array de productos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Producto"
+
+  /productos/{id}:
+    get:
+      summary: Obtiene un producto por ID
+      tags: [Productos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Producto encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Producto"
+        "404":
+          description: Producto no encontrado
+
+  /clientesa:
+    get:
+      summary: Lista todos los clientes
+      tags: [Clientes]
+      responses:
+        "200":
+          description: Array de clientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Cliente"
+    post:
+      summary: Crea un nuevo cliente
+      tags: [Clientes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClienteInput"
+      responses:
+        "201":
+          description: Cliente creado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: "#/components/schemas/Cliente"
+
+  /ventas:
+    get:
+      summary: Lista ventas a crédito activas
+      tags: [Ventas]
+      responses:
+        "200":
+          description: Array de ventas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Venta"
+
+  /ventas/{id}:
+    get:
+      summary: Obtiene una venta por ID
+      tags: [Ventas]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Venta encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/Venta"
+        "404":
+          description: Venta no encontrada
+
+  /ventasa:
+    post:
+      summary: Crea una nueva venta con detalle
+      tags: [Ventas]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VentaInput"
+      responses:
+        "201":
+          description: Venta creada
+
+  /ventasasimpli:
+    post:
+      summary: Crea una venta simplificada (solo monto y descripción)
+      tags: [Ventas]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VentaSimplificadaInput"
+      responses:
+        "201":
+          description: Venta creada
+
+components:
+  schemas:
+    Producto:
+      type: object
+      properties:
+        id:
+          type: integer
+        codigo:
+          type: string
+          description: Código único de 12 dígitos
+        descripcion:
+          type: string
+        detalle:
+          type: string
+        stock:
+          type: number
+        pcosto:
+          type: number
+        pventa:
+          type: number
+        pmayorista:
+          type: number
+        cmayorista:
+          type: number
+        dmayorista:
+          type: number
+        estado:
+          type: integer
+        imagen_url:
+          type: string
+          nullable: true
+        categoria:
+          type: string
+        medida:
+          type: string
+        precioTiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/PrecioTier"
+
+    PrecioTier:
+      type: object
+      properties:
+        cantidad_desde:
+          type: integer
+        precio_unitario:
+          type: number
+        orden:
+          type: integer
+
+    Cliente:
+      type: object
+      properties:
+        id:
+          type: integer
+        razonsocial:
+          type: string
+        ruc:
+          type: string
+        direccion:
+          type: string
+        correo:
+          type: string
+        telefono:
+          type: string
+        celular:
+          type: string
+        estado:
+          type: integer
+
+    ClienteInput:
+      type: object
+      required: [razonsocial]
+      properties:
+        razonsocial:
+          type: string
+        ruc:
+          type: string
+        direccion:
+          type: string
+        correo:
+          type: string
+        telefono:
+          type: string
+        celular:
+          type: string
+
+    Venta:
+      type: object
+      properties:
+        id:
+          type: integer
+        usuario:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            email:
+              type: string
+        cliente:
+          $ref: "#/components/schemas/Cliente"
+        tipo_comprobante:
+          type: string
+          enum: [CONTADO, CREDITO]
+        fecha_emision:
+          type: string
+          format: date
+        numero_factura:
+          type: string
+        total:
+          type: number
+        estado:
+          type: integer
+        monto_pagare:
+          type: number
+        detalles:
+          type: array
+          items:
+            $ref: "#/components/schemas/DetalleVenta"
+        pagare:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+            monto:
+              type: number
+
+    DetalleVenta:
+      type: object
+      properties:
+        id:
+          type: integer
+        cantidad:
+          type: number
+        descripcion:
+          type: string
+        monto:
+          type: number
+        precio_u:
+          type: number
+        tipo_impuesto:
+          type: string
+        producto:
+          type: object
+          properties:
+            id:
+              type: integer
+            codigo:
+              type: string
+            descripcion:
+              type: string
+            pventa:
+              type: number
+            imagen:
+              type: string
+
+    VentaInput:
+      type: object
+      required: [id_cliente, tipo_comprobante, detalles]
+      properties:
+        id_cliente:
+          type: integer
+        tipo_comprobante:
+          type: string
+          enum: [CONTADO, CREDITO]
+        numero_factura:
+          type: string
+        timbrado_factura:
+          type: string
+        detalles:
+          type: array
+          items:
+            type: object
+            properties:
+              id_producto:
+                type: integer
+              cantidad:
+                type: number
+              precio_u:
+                type: number
+              tipo_impuesto:
+                type: string
+        cuotas:
+          type: array
+          items:
+            type: object
+            properties:
+              porcentaje:
+                type: number
+              dias_plazo:
+                type: integer
+
+    VentaSimplificadaInput:
+      type: object
+      required: [id_cliente, monto]
+      properties:
+        id_cliente:
+          type: integer
+        monto:
+          type: number
+        descripcion:
+          type: string
+        numero_factura:
+          type: string

@@ -2,7 +2,7 @@
 
 @section('content_header')
     <h1 class="m-0 custom-heading">
-        <i class="fas fa-shield-alt"></i> Permisos de Usuarios
+        <i class="fas fa-users-cog"></i> Usuarios y Roles
     </h1>
 @stop
 
@@ -85,7 +85,12 @@
                             </button>
                         </div>
                         <div class="col-md-2 mb-3">
-                            <button class="btn btn-success" data-toggle="modal" data-target="#crearPermisoModal">
+                            <a href="{{ route('rol.createUser') }}" class="btn btn-success">
+                                <i class="fas fa-user-plus"></i> Crear Usuario
+                            </a>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <button class="btn btn-warning" data-toggle="modal" data-target="#crearPermisoModal">
                                 <i class="fas fa-plus"></i> Crear Permiso
                             </button>
                         </div>

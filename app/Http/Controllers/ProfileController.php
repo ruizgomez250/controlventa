@@ -37,7 +37,7 @@ class ProfileController extends Controller
             ]);
             if (strlen($request->input('contrasena_actual')) >= 8 && Hash::check($request->input('contrasena_actual'), $user->password)) {
                 // La contraseña actual es correcta y cumple con la longitud mínima
-                $user->password = Hash::make($request->input('nueva_contrasena'));
+                $user->password = $request->input('nueva_contrasena');
                 $user->save();
                 return redirect()->route('profile.edit')->with('success', 'Contraseña actualizada exitosamente');
             } elseif (strlen($request->input('contrasena_actual')) < 8) {

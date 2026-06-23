@@ -55,7 +55,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost/kubivet/public/home'),
+    'url' => env('APP_URL', 'http://localhost/controlventa'),
 
     'asset_url' => env('ASSET_URL'),
 
