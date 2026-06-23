@@ -20,6 +20,31 @@ class Venta extends Model
         'estado'
     ];
 
+    protected static function booted()
+    {
+        static::created(function ($venta) {
+            Auditoria::create([
+                'user_id' => auth()->id() ?: $venta->id_usuario,
+                'accion' => 'venta_creada',
+                'entidad_tipo' => 'Venta',
+                'entidad_id' => $venta->id,
+                'descripcion' => 'Creó la venta N° ' . ($venta->numero_factura ?: $venta->id) . ' por Gs. ' . number_format($venta->total, 0, ',', '.'),
+            ]);
+        });
+
+        static::updated(function ($venta) {
+            if ($venta->isDirty('estado') && $venta->estado == 0) {
+                Auditoria::create([
+                    'user_id' => auth()->id() ?: $venta->id_usuario,
+                    'accion' => 'factura_anulada',
+                    'entidad_tipo' => 'Venta',
+                    'entidad_id' => $venta->id,
+                    'descripcion' => 'Anuló la factura N° ' . ($venta->numero_factura ?: $venta->id) . ' del cliente ' . ($venta->cliente->razonsocial ?? 'N/A'),
+                ]);
+            }
+        });
+    }
+
     public function usuario()
     {
         return $this->belongsTo(User::class, 'id_usuario');

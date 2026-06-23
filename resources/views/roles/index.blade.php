@@ -9,22 +9,25 @@
 @section('css')
     <style>
         .permission-card {
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--modern-card-border, rgba(148,163,184,0.12));
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 15px;
-            background: #fff;
+            background: var(--modern-card-bg, rgba(30,41,59,0.85));
+            backdrop-filter: blur(var(--modern-glass-blur, 20px));
+            -webkit-backdrop-filter: blur(var(--modern-glass-blur, 20px));
             transition: box-shadow 0.2s;
         }
         .permission-card:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         .permission-card h5 {
             margin-top: 0;
             margin-bottom: 10px;
             padding-bottom: 8px;
-            border-bottom: 2px solid #e9ecef;
+            border-bottom: 2px solid var(--modern-card-border, rgba(148,163,184,0.12));
             font-weight: 600;
+            color: var(--modern-text-primary, #f1f5f9);
         }
         .permission-card .form-check {
             margin-bottom: 6px;
@@ -32,11 +35,15 @@
         .permission-card .form-check-label {
             cursor: pointer;
             user-select: none;
+            color: var(--modern-text-secondary, #94a3b8);
+        }
+        .permission-card .form-check-label:hover {
+            color: var(--modern-text-primary, #f1f5f9);
         }
         .select-all-link {
             font-size: 0.85rem;
             cursor: pointer;
-            color: #007bff;
+            color: var(--modern-primary, #6366f1);
             margin-left: 5px;
         }
         .select-all-link:hover {
@@ -45,19 +52,70 @@
         .badge-count {
             font-size: 0.8rem;
             margin-left: 8px;
+            color: var(--modern-text-muted, #64748b);
         }
         #permisos-container {
             display: none;
         }
         .user-info-bar {
-            background: #f8f9fa;
+            background: var(--modern-card-bg, rgba(30,41,59,0.85));
+            backdrop-filter: blur(var(--modern-glass-blur, 20px));
+            -webkit-backdrop-filter: blur(var(--modern-glass-blur, 20px));
             border-radius: 8px;
             padding: 12px 18px;
             margin-bottom: 20px;
-            border-left: 4px solid #007bff;
+            border-left: 4px solid var(--modern-primary, #6366f1);
+            color: var(--modern-text-primary, #f1f5f9);
         }
         .permiso-checkbox:checked {
             accent-color: #28a745;
+        }
+        .permiso-checkbox {
+            accent-color: var(--modern-primary, #6366f1);
+        }
+        .modal-content {
+            background: var(--modern-card-bg, rgba(30,41,59,0.95)) !important;
+            border: 1px solid var(--modern-card-border, rgba(148,163,184,0.12)) !important;
+            color: var(--modern-text-primary, #f1f5f9) !important;
+        }
+        .modal-header {
+            border-bottom: 1px solid var(--modern-card-border, rgba(148,163,184,0.12));
+        }
+        .modal-footer {
+            border-top: 1px solid var(--modern-card-border, rgba(148,163,184,0.12));
+        }
+        .modal-title {
+            color: var(--modern-text-primary, #f1f5f9);
+        }
+        .close {
+            color: var(--modern-text-primary, #f1f5f9) !important;
+            text-shadow: none !important;
+            opacity: 0.7;
+        }
+        .close:hover {
+            opacity: 1;
+        }
+        .text-muted {
+            color: var(--modern-text-muted, #64748b) !important;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #ffffff !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__placeholder {
+            color: #cbd5e1 !important;
+        }
+        .select2-dropdown {
+            background-color: #1e293b !important;
+            border: 1px solid rgba(148,163,184,0.12) !important;
+        }
+        .select2-search--dropdown .select2-search__field {
+            background-color: #334155 !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(148,163,184,0.2) !important;
+        }
+        .form-group label {
+            color: #ffffff !important;
         }
     </style>
 @endsection
@@ -76,7 +134,7 @@
                             </x-slot>
                             <option value="">-- Seleccione un usuario --</option>
                             @foreach ($usuarios as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }} ({{ $item->email }})</option>
+                                <option value="{{ $item->id }}" class="info">{{ $item->name }} ({{ $item->email }})</option>
                             @endforeach
                         </x-adminlte-select2>
                         <div class="col-md-2 mb-3">

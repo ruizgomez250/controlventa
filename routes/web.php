@@ -57,11 +57,7 @@ Route::resource('empresas', App\Http\Controllers\EmpresaController::class);
 // Rutas principales de la aplicación (funcionan en localhost/dominio principal)
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-Route::get('/home', function () {
-    return view('home');
-})->name('home')->middleware('auth');
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home')->middleware('auth');
 
 //acceden los autenticados
 Route::middleware('auth')->group(function () {
@@ -90,7 +86,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/documentopagopdf/{id}', [VentaController::class, 'generarFactura'])->name('documentopagopdf');
     Route::get('/documentopagomontopdf/{id}', [VentaController::class, 'generarFacturaMonto'])->name('documentopagomontopdf');
     Route::get('/cajareportepdf/{desde}/{hasta}/{idusuario?}', [CajaReporteController::class, 'pdffechasusuario']);
-    Route::get('/caja', [VentaController::class, 'indexCaja']);
+    Route::get('/caja', [VentaController::class, 'indexCaja'])->name('caja.index');
     Route::get('/caja/compras', [CompraController::class, 'indexCaja']);
     Route::get('/gananciareportepdf/{desde}/{hasta}/{idproducto?}', [ProductoreporteController::class, 'pdfganancia']);
     Route::get('/ventareportepdf/{desde}/{hasta}/{idusuario?}', [VentaController::class, 'pdffechasusuario']);
