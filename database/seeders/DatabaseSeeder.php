@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             ImpuestosSeeder::class,
             PermissionSeeder::class,
             AssignAllPermissionsToUserSeeder::class,
+            AdminFullPermissionsSeeder::class,
         ]);
     }
 }
