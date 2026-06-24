@@ -28,6 +28,11 @@
                         @foreach ($producto as $row)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
+                                <td>
+                                    <img src="{{ $row->imagen_url }}" alt="{{ $row->descripcion }}"
+                                        style="width:50px;height:50px;object-fit:cover;border-radius:4px;cursor:pointer;"
+                                        onclick="mostrarImagen('{{ $row->imagen_url }}', '{{ $row->descripcion }}')">
+                                </td>
                                 <td>{{  $row->unidaddemedida->descripcion }}</td>
                                 <td>{{ $row->descripcion }}</td>
                                 <td>{{ $row->categoriaproducto?->descripcion }}</td>
@@ -95,10 +100,19 @@
             </div>
         </div>
     </div>
-    {{-- Example button to open modal --}}
-
-
-
+    <div class="modal fade" id="imagenModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagenModalLabel">Imagen</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="imagenModalSrc" src="" class="img-fluid" style="max-height:500px;">
+            </div>
+        </div>
+    </div>
+</div>
 
 @stop
 
@@ -130,6 +144,12 @@
                     
                 }
         });
+    }
+
+    function mostrarImagen(url, descripcion) {
+        $('#imagenModalSrc').attr('src', url);
+        $('#imagenModalLabel').text(descripcion);
+        $('#imagenModal').modal('show');
     }
 
     // Obtener el mensaje de éxito o error de Laravel

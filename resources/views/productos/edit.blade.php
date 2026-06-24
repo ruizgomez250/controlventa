@@ -17,188 +17,274 @@
                     @csrf
                     @method('put')
 
+                    <ul class="nav nav-tabs" id="productoTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">
+                                <i class="fas fa-info-circle"></i> General
+                            </a>
+                        </li>
+                        @can('producto comercial')
+                        <li class="nav-item">
+                            <a class="nav-link" id="comercial-tab" data-toggle="tab" href="#comercial" role="tab" aria-controls="comercial" aria-selected="false">
+                                <i class="fas fa-chart-line"></i> Datos Comerciales
+                            </a>
+                        </li>
+                        @endcan
+                        @can('producto stock')
+                        <li class="nav-item">
+                            <a class="nav-link" id="stock-tab" data-toggle="tab" href="#stock" role="tab" aria-controls="stock" aria-selected="false">
+                                <i class="fas fa-warehouse"></i> Stock
+                            </a>
+                        </li>
+                        @endcan
+                    </ul>
 
-                    <div class="row">
+                    <div class="tab-content mt-3">
+                        {{-- TAB: GENERAL --}}
+                        <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                            <div class="row">
+                                <x-adminlte-input name="codigo" label="Código" placeholder="Código" fgroup-class="col-md-3"
+                                    value="{{ $producto->codigo }}" style="text-align: center;" label-class="text-info">
+                                    <x-slot name="prependSlot">
+                                        <div class="input-group-text bg-info">
+                                            <i class="fas fa-barcode"></i>
+                                        </div>
+                                    </x-slot>
+                                </x-adminlte-input>
+                                @error('codigo')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
+                                <x-adminlte-input name="descripcion" label="Descripción" value="{{ $producto->descripcion }}"
+                                    fgroup-class="col-md-7" />
+                                @error('descripcion')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
 
-                        <x-adminlte-input name="codigo" label="Código" placeholder="Código" fgroup-class="col-md-3"
-                            value="{{ $producto->codigo }}" style="text-align: center;" label-class="text-info">
-                            <x-slot name="prependSlot">
-                                <div class="input-group-text bg-info">
-                                    <i class="fas fa-barcode "></i>
+                                <x-adminlte-select name="id_impuesto" id="id_impuesto" label="Impuesto" fgroup-class="col-md-2"
+                                    label-class="text-success">
+                                    <x-slot name="prependSlot">
+                                        <div class="input-group-text bg-gradient-success">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                        </div>
+                                    </x-slot>
+                                    @foreach ($impuestos as $imp)
+                                        <option value="{{ $imp->id }}"
+                                            {{ old('id_impuesto', $producto->id_impuesto) == $imp->id ? 'selected' : '' }}>
+                                            {{ $imp->valor_formateado }}% ({{ $imp->descripcion }})
+                                        </option>
+                                    @endforeach
+                                </x-adminlte-select>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="imagen">Imagen del Producto</label>
+                                        <div id="preview-container" class="mb-2">
+                                            <img id="preview" src="{{ $producto->imagen_url }}" class="img-fluid img-thumbnail" style="max-height:180px;">
+                                        </div>
+                                        <div class="custom-file">
+                                            <input type="file" name="imagen" id="imagen" class="custom-file-input" accept="image/*">
+                                            <label class="custom-file-label" for="imagen">Seleccionar imagen</label>
+                                        </div>
+                                        <button type="button" id="remove-preview" class="btn btn-sm btn-outline-secondary mt-1">
+                                            <i class="fas fa-times"></i> Quitar imagen
+                                        </button>
+                                    </div>
                                 </div>
-                            </x-slot>
-                        </x-adminlte-input>
-                        @error('codigo')
-                            <div class="alert alert-danger">{{ $message }}</div>
-                        @enderror
-                        <x-adminlte-input name="descripcion" label="Descripción" value="{{ $producto->descripcion }}"
-                            fgroup-class="col-md-7" />
-                        @error('descripcion')
-                            <div class="alert alert-danger">{{ $message }}</div>
-                        @enderror
-                        
-                        <x-adminlte-select name="id_impuesto" id="id_impuesto" label="Impuesto" fgroup-class="col-md-2"
-                            label-class="text-success">
+                                <div class="col-md-8">
+                                    <x-adminlte-textarea name="detalle" label="Detalle del Producto"
+                                        placeholder="Ingresar detalle del producto" label-class="text-warning">
+                                        <x-slot name="prependSlot">
+                                            <div class="input-group-text bg-warning">
+                                                <i class="fas fa-lg fa-file-alt"></i>
+                                            </div>
+                                        </x-slot>
+                                        {{ $producto->detalle }}
+                                    </x-adminlte-textarea>
 
-                            <x-slot name="prependSlot">
-                                <div class="input-group-text bg-gradient-success">
-                                    <i class="fas fa-money-bill-wave"></i>
+                                    <x-adminlte-select2 name="id_proveedor" label="Proveedor Principal"
+                                        data-placeholder="Seleccionar un proveedor..." fgroup-class="col-md-12"
+                                        label-class="text-info">
+                                        <x-slot name="prependSlot">
+                                            <div class="input-group-text bg-info">
+                                                <i class="fas fa-truck"></i>
+                                            </div>
+                                        </x-slot>
+                                        <option value=""></option>
+                                        @foreach ($proveedores as $prov)
+                                            <option value="{{ $prov->id }}"
+                                                {{ $producto->id_proveedor == $prov->id ? 'selected' : '' }}>
+                                                {{ $prov->razonsocial }}
+                                            </option>
+                                        @endforeach
+                                    </x-adminlte-select2>
                                 </div>
-                            </x-slot>
+                            </div>
 
-                            @foreach ($impuestos as $imp)
-                                <option value="{{ $imp->id }}"
-                                    {{ old('id_impuesto', 1) == $imp->id ? 'selected' : '' }}>
-                                    {{ $imp->valor_formateado  }}% ({{ $imp->descripcion }})
-                                </option>
-                            @endforeach
+                            <div class="row">
+                                <x-adminlte-select2 name="id_categoria" label="Categoria"
+                                    data-placeholder="Seleccionar una categoría..." fgroup-class="col-md-5"
+                                    label-class="text-danger">
+                                    <x-slot name="prependSlot">
+                                        <div class="input-group-text bg-gradient-red">
+                                            <i class="fas fa-tag"></i>
+                                        </div>
+                                    </x-slot>
+                                    <x-slot name="appendSlot">
+                                        <x-adminlte-button theme="outline-danger" data-toggle="modal" data-target="#addCatModal"
+                                            icon="fas fa-lg fa-plus text-danger" />
+                                    </x-slot>
+                                    @foreach ($categoria as $item)
+                                        <option value={{ $item->id }}
+                                            {{ $item->id == $producto->id_categoria ? 'selected' : '' }}>
+                                            {{ $item->descripcion }}</option>
+                                    @endforeach
+                                </x-adminlte-select2>
 
-                        </x-adminlte-select>
+                                <x-adminlte-select2 name="id_medida" id="id_medida" label="Unidad Medida"
+                                    data-placeholder="Seleccionar una medida..." fgroup-class="col-md-4"
+                                    label-class="text-danger">
+                                    <x-slot name="prependSlot">
+                                        <div class="input-group-text bg-gradient-red">
+                                            <i class="fas fa-tag"></i>
+                                        </div>
+                                    </x-slot>
+                                    <x-slot name="appendSlot">
+                                        <x-adminlte-button theme="outline-danger" data-toggle="modal"
+                                            data-target="#addunidmedidaModal" icon="fas fa-lg fa-plus text-danger" />
+                                    </x-slot>
+                                    @foreach ($medida as $item)
+                                        <option value={{ $item->id }}
+                                            {{ $item->id == $producto->id_medida ? 'selected' : '' }}>{{ $item->descripcion }}
+                                        </option>
+                                    @endforeach
+                                </x-adminlte-select2>
 
+                                <x-adminlte-select name="estado" label="Estado"
+                                    data-placeholder="Seleccionar una opción..." fgroup-class="col-md-3">
+                                    <option value="1" {{ $producto->estado === 1 ? 'selected' : '' }}>Activo</option>
+                                    <option value="0" {{ $producto->estado === 0 ? 'selected' : '' }}>Inactivo</option>
+                                </x-adminlte-select>
+                            </div>
 
-                    </div>
+                            <div class="row">
+                                <x-adminlte-select name="tipo" label="Tipo de Producto" fgroup-class="col-md-4"
+                                    label-class="text-secondary">
+                                    <x-slot name="prependSlot">
+                                        <div class="input-group-text bg-secondary">
+                                            <i class="fas fa-tag"></i>
+                                        </div>
+                                    </x-slot>
+                                    <option value="venta" {{ $producto->tipo == 'venta' ? 'selected' : '' }}>Para la Venta</option>
+                                    <option value="uso_interno" {{ $producto->tipo == 'uso_interno' ? 'selected' : '' }}>Uso Interno</option>
+                                    <option value="ambos" {{ $producto->tipo == 'ambos' ? 'selected' : '' }}>Ambos</option>
+                                </x-adminlte-select>
 
-
-
-                    <div class="row">
-                        {{-- Disabled --}}
-                        <x-adminlte-textarea name="detalle" label="Detalle del Producto" fgroup-class="col-md-7"
-                            placeholder="Ingresar detalle del producto" label-class="text-warning">
-                            <x-slot name="prependSlot">
-                                <div class="input-group-text bg-warning">
-                                    <i class="fas fa-lg fa-file-alt "></i>
+                                <div class="col-md-4 text-right">
+                                    {{ $qrCode }}
                                 </div>
-                            </x-slot>
-                            {{ $producto->detalle }}
-                        </x-adminlte-textarea>
-
-                        <x-adminlte-select2 name="id_categoria" label="Categoria"
-                            data-placeholder="Seleccionar una categoría..." fgroup-class="col-md-5"
-                            label-class="text-danger">
-                            <x-slot name="prependSlot">
-                                <div class="input-group-text bg-gradient-red">
-                                    <i class="fas fa-tag"></i>
-                                </div>
-                            </x-slot>
-                            <x-slot name="appendSlot">
-                                <x-adminlte-button theme="outline-danger" data-toggle="modal" data-target="#addCatModal"
-                                    icon="fas fa-lg fa-plus text-danger" />
-                            </x-slot>
-
-
-
-                            @foreach ($categoria as $item)
-                                <<option value={{ $item->id }}
-                                    {{ $item->id == $producto->id_categoria ? 'selected' : '' }}>
-                                    {{ $item->descripcion }}</option>
-                            @endforeach
-                        </x-adminlte-select2>
-                    </div>
-
-
-                    <div class="row">
-
-                        <x-adminlte-input name="stock" type="number" label="Stock" fgroup-class="col-md-2"
-                            step="any" min="0" value="{{ $producto->stock }}" />
-
-
-                        <x-adminlte-select2 name="id_medida" id="id_medida" label="Unidad Medida"
-                            data-placeholder="Seleccionar una medida..." fgroup-class="col-md-3"
-                            label-class="text-danger">
-                            <x-slot name="prependSlot">
-                                <div class="input-group-text bg-gradient-red">
-                                    <i class="fas fa-tag"></i>
-                                </div>
-                            </x-slot>
-                            <x-slot name="appendSlot">
-                                <x-adminlte-button theme="outline-danger" data-toggle="modal"
-                                    data-target="#addunidmedidaModal" icon="fas fa-lg fa-plus text-danger" />
-                            </x-slot>
-
-
-
-                            @foreach ($medida as $item)
-                                <option value={{ $item->id }}
-                                    {{ $item->id == $producto->id_medida ? 'selected' : '' }}>{{ $item->descripcion }}
-                                </option>
-                            @endforeach
-                        </x-adminlte-select2>
-
-
-
-
-                        <x-adminlte-input name="pcosto" type="number" label="Precio Costo"
-                            value="{{ $producto->pcosto }}" fgroup-class="col-md-2" />
-
-                        <x-adminlte-input name="pventa" type="number" label="Precio Venta"
-                            value="{{ $producto->pventa }}" fgroup-class="col-md-2" />
-
-                        <x-adminlte-select name="estado" label="Estado del Producto"
-                            data-placeholder="Seleccionar una opción..." fgroup-class="col-md-3">
-                            <option value="1" {{ $producto->estado === 1 ? 'selected' : '' }}>Activo</option>
-                            <option value="0" {{ $producto->estado === 0 ? 'selected' : '' }}>Inactivo</option>
-                        </x-adminlte-select>
-
-                        {{-- <x-adminlte-select name="id_estado" label="Estado"
-                            data-placeholder="Seleccionar una opción..." fgroup-class="col-md-3">
-                            
-                            @foreach ($opcion as $item)
-                            <option value={{ $item->id }} {{ $item->id == $producto->id_estado ? 'selected' : '' }} >{{ $item->descripcion }}</option>
-                            @endforeach
-                        </x-adminlte-select> --}}
-                    </div>
-                    {{-- Precios Mayoristas por Tramos --}}
-                    <div class="card card-outline card-info mt-3">
-                        <div class="card-header">
-                            <h3 class="card-title"><i class="fas fa-layer-group"></i> Precios Mayoristas por Tramos</h3>
-                            <div class="card-tools">
-                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                    <i class="fas fa-minus"></i>
-                                </button>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <p class="text-muted">Define precios especiales según la cantidad comprada.</p>
-                            <table class="table table-sm table-bordered" id="tierTable">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th style="width:40px;">#</th>
-                                        <th>Desde Cantidad</th>
-                                        <th>Precio Unitario Gs.</th>
-                                        <th style="width:50px;"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tierBody">
-                                    @foreach ($producto->precioTiers as $tier)
-                                        <tr>
-                                            <td class="text-center align-middle">{{ $loop->iteration }}</td>
-                                            <td><input type="number" name="tier_cantidad[]" class="form-control form-control-sm" value="{{ $tier->cantidad_desde }}" min="1" required></td>
-                                            <td><input type="number" name="tier_precio[]" class="form-control form-control-sm" value="{{ $tier->precio_unitario }}" min="0" required></td>
-                                            <td class="text-center align-middle">
-                                                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); renumerarTiers();"><i class="fa fa-trash"></i></button>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                            <button type="button" class="btn btn-success btn-sm mt-2" onclick="addTierRow()">
-                                <i class="fas fa-plus"></i> Agregar Tramo
-                            </button>
+
+                        @can('producto comercial')
+                        {{-- TAB: DATOS COMERCIALES --}}
+                        <div class="tab-pane fade" id="comercial" role="tabpanel" aria-labelledby="comercial-tab">
+                            <div class="card card-outline card-success">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-dollar-sign"></i> Precios</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <x-adminlte-input name="pcosto" id="pcosto" type="number" label="Precio Costo"
+                                            value="{{ $producto->pcosto }}" fgroup-class="col-md-4" min="0"
+                                            oninput="calcularPorcentajeAumento()" />
+
+                                        <x-adminlte-input name="porcentaje" id="porcentaje" type="number" label="% Margen"
+                                            fgroup-class="col-md-2" value="0" min="0" max="100" step="any"
+                                            oninput="calcularPrecioVenta()" label-class="text-success" />
+
+                                        <x-adminlte-input name="pventa" id="pventa" type="number" label="Precio Venta"
+                                            value="{{ $producto->pventa }}" fgroup-class="col-md-4" min="0"
+                                            oninput="calcularPorcentajeAumento()" />
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6 rcorners2 importet">
+                                            <p><strong>Margen según fórmula:</strong> (Precio Venta - Costo) / Precio Venta;</p>
+                                            <h1 id="margenganancia" class="text-center">0 %</h1>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card card-outline card-info mt-3">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-layer-group"></i> Precios Mayoristas por Tramos</h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <p class="text-muted">Define precios especiales según la cantidad comprada.</p>
+                                    <table class="table table-sm table-bordered" id="tierTable">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th style="width:40px;">#</th>
+                                                <th>Desde Cantidad</th>
+                                                <th>Precio Unitario Gs.</th>
+                                                <th style="width:50px;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tierBody">
+                                            @foreach ($producto->precioTiers as $tier)
+                                                <tr>
+                                                    <td class="text-center align-middle">{{ $loop->iteration }}</td>
+                                                    <td><input type="number" name="tier_cantidad[]" class="form-control form-control-sm" value="{{ $tier->cantidad_desde }}" min="1" required></td>
+                                                    <td><input type="number" name="tier_precio[]" class="form-control form-control-sm" value="{{ $tier->precio_unitario }}" min="0" required></td>
+                                                    <td class="text-center align-middle">
+                                                        <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove(); renumerarTiers();"><i class="fa fa-trash"></i></button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn btn-success btn-sm mt-2" onclick="addTierRow()">
+                                        <i class="fas fa-plus"></i> Agregar Tramo
+                                    </button>
+                                </div>
+                            </div>
                         </div>
+                        @endcan
+
+                        @can('producto stock')
+                        {{-- TAB: STOCK --}}
+                        <div class="tab-pane fade" id="stock" role="tabpanel" aria-labelledby="stock-tab">
+                            <div class="row">
+                                <x-adminlte-input name="stock_inicial" id="stock_inicial" type="number" label="Stock Inicial"
+                                    value="{{ $producto->stock_inicial ?? 0 }}" fgroup-class="col-md-3" step="any" min="0" />
+
+                                <x-adminlte-input name="stock" type="number" label="Stock Actual"
+                                    value="{{ $producto->stock }}" fgroup-class="col-md-3" step="any" min="0" />
+
+                                <x-adminlte-input name="stock_minimo" id="stock_minimo" type="number" label="Stock Mínimo"
+                                    value="{{ $producto->stock_minimo ?? 0 }}" fgroup-class="col-md-3" step="any" min="0" />
+
+                                <x-adminlte-input name="stock_maximo" id="stock_maximo" type="number" label="Stock Máximo"
+                                    value="{{ $producto->stock_maximo ?? 0 }}" fgroup-class="col-md-3" step="any" min="0" />
+                            </div>
+
+                            <div class="row">
+                                <x-adminlte-input name="ubicacion_deposito" label="Ubicación en Depósito"
+                                    value="{{ $producto->ubicacion_deposito }}"
+                                    placeholder="Ej: Estante A, Pasillo 3" fgroup-class="col-md-6" />
+                            </div>
+                        </div>
+                        @endcan
                     </div>
 
-                    <div class="mt-3 col-4">
-                        {{ $qrCode }}
-                        <?php
-                        // echo '<img src="data:image/png;base64,' . DNS1D::getBarcodePNG($producto->codigo, 'PHARMA', 2, 60) . '" alt="barcode"   /></br>';
-                        ?>
-                        {{-- <div class="row" style="justify-content: center;"> P-{{ $producto->codigo }}</div> --}}
-
-                    </div>
-
-
-
-                    <div class="row">
+                    <div class="row mt-3">
                         <div class="form-group col-md-12">
                             <a class="btn btn-danger" style="float: right;"
                                 href="{{ route('producto.index') }}">Cancelar</a>
@@ -321,12 +407,12 @@
                                     <input type="hidden" class="form-control" id="id" name="id"
                                         value="{{ $row->id }}">
                                     <input type="hidden" class="form-control" id="id_dominio" name="id_dominio"
-                                        value="3">
+                                        value="5">
                                     <input type="hidden" class="form-control" id="descripcion" name="descripcion"
                                         value="{{ $row->descripcion }}">
                                     <button type="button" class="btn btn-sm btn-outline-secondary"
-                                        id="delete-button" data-url="{{ url('borrar-categoria') . '/' . $row->id }}"
-                                        onclick="borrar(this,'id_categoria',true)">
+                                        id="delete-button" data-url="{{ url('borrar-unidad') . '/' . $row->id }}"
+                                        onclick="borrar(this,'id_medida',true)">
                                         <ion-icon name="trash-outline"><i
                                                 class="fa fa-sm fa-fw fa-trash"></i></ion-icon>
                                     </button>
@@ -344,37 +430,20 @@
 @stop
 @push('js')
 <script>
-    document.getElementById('imagen').addEventListener('change', function(event) {
-        const [file] = event.target.files;
-        const previewContainer = document.getElementById('preview-container');
-        const preview = document.getElementById('preview');
-        const removeBtn = document.getElementById('remove-preview');
-
-        if (file) {
-            preview.src = URL.createObjectURL(file);
-            previewContainer.classList.remove('d-none');
-        }
-
-        removeBtn.addEventListener('click', () => {
-            preview.src = '#';
-            previewContainer.classList.add('d-none');
-            document.getElementById('imagen').value = '';
-        });
-    });
-
     function calcularPorcentajeAumento() {
-        // Obtén los valores de precio de costo y precio de venta
         var pcosto = parseFloat(document.getElementById('pcosto').value);
         var pventa = parseFloat(document.getElementById('pventa').value);
 
-        // Calcula el porcentaje de aumento si ambos valores son mayores a 0
         if (pcosto > 0 && pventa > 0) {
             var porcentajeAumento = ((pventa - pcosto) / pcosto) * 100;
+            var margenGanancia = ((pventa - pcosto) / pventa) * 100;
 
-            // Muestra el resultado en el campo de porcentaje
             document.getElementById('porcentaje').value = porcentajeAumento.toFixed(2);
+            const margenGananciaElement = document.getElementById('margenganancia');
+            if (margenGananciaElement) {
+                margenGananciaElement.textContent = margenGanancia + ' %';
+            }
         } else {
-            // Si uno de los valores es 0, establece el porcentaje en 0
             document.getElementById('porcentaje').value = 0;
         }
     }
@@ -422,19 +491,43 @@
     var dataTable1;
 
     $(document).ready(function() {
+        $('#addCatModal').appendTo('body');
+        $('#addunidmedidaModal').appendTo('body');
+
+        calcularPorcentajeAumento();
+
+        bsCustomFileInput.init();
+
+        $(document).on('change', '#imagen', function() {
+            const file = this.files && this.files[0];
+            const preview = $('#preview');
+            const container = $('#preview-container');
+            const removeBtn = $('#remove-preview');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.attr('src', e.target.result);
+                };
+                reader.readAsDataURL(file);
+                container.removeClass('d-none');
+                removeBtn.removeClass('d-none');
+            }
+        });
+
+        $(document).on('click', '#remove-preview', function() {
+            $('#preview').attr('src', '{{ $producto->imagen_url }}');
+            $('#preview-container').removeClass('d-none');
+            $('#remove-preview').addClass('d-none');
+            $('#imagen').val('');
+        });
+
         if (!$.fn.DataTable.isDataTable('#table1')) {
-            // DataTable no se ha inicializado en #table1, así que lo inicializamos
-            dataTable = $('#table1').DataTable({
-                // Configuración de DataTables
-            });
+            dataTable = $('#table1').DataTable({});
         } else {
-            // DataTable ya se ha inicializado en #table1, por lo que simplemente obtenemos la instancia existente
             dataTable = $('#table1').DataTable();
         }
         if (!$.fn.DataTable.isDataTable('#table2')) {
-            dataTable1 = $('#table2').DataTable({
-                // Configuración de DataTables
-            });
+            dataTable1 = $('#table2').DataTable({});
         } else {
             dataTable1 = $('#table2').DataTable();
         }

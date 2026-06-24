@@ -6,6 +6,7 @@ use App\Models\Configuracion;
 use App\Models\Impuesto;
 use App\Models\Producto;
 use App\Models\ProductoPrecioTier;
+use App\Models\Proveedor;
 use App\Models\Opcion;
 use App\Models\TablaPorcentaje;
 use App\Models\TemporalVentaDetalle;
@@ -38,6 +39,7 @@ class ProductoController extends Controller
 
             $heads = [
                 'N°',
+                'Imagen',
                 'Unidad M.',
                 'Descripción',
                 'Categoría',
@@ -64,7 +66,14 @@ class ProductoController extends Controller
         $impuestos = Impuesto::all();
         $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
         $medida = Opcion::where('id_dominio', 5)->orderBy('id')->get();
-        return view('productos.create', ['medida' => $medida, 'categoria' => $categoria, 'impuestos' => $impuestos, 'headcat' => $headcat]);
+        $proveedores = Proveedor::where('estado', 1)->orderBy('razonsocial')->get();
+        return view('productos.create', [
+            'medida' => $medida,
+            'categoria' => $categoria,
+            'impuestos' => $impuestos,
+            'headcat' => $headcat,
+            'proveedores' => $proveedores
+        ]);
     }
 
     /**
@@ -160,8 +169,17 @@ class ProductoController extends Controller
             $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
             $medida = Opcion::where('id_dominio', 5)->orderBy('descripcion')->get();
             $impuestos = Impuesto::all();
+            $proveedores = Proveedor::where('estado', 1)->orderBy('razonsocial')->get();
             $producto->load('precioTiers');
-            return view('productos.edit', ['headcat' => $headcat, 'categoria' => $categoria, 'producto' => $producto, 'medida' => $medida, 'qrCode' => $qrCode, 'impuestos' => $impuestos]);
+            return view('productos.edit', [
+                'headcat' => $headcat,
+                'categoria' => $categoria,
+                'producto' => $producto,
+                'medida' => $medida,
+                'qrCode' => $qrCode,
+                'impuestos' => $impuestos,
+                'proveedores' => $proveedores
+            ]);
     }
 
     /**
@@ -193,7 +211,12 @@ class ProductoController extends Controller
             $validated['imagen'] = $path;
         }
 
-        $producto->update($validated);
+        $extraFields = $request->only([
+            'codigo', 'detalle', 'stock', 'stock_minimo', 'stock_inicial', 'stock_maximo',
+            'ubicacion_deposito', 'pcosto', 'pventa', 'estado', 'observacion', 'tipo',
+            'id_proveedor'
+        ]);
+        $producto->update(array_merge($validated, $extraFields));
 
         $producto->precioTiers()->delete();
         if ($request->has('tier_cantidad')) {

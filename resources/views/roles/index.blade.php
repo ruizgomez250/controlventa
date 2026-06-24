@@ -322,7 +322,15 @@
             $.post('{{ route("permisos.crear") }}', $(this).serialize(), function(res) {
                 $('#crearPermisoModal').modal('hide');
                 $('#crearPermisoForm')[0].reset();
-                Swal.fire('Éxito', res.success, 'success');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Permiso creado',
+                    text: res.success,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(function() {
+                    location.reload();
+                });
             }).fail(function(xhr) {
                 var msg = xhr.responseJSON?.error || xhr.responseJSON?.errors?.nombre?.[0] || 'Error al crear permiso';
                 Swal.fire('Error', msg, 'error');

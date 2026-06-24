@@ -9,7 +9,7 @@ class Producto extends Model
 {
     use HasFactory;
     protected $table = "productos"; //le personalizo el nombre a la tabla
-    protected $fillable = ['id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'stock', 'stock_minimo', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'impuesto', 'imagen', 'id_impuesto', 'pmayorista', 'cmayorista', 'dmayorista', 'tipo'];
+    protected $fillable = ['id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'stock', 'stock_minimo', 'stock_inicial', 'stock_maximo', 'ubicacion_deposito', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'impuesto', 'imagen', 'id_impuesto', 'id_proveedor', 'pmayorista', 'cmayorista', 'dmayorista', 'tipo'];
 
     protected static function booted()
     {
@@ -59,5 +59,10 @@ class Producto extends Model
     public function precioTiers()
     {
         return $this->hasMany(ProductoPrecioTier::class, 'id_producto')->orderBy('cantidad_desde');
+    }
+
+    public function proveedorPrincipal()
+    {
+        return $this->belongsTo(Proveedor::class, 'id_proveedor');
     }
 }

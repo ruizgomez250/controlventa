@@ -14,6 +14,23 @@ use Spatie\Permission\PermissionRegistrar;
 
 class RolController extends Controller
 {
+    private const GRUPOS = [
+        'cliente' => ['leer', 'crear', 'editar', 'borrar'],
+        'proveedor' => ['leer', 'crear', 'editar', 'borrar'],
+        'producto' => ['leer', 'crear', 'editar', 'borrar', 'comercial', 'stock'],
+        'compra' => ['leer', 'crear', 'editar', 'borrar'],
+        'venta' => ['leer', 'crear', 'editar', 'borrar'],
+        'caja' => ['leer', 'crear', 'editar', 'borrar'],
+        'cajareporte' => ['leer', 'crear', 'editar', 'borrar'],
+        'reporte' => ['leer', 'crear', 'editar', 'borrar'],
+        'rol' => ['leer', 'crear', 'editar', 'borrar'],
+        'gasto' => ['leer', 'crear', 'editar', 'borrar'],
+        'cheque' => ['leer', 'crear', 'editar', 'borrar'],
+        'tabla_porcentaje' => ['leer', 'modificar'],
+        'configuracion' => ['modificar'],
+        'empresa' => ['leer', 'crear', 'editar', 'borrar'],
+    ];
+
     public function index(): View
     {
         if (!auth()->user()->can('rol crear')) {
@@ -21,31 +38,8 @@ class RolController extends Controller
         }
         $usuarios = User::all();
 
-        $allPermissions = Permission::all()->pluck('name');
-        $permissionGroups = [];
-        $displayNames = [];
-        $actionLabels = [
-            'leer' => 'Ver',
-            'crear' => 'Crear',
-            'editar' => 'Editar',
-            'borrar' => 'Eliminar',
-            'modificar' => 'Modificar',
-        ];
-        $actionIcons = [
-            'leer' => 'fa-eye',
-            'crear' => 'fa-plus',
-            'editar' => 'fa-edit',
-            'borrar' => 'fa-trash',
-            'modificar' => 'fa-cog',
-        ];
-        $actionColors = [
-            'leer' => 'info',
-            'crear' => 'success',
-            'editar' => 'warning',
-            'borrar' => 'danger',
-            'modificar' => 'secondary',
-        ];
-        $displayNameMap = [
+        $permissionGroups = self::GRUPOS;
+        $displayNames = [
             'cliente' => 'Cliente',
             'proveedor' => 'Proveedor',
             'producto' => 'Producto',
@@ -61,16 +55,33 @@ class RolController extends Controller
             'configuracion' => 'Configuración',
             'empresa' => 'Empresa',
         ];
-
-        foreach ($allPermissions as $permName) {
-            $parts = explode(' ', $permName);
-            $model = $parts[0] ?? $permName;
-            $action = $parts[1] ?? 'leer';
-            $permissionGroups[$model][] = $action;
-            if (!isset($displayNames[$model])) {
-                $displayNames[$model] = $displayNameMap[$model] ?? ucfirst($model);
-            }
-        }
+        $actionLabels = [
+            'leer' => 'Ver',
+            'crear' => 'Crear',
+            'editar' => 'Editar',
+            'borrar' => 'Eliminar',
+            'modificar' => 'Modificar',
+            'comercial' => 'Datos Comerciales',
+            'stock' => 'Stock',
+        ];
+        $actionIcons = [
+            'leer' => 'fa-eye',
+            'crear' => 'fa-plus',
+            'editar' => 'fa-edit',
+            'borrar' => 'fa-trash',
+            'modificar' => 'fa-cog',
+            'comercial' => 'fa-chart-line',
+            'stock' => 'fa-warehouse',
+        ];
+        $actionColors = [
+            'leer' => 'info',
+            'crear' => 'success',
+            'editar' => 'warning',
+            'borrar' => 'danger',
+            'modificar' => 'secondary',
+            'comercial' => 'primary',
+            'stock' => 'secondary',
+        ];
 
         return view('roles.index', compact('usuarios', 'permissionGroups', 'displayNames', 'actionLabels', 'actionIcons', 'actionColors'));
     }
@@ -98,9 +109,18 @@ class RolController extends Controller
         if (!$user) {
             return redirect()->back()->with('error', 'Usuario no encontrado.');
         }
-        $permisos = $request->input('permisos', []);
-        $user->syncPermissions($permisos);
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $permisos = array_unique($request->input('permisos', []));
+        $existing = Permission::whereIn('name', $permisos)->pluck('name')->toArray();
+        $missing = array_diff($permisos, $existing);
+        foreach ($missing as $name) {
+            Permission::create(['name' => $name]);
+        }
+        try {
+            $user->syncPermissions($permisos);
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+        } catch (\Exception $e) {
+            return redirect()->route('rol.index')->with('error', 'Error al guardar permisos: ' . $e->getMessage());
+        }
         return redirect()->route('rol.index')->with('success', 'Permisos actualizados exitosamente.');
     }
 

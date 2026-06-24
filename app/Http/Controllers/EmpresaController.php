@@ -187,7 +187,7 @@ class EmpresaController extends Controller
         $grupos = [
             'cliente' => ['leer', 'crear', 'editar', 'borrar'],
             'proveedor' => ['leer', 'crear', 'editar', 'borrar'],
-            'producto' => ['leer', 'crear', 'editar', 'borrar'],
+            'producto' => ['leer', 'crear', 'editar', 'borrar', 'comercial', 'stock'],
             'compra' => ['leer', 'crear', 'editar', 'borrar'],
             'venta' => ['leer', 'crear', 'editar', 'borrar'],
             'caja' => ['leer', 'crear', 'editar', 'borrar'],
