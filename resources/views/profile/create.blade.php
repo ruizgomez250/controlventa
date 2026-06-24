@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-    <h1 class="m-0 custom-heading">Registrar Compra</h1>
+    <h1 class="m-0 custom-heading">{{ __('Registrar Compra') }}</h1>
 @stop
 @section('css')
     <link rel="stylesheet" href="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.css') }}">
@@ -25,7 +25,7 @@
                                 $config1 = ['format' => 'DD-MM-YYYY'];
                             @endphp
                             <div class="form-group">
-                                <label for="fechaemision">FECHA DE EMISIÓN</label>
+                                <label for="fechaemision">{{ __('FECHA DE EMISIÓN') }}</label>
                                 <input type="date" class="form-control" id="fechaemision" name="fechaemision"
                                     value="{{ date('Y-m-d') }}" required>
                             </div>
@@ -37,16 +37,16 @@
                                 fgroup-class="col-md-2" required/>
                             <div class="card" style="width: 14rem;margin-top: -18px">
                                 <div class="card-body">
-                                    <label for="">CONDICIÓN DE COMPRA</label>
+                                    <label for="">{{ __('CONDICIÓN DE COMPRA') }}</label>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="condicion" id="inlineRadio1"
                                             value="CONTADO" checked>
-                                        <label class="form-check-label" for="inlineRadio1">Contado</label>
+                                        <label class="form-check-label" for="inlineRadio1">{{ __('Contado') }}</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="condicion" id="inlineRadio2"
                                             value="CREDITO">
-                                        <label class="form-check-label" for="inlineRadio2">Crédito</label>
+                                        <label class="form-check-label" for="inlineRadio2">{{ __('Crédito') }}</label>
                                     </div>
                                 </div>
 
@@ -54,14 +54,14 @@
                             <x-adminlte-input type="hidden" id="proveedor_id" name="proveedor_id" />
                         </div>
                         <div class="row">
-                            <x-adminlte-card title="Proveedor" class="text-primary">
+                            <x-adminlte-card title="{{ __('Proveedor') }}" class="text-primary">
 
                                 <div class="row">
                                     <x-adminlte-input type="number" id="cod_proveedor" name="cod_proveedor"
-                                        onchange="cambiarCod()" placeholder="Codigo" label="COD." fgroup-class="col-md-1"
+                                        onchange="cambiarCod()" placeholder="{{ __('Codigo') }}" label="COD." fgroup-class="col-md-1"
                                         required />
                                     <x-adminlte-select2 name="id_proveedor" id="id_proveedor" label="RAZON SOCIAL"
-                                        data-placeholder="Seleccionar un proveedor..." fgroup-class="col-md-8"
+                                        data-placeholder="{{ __('Seleccionar un proveedor...') }}" fgroup-class="col-md-8"
                                         onchange="actualizarNumeroDocumento()">
                                         <x-slot name="prependSlot">
                                             <div class="input-group-text bg-gradient-primary">
@@ -74,7 +74,7 @@
                                         @endforeach
                                     </x-adminlte-select2>
                                     <x-adminlte-input type="text" id="numero_documento" name="numero_documento"
-                                        placeholder="RUC" label="RUC" readonly fgroup-class="col-md-2" />
+                                        placeholder="{{ __('RUC') }}" label="RUC" readonly fgroup-class="col-md-2" />
                                 </div>
                             </x-adminlte-card>
                         </div>
@@ -83,27 +83,27 @@
                         <div id="items">
                             <div class="item" style="background-color: yellow;">
                                 <div class="row ml-2">
-                                    <label for="" class="col-1">ITEM</label>
-                                    <label for="" class="col-1">UNDM</label>
-                                    <label for="" class="col-1">CÓDIGO</label>
-                                    <label for="" class="col-1">CANTIDAD</label>
-                                    <label for="" class="col-3">DESCRIPCION</label>
-                                    <label for="" class="col-1">PRECIO UNITARIO</label>
-                                    <label for="" class="col-1">EXENTAS</label>
+                                    <label for="" class="col-1">{{ __('ITEM') }}</label>
+                                    <label for="" class="col-1">{{ __('UNDM') }}</label>
+                                    <label for="" class="col-1">{{ __('CÓDIGO') }}</label>
+                                    <label for="" class="col-1">{{ __('CANTIDAD') }}</label>
+                                    <label for="" class="col-3">{{ __('DESCRIPCION') }}</label>
+                                    <label for="" class="col-1">{{ __('PRECIO UNITARIO') }}</label>
+                                    <label for="" class="col-1">{{ __('EXENTAS') }}</label>
                                     <label for="" class="col-1">5%</label>
                                     <label for="" class="col-1">10%</label>
                                 </div>
                             </div>
                         </div>
 
-                        <button onclick="addNewItem()" class="btn btn-primary mt-2" type="button">Agregar Ítem</button>
+                        <button onclick="addNewItem()" class="btn btn-primary mt-2" type="button">{{ __('Agregar Ítem') }}</button>
 
                         <!-- Agrega este elemento para mostrar la suma total -->
-                    <div>Suma Total: <span id="total-sum">0</span></div>
+                    <div>{{ __('Suma Total:') }}<span id="total-sum">0</span></div>
                         <div class="row">
                             <div class="form-group col-md-12">
                                 <a class="btn btn-danger mx-1" style="float: right;"
-                                    href="{{ route('compra.index') }}">Cancelar</a>
+                                    href="{{ route('compra.index') }}">{{ __('Cancelar') }}</a>
                                 <x-adminlte-button class="btn-group" style="float: right;" type="submit"
                                     label="Registrar" theme="primary" icon="fas fa-lg fa-save" />
                             </div>

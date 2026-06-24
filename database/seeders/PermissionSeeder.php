@@ -26,6 +26,7 @@ class PermissionSeeder extends Seeder
             'cheque' => ['leer', 'crear', 'editar', 'borrar'],
             'tabla_porcentaje' => ['leer', 'modificar'],
             'configuracion' => ['modificar'],
+            'empresa' => ['leer', 'crear', 'editar', 'borrar'],
         ];
 
         $allPermissions = [];
@@ -33,7 +34,7 @@ class PermissionSeeder extends Seeder
             foreach ($actions as $action) {
                 $permissionName = strtolower($model) . ' ' . $action;
                 $allPermissions[] = $permissionName;
-                Permission::create(['name' => $permissionName, 'guard_name' => 'web']);
+                Permission::firstOrCreate(['name' => $permissionName, 'guard_name' => 'web']);
             }
         }
 

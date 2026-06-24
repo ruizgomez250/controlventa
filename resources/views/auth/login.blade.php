@@ -290,7 +290,7 @@
                 </svg>
             </div>
             <h1>{{ config('app.name', 'ControlVenta') }}</h1>
-            <p>Ingresa tus credenciales para acceder</p>
+            <p>{{ __('Ingresa tus credenciales para acceder') }}</p>
         </div>
 
         <div class="login-card">
@@ -310,13 +310,13 @@
                 @csrf
 
                 <div class="form-group">
-                    <label for="email">Correo electrónico</label>
+                    <label for="email">{{ __('Correo electrónico') }}</label>
                     <div class="input-wrapper">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="4" width="20" height="16" rx="2"/>
                             <path d="M22 4L12 13 2 4"/>
                         </svg>
-                        <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" placeholder="tu@correo.com" required autofocus autocomplete="email">
+                        <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" placeholder="{{ __('tu@correo.com') }}" required autofocus autocomplete="email">
                     </div>
                     @error('email')
                         <span class="invalid-feedback">{{ $message }}</span>
@@ -324,13 +324,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Contraseña</label>
+                    <label for="password">{{ __('Contraseña') }}</label>
                     <div class="input-wrapper">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                             <path d="M7 11V7a5 5 0 0110 0v4"/>
                         </svg>
-                        <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="••••••••" required autocomplete="current-password">
+                        <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="{{ __('••••••••') }}" required autocomplete="current-password">
                     </div>
                     @error('password')
                         <span class="invalid-feedback">{{ $message }}</span>
@@ -339,23 +339,21 @@
 
                 <div class="form-options">
                     <label>
-                        <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                        Recordarme
-                    </label>
+                        <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>{{ __('Recordarme') }}</label>
                     @if (Route::has('password.request'))
-                        <a href="{{ route('password.request') }}" style="color:#818cf8;font-size:13px;text-decoration:none;">¿Olvidaste tu contraseña?</a>
+                        <a href="{{ route('password.request') }}" style="color:#818cf8;font-size:13px;text-decoration:none;">{{ __('¿Olvidaste tu contraseña?') }}</a>
                     @endif
                 </div>
 
                 <button type="submit" class="btn-login" id="loginBtn">
                     <span class="spinner"></span>
-                    <span class="btn-text">Iniciar Sesión</span>
+                    <span class="btn-text">{{ __('Iniciar Sesión') }}</span>
                 </button>
             </form>
 
             <div class="login-footer">
                 @if (Route::has('register'))
-                    <a href="{{ route('register') }}">¿No tienes cuenta? Regístrate</a>
+                    <a href="{{ route('register') }}">{{ __('¿No tienes cuenta? Regístrate') }}</a>
                 @endif
             </div>
         </div>

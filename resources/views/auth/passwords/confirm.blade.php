@@ -124,7 +124,7 @@
                 </svg>
             </div>
             <h1>{{ config('app.name', 'ControlVenta') }}</h1>
-            <p>Confirma tu contraseña para continuar</p>
+            <p>{{ __('Confirma tu contraseña para continuar') }}</p>
         </div>
 
         <div class="login-card">
@@ -136,24 +136,24 @@
                 @csrf
 
                 <div class="form-group">
-                    <label for="password">Contraseña</label>
+                    <label for="password">{{ __('Contraseña') }}</label>
                     <div class="input-wrapper">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                             <path d="M7 11V7a5 5 0 0110 0v4"/>
                         </svg>
-                        <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="••••••••" required autofocus>
+                        <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="{{ __('••••••••') }}" required autofocus>
                     </div>
                     @error('password')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>
 
-                <button type="submit" class="btn-login">Confirmar contraseña</button>
+                <button type="submit" class="btn-login">{{ __('Confirmar contraseña') }}</button>
             </form>
 
             <div class="login-footer">
-                <a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a>
+                <a href="{{ route('password.request') }}">{{ __('¿Olvidaste tu contraseña?') }}</a>
             </div>
         </div>
     </div>

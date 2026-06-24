@@ -5,11 +5,11 @@
 @section('content_header')
     <div class="row">
         <div class="col-6">
-            <h1 class="m-0 custom-heading">Lista de Productos</h1>
+            <h1 class="m-0 custom-heading">{{ __('Lista de Productos') }}</h1>
         </div>
         <div class="col-6">
-            <a href="{{ route('producto.create') }}" class="btn btn-primary " style="float: right;">Registra Nuevo
-                Producto</a>
+            <a href="{{ route('producto.create') }}" class="btn btn-primary " style="float: right;">{{ __('Registra Nuevo
+                Producto') }}</a>
         </div>
 
     </div>
@@ -49,7 +49,7 @@
                                             @endforeach
                                         </small>
                                     @else
-                                        <small class="text-muted">—</small>
+                                        <small class="text-muted">{{ __('—') }}</small>
                                     @endif
                                 </td>
                                 <td style="float:right;">
@@ -87,9 +87,9 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Detalle</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">{{ __('Detalle') }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true">{{ __('&times;') }}</span>
                     </button>
                 </div>
                 <div class="modal-body">                    
@@ -104,8 +104,8 @@
     <div class="modal-dialog modal-md modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="imagenModalLabel">Imagen</h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h5 class="modal-title" id="imagenModalLabel">{{ __('Imagen') }}</h5>
+                <button type="button" class="close" data-dismiss="modal">{{ __('&times;') }}</button>
             </div>
             <div class="modal-body text-center">
                 <img id="imagenModalSrc" src="" class="img-fluid" style="max-height:500px;">

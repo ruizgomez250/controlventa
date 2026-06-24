@@ -47,12 +47,22 @@ class ConfiguracionController extends Controller
                 // Ventas / pagos
                 $ventas = Configuracion::firstOrCreate(
                     ['descripcion' => 'ventas'],
-                    ['estado' => 0] // Si no existe, por defecto 0
+                    ['estado' => 0]
                 );
 
-                // Si el checkbox 'pagos' viene, marcar 1, si no, 0
                 $ventas->estado = $request->has('pagos') ? 1 : 0;
                 $ventas->save();
+
+                // Idioma
+                if ($request->has('idioma')) {
+                    $idioma = Configuracion::firstOrCreate(
+                        ['descripcion' => 'idioma'],
+                        ['observacion' => 'es']
+                    );
+                    $idioma->observacion = $request->input('idioma');
+                    $idioma->save();
+                    session(['app_locale' => $request->input('idioma')]);
+                }
             });
 
             return redirect()->route('configuracion.index')

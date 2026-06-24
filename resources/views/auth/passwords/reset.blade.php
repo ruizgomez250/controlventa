@@ -124,7 +124,7 @@
                 </svg>
             </div>
             <h1>{{ config('app.name', 'ControlVenta') }}</h1>
-            <p>Restablece tu contraseña</p>
+            <p>{{ __('Restablece tu contraseña') }}</p>
         </div>
 
         <div class="login-card">
@@ -137,13 +137,13 @@
                 <input type="hidden" name="token" value="{{ $token }}">
 
                 <div class="form-group">
-                    <label for="email">Correo electrónico</label>
+                    <label for="email">{{ __('Correo electrónico') }}</label>
                     <div class="input-wrapper">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="4" width="20" height="16" rx="2"/>
                             <path d="M22 4L12 13 2 4"/>
                         </svg>
-                        <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ $email ?? old('email') }}" placeholder="tu@correo.com" required autofocus>
+                        <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ $email ?? old('email') }}" placeholder="{{ __('tu@correo.com') }}" required autofocus>
                     </div>
                     @error('email')
                         <span class="invalid-feedback">{{ $message }}</span>
@@ -151,13 +151,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Nueva contraseña</label>
+                    <label for="password">{{ __('Nueva contraseña') }}</label>
                     <div class="input-wrapper">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                             <path d="M7 11V7a5 5 0 0110 0v4"/>
                         </svg>
-                        <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="••••••••" required autocomplete="new-password">
+                        <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="{{ __('••••••••') }}" required autocomplete="new-password">
                     </div>
                     @error('password')
                         <span class="invalid-feedback">{{ $message }}</span>
@@ -165,21 +165,21 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="password-confirm">Confirmar nueva contraseña</label>
+                    <label for="password-confirm">{{ __('Confirmar nueva contraseña') }}</label>
                     <div class="input-wrapper">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                             <path d="M7 11V7a5 5 0 0110 0v4"/>
                         </svg>
-                        <input type="password" id="password-confirm" name="password_confirmation" class="form-control" placeholder="••••••••" required autocomplete="new-password">
+                        <input type="password" id="password-confirm" name="password_confirmation" class="form-control" placeholder="{{ __('••••••••') }}" required autocomplete="new-password">
                     </div>
                 </div>
 
-                <button type="submit" class="btn-login">Restablecer contraseña</button>
+                <button type="submit" class="btn-login">{{ __('Restablecer contraseña') }}</button>
             </form>
 
             <div class="login-footer">
-                <a href="{{ route('login') }}">Volver al inicio de sesión</a>
+                <a href="{{ route('login') }}">{{ __('Volver al inicio de sesión') }}</a>
             </div>
         </div>
     </div>

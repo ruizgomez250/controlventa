@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-    <h1 class="m-0 custom-heading">Reporte de Ventas por Estado</h1>
+    <h1 class="m-0 custom-heading">{{ __('Reporte de Ventas por Estado') }}</h1>
 @stop
 
 @section('content')
@@ -9,33 +9,33 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Generar Reporte de Ventas</h3>
+                    <h3 class="card-title">{{ __('Generar Reporte de Ventas') }}</h3>
                     <div class="card-tools">
-                        <span class="badge badge-warning">Estado 1 = Vendido</span>
-                        <span class="badge badge-success ml-2">Estado 2 = Cobrado</span>
+                        <span class="badge badge-warning">{{ __('Estado 1 = Vendido') }}</span>
+                        <span class="badge badge-success ml-2">{{ __('Estado 2 = Cobrado') }}</span>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-12">
-                            <h5>Reporte por Usuario</h5>
+                            <h5>{{ __('Reporte por Usuario') }}</h5>
                             <hr>
                         </div>
                         
                         <div class="form-group col-md-3">
-                            <label>FECHA DESDE</label>
+                            <label>{{ __('FECHA DESDE') }}</label>
                             <input type="date" class="form-control" id="desde1" value="{{ date('Y-m-d') }}">
                         </div>
                         
                         <div class="form-group col-md-3">
-                            <label>FECHA HASTA</label>
+                            <label>{{ __('FECHA HASTA') }}</label>
                             <input type="date" class="form-control" id="hasta1" value="{{ date('Y-m-d') }}">
                         </div>
                         
                         <div class="form-group col-md-4">
-                            <label>USUARIO</label>
+                            <label>{{ __('USUARIO') }}</label>
                             <select class="form-control" id="idusuario">
-                                <option value="">Seleccionar usuario...</option>
+                                <option value="">{{ __('Seleccionar usuario...') }}</option>
                                 @foreach ($usuarios as $item)
                                     <option value="{{ $item->id }}">{{ $item->name }}</option>
                                 @endforeach
@@ -43,10 +43,9 @@
                         </div>
                         
                         <div class="form-group col-md-2">
-                            <label>&nbsp;</label>
+                            <label>{{ __('&nbsp;') }}</label>
                             <button class="btn btn-secondary form-control" onclick="generarPDF()">
-                                <i class="fas fa-file-pdf"></i> Generar
-                            </button>
+                                <i class="fas fa-file-pdf"></i>{{ __('Generar') }}</button>
                         </div>
                     </div>
 
@@ -54,25 +53,24 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <h5>Reporte General</h5>
+                            <h5>{{ __('Reporte General') }}</h5>
                             <hr>
                         </div>
                         
                         <div class="form-group col-md-4">
-                            <label>FECHA DESDE</label>
+                            <label>{{ __('FECHA DESDE') }}</label>
                             <input type="date" class="form-control" id="desde2" value="{{ date('Y-m-d') }}">
                         </div>
                         
                         <div class="form-group col-md-4">
-                            <label>FECHA HASTA</label>
+                            <label>{{ __('FECHA HASTA') }}</label>
                             <input type="date" class="form-control" id="hasta2" value="{{ date('Y-m-d') }}">
                         </div>
                         
                         <div class="form-group col-md-4">
-                            <label>&nbsp;</label>
+                            <label>{{ __('&nbsp;') }}</label>
                             <button class="btn btn-secondary form-control" onclick="generarPDFsinuser()">
-                                <i class="fas fa-file-pdf"></i> Generar
-                            </button>
+                                <i class="fas fa-file-pdf"></i>{{ __('Generar') }}</button>
                         </div>
                     </div>
                 </div>

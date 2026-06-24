@@ -5,15 +5,13 @@
 <div class="row">
 
 <div class="col-6">
-<h1 class="m-0 custom-heading">Lista de Cheques</h1>
+<h1 class="m-0 custom-heading">{{ __('Lista de Cheques') }}</h1>
 </div>
 
 <div class="col-6">
 <a href="{{ route('cheques.create') }}"
 class="btn btn-primary"
-style="float:right;">
-Registrar Nuevo Cheque
-</a>
+style="float:right;">{{ __('Registrar Nuevo Cheque') }}</a>
 </div>
 
 </div>
@@ -44,15 +42,11 @@ with-buttons>
 
 @if($row->tipo == 'cobrar')
 
-<span class="badge badge-success">
-💰 Cobro
-</span>
+<span class="badge badge-success">{{ __('💰 Cobro') }}</span>
 
 @elseif($row->tipo == 'pagar')
 
-<span class="badge badge-danger">
-💸 Pago
-</span>
+<span class="badge badge-danger">{{ __('💸 Pago') }}</span>
 
 @else
 
@@ -78,27 +72,19 @@ $cobro = \Carbon\Carbon::parse($row->fecha_cobro);
 
 @if($row->estado == 'cobrado')
 
-<span class="badge badge-success">
-🟢 Cobrado
-</span>
+<span class="badge badge-success">{{ __('🟢 Cobrado') }}</span>
 
 @elseif($cobro->lt($hoy))
 
-<span class="badge badge-danger">
-🔴 Vencido
-</span>
+<span class="badge badge-danger">{{ __('🔴 Vencido') }}</span>
 
 @elseif($cobro->between($hoy, $hoy->copy()->addDays(5)))
 
-<span class="badge badge-warning">
-🟡 Próximo
-</span>
+<span class="badge badge-warning">{{ __('🟡 Próximo') }}</span>
 
 @else
 
-<span class="badge badge-secondary">
-Pendiente
-</span>
+<span class="badge badge-secondary">{{ __('Pendiente') }}</span>
 
 @endif
 

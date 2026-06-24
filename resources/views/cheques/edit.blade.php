@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<h1 class="m-0 custom-heading">Editar Cheque</h1>
+<h1 class="m-0 custom-heading">{{ __('Editar Cheque') }}</h1>
 @stop
 
 @section('content')
@@ -24,8 +24,8 @@
 </div>
 </x-slot>
 
-<option value="cobrar" {{ $cheque->tipo=='cobrar'?'selected':'' }}>Cheque a Cobrar</option>
-<option value="pagar" {{ $cheque->tipo=='pagar'?'selected':'' }}>Cheque a Pagar</option>
+<option value="cobrar" {{ $cheque->tipo=='cobrar'?'selected':'' }}>{{ __('Cheque a Cobrar') }}</option>
+<option value="pagar" {{ $cheque->tipo=='pagar'?'selected':'' }}>{{ __('Cheque a Pagar') }}</option>
 
 </x-adminlte-select>
 
@@ -92,10 +92,10 @@ fgroup-class="col-md-3" />
 label="Estado"
 fgroup-class="col-md-3">
 
-<option value="pendiente" {{ $cheque->estado=='pendiente'?'selected':'' }}>Pendiente</option>
-<option value="cobrado" {{ $cheque->estado=='cobrado'?'selected':'' }}>Cobrado</option>
-<option value="pagado" {{ $cheque->estado=='pagado'?'selected':'' }}>Pagado</option>
-<option value="rechazado" {{ $cheque->estado=='rechazado'?'selected':'' }}>Rechazado</option>
+<option value="pendiente" {{ $cheque->estado=='pendiente'?'selected':'' }}>{{ __('Pendiente') }}</option>
+<option value="cobrado" {{ $cheque->estado=='cobrado'?'selected':'' }}>{{ __('Cobrado') }}</option>
+<option value="pagado" {{ $cheque->estado=='pagado'?'selected':'' }}>{{ __('Pagado') }}</option>
+<option value="rechazado" {{ $cheque->estado=='rechazado'?'selected':'' }}>{{ __('Rechazado') }}</option>
 
 </x-adminlte-select>
 
@@ -117,9 +117,7 @@ fgroup-class="col-md-12">
 <div class="col-md-12 text-right">
 
 <a href="{{ route('cheques.index') }}"
-class="btn btn-danger mx-1">
-Cancelar
-</a>
+class="btn btn-danger mx-1">{{ __('Cancelar') }}</a>
 
 <x-adminlte-button
 type="submit"

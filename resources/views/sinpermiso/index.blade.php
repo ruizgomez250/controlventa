@@ -4,7 +4,7 @@
 
 
 
-    <h5 class=" custom-heading" id="exampleModalLabel">No tiene permiso para acceder a este recurso</h5>
+    <h5 class=" custom-heading" id="exampleModalLabel">{{ __('No tiene permiso para acceder a este recurso') }}</h5>
     <div class="container">
         
         <!-- Perrito durmiendo -->

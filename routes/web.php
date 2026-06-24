@@ -124,3 +124,11 @@ Route::get('/create', function () {
     return view('create');
 });
 Route::resource('cheques', ChequeController::class);
+
+Route::get('/idioma/{locale}', function ($locale) {
+    if (in_array($locale, ['es', 'en'])) {
+        session(['app_locale' => $locale]);
+        app()->setLocale($locale);
+    }
+    return redirect()->back();
+})->name('idioma');

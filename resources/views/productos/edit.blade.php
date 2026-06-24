@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-    <h1 class="m-0 custom-heading">Editar Datos Del Producto</h1>
+    <h1 class="m-0 custom-heading">{{ __('Editar Datos Del Producto') }}</h1>
 @stop
 
 @section('content')
@@ -20,21 +20,18 @@
                     <ul class="nav nav-tabs" id="productoTabs" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">
-                                <i class="fas fa-info-circle"></i> General
-                            </a>
+                                <i class="fas fa-info-circle"></i>{{ __('General') }}</a>
                         </li>
                         @can('producto comercial')
                         <li class="nav-item">
                             <a class="nav-link" id="comercial-tab" data-toggle="tab" href="#comercial" role="tab" aria-controls="comercial" aria-selected="false">
-                                <i class="fas fa-chart-line"></i> Datos Comerciales
-                            </a>
+                                <i class="fas fa-chart-line"></i>{{ __('Datos Comerciales') }}</a>
                         </li>
                         @endcan
                         @can('producto stock')
                         <li class="nav-item">
                             <a class="nav-link" id="stock-tab" data-toggle="tab" href="#stock" role="tab" aria-controls="stock" aria-selected="false">
-                                <i class="fas fa-warehouse"></i> Stock
-                            </a>
+                                <i class="fas fa-warehouse"></i>{{ __('Stock') }}</a>
                         </li>
                         @endcan
                     </ul>
@@ -43,7 +40,7 @@
                         {{-- TAB: GENERAL --}}
                         <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
                             <div class="row">
-                                <x-adminlte-input name="codigo" label="Código" placeholder="Código" fgroup-class="col-md-3"
+                                <x-adminlte-input name="codigo" label="Código" placeholder="{{ __('Código') }}" fgroup-class="col-md-3"
                                     value="{{ $producto->codigo }}" style="text-align: center;" label-class="text-info">
                                     <x-slot name="prependSlot">
                                         <div class="input-group-text bg-info">
@@ -79,22 +76,21 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="imagen">Imagen del Producto</label>
+                                        <label for="imagen">{{ __('Imagen del Producto') }}</label>
                                         <div id="preview-container" class="mb-2">
                                             <img id="preview" src="{{ $producto->imagen_url }}" class="img-fluid img-thumbnail" style="max-height:180px;">
                                         </div>
                                         <div class="custom-file">
                                             <input type="file" name="imagen" id="imagen" class="custom-file-input" accept="image/*">
-                                            <label class="custom-file-label" for="imagen">Seleccionar imagen</label>
+                                            <label class="custom-file-label" for="imagen">{{ __('Seleccionar imagen') }}</label>
                                         </div>
                                         <button type="button" id="remove-preview" class="btn btn-sm btn-outline-secondary mt-1">
-                                            <i class="fas fa-times"></i> Quitar imagen
-                                        </button>
+                                            <i class="fas fa-times"></i>{{ __('Quitar imagen') }}</button>
                                     </div>
                                 </div>
                                 <div class="col-md-8">
                                     <x-adminlte-textarea name="detalle" label="Detalle del Producto"
-                                        placeholder="Ingresar detalle del producto" label-class="text-warning">
+                                        placeholder="{{ __('Ingresar detalle del producto') }}" label-class="text-warning">
                                         <x-slot name="prependSlot">
                                             <div class="input-group-text bg-warning">
                                                 <i class="fas fa-lg fa-file-alt"></i>
@@ -104,7 +100,7 @@
                                     </x-adminlte-textarea>
 
                                     <x-adminlte-select2 name="id_proveedor" label="Proveedor Principal"
-                                        data-placeholder="Seleccionar un proveedor..." fgroup-class="col-md-12"
+                                        data-placeholder="{{ __('Seleccionar un proveedor...') }}" fgroup-class="col-md-12"
                                         label-class="text-info">
                                         <x-slot name="prependSlot">
                                             <div class="input-group-text bg-info">
@@ -124,7 +120,7 @@
 
                             <div class="row">
                                 <x-adminlte-select2 name="id_categoria" label="Categoria"
-                                    data-placeholder="Seleccionar una categoría..." fgroup-class="col-md-5"
+                                    data-placeholder="{{ __('Seleccionar una categoría...') }}" fgroup-class="col-md-5"
                                     label-class="text-danger">
                                     <x-slot name="prependSlot">
                                         <div class="input-group-text bg-gradient-red">
@@ -143,7 +139,7 @@
                                 </x-adminlte-select2>
 
                                 <x-adminlte-select2 name="id_medida" id="id_medida" label="Unidad Medida"
-                                    data-placeholder="Seleccionar una medida..." fgroup-class="col-md-4"
+                                    data-placeholder="{{ __('Seleccionar una medida...') }}" fgroup-class="col-md-4"
                                     label-class="text-danger">
                                     <x-slot name="prependSlot">
                                         <div class="input-group-text bg-gradient-red">
@@ -162,9 +158,9 @@
                                 </x-adminlte-select2>
 
                                 <x-adminlte-select name="estado" label="Estado"
-                                    data-placeholder="Seleccionar una opción..." fgroup-class="col-md-3">
-                                    <option value="1" {{ $producto->estado === 1 ? 'selected' : '' }}>Activo</option>
-                                    <option value="0" {{ $producto->estado === 0 ? 'selected' : '' }}>Inactivo</option>
+                                    data-placeholder="{{ __('Seleccionar una opción...') }}" fgroup-class="col-md-3">
+                                    <option value="1" {{ $producto->estado === 1 ? 'selected' : '' }}>{{ __('Activo') }}</option>
+                                    <option value="0" {{ $producto->estado === 0 ? 'selected' : '' }}>{{ __('Inactivo') }}</option>
                                 </x-adminlte-select>
                             </div>
 
@@ -176,9 +172,9 @@
                                             <i class="fas fa-tag"></i>
                                         </div>
                                     </x-slot>
-                                    <option value="venta" {{ $producto->tipo == 'venta' ? 'selected' : '' }}>Para la Venta</option>
-                                    <option value="uso_interno" {{ $producto->tipo == 'uso_interno' ? 'selected' : '' }}>Uso Interno</option>
-                                    <option value="ambos" {{ $producto->tipo == 'ambos' ? 'selected' : '' }}>Ambos</option>
+                                    <option value="venta" {{ $producto->tipo == 'venta' ? 'selected' : '' }}>{{ __('Para la Venta') }}</option>
+                                    <option value="uso_interno" {{ $producto->tipo == 'uso_interno' ? 'selected' : '' }}>{{ __('Uso Interno') }}</option>
+                                    <option value="ambos" {{ $producto->tipo == 'ambos' ? 'selected' : '' }}>{{ __('Ambos') }}</option>
                                 </x-adminlte-select>
 
                                 <div class="col-md-4 text-right">
@@ -192,7 +188,7 @@
                         <div class="tab-pane fade" id="comercial" role="tabpanel" aria-labelledby="comercial-tab">
                             <div class="card card-outline card-success">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-dollar-sign"></i> Precios</h3>
+                                    <h3 class="card-title"><i class="fas fa-dollar-sign"></i>{{ __('Precios') }}</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -210,7 +206,7 @@
                                     </div>
                                     <div class="row">
                                         <div class="col-6 rcorners2 importet">
-                                            <p><strong>Margen según fórmula:</strong> (Precio Venta - Costo) / Precio Venta;</p>
+                                            <p><strong>{{ __('Margen según fórmula:') }}</strong>{{ __('(Precio Venta - Costo) / Precio Venta;') }}</p>
                                             <h1 id="margenganancia" class="text-center">0 %</h1>
                                         </div>
                                     </div>
@@ -219,7 +215,7 @@
 
                             <div class="card card-outline card-info mt-3">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-layer-group"></i> Precios Mayoristas por Tramos</h3>
+                                    <h3 class="card-title"><i class="fas fa-layer-group"></i>{{ __('Precios Mayoristas por Tramos') }}</h3>
                                     <div class="card-tools">
                                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                             <i class="fas fa-minus"></i>
@@ -227,13 +223,13 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted">Define precios especiales según la cantidad comprada.</p>
+                                    <p class="text-muted">{{ __('Define precios especiales según la cantidad comprada.') }}</p>
                                     <table class="table table-sm table-bordered" id="tierTable">
                                         <thead class="thead-light">
                                             <tr>
-                                                <th style="width:40px;">#</th>
-                                                <th>Desde Cantidad</th>
-                                                <th>Precio Unitario Gs.</th>
+                                                <th style="width:40px;">{{ __('#') }}</th>
+                                                <th>{{ __('Desde Cantidad') }}</th>
+                                                <th>{{ __('Precio Unitario Gs.') }}</th>
                                                 <th style="width:50px;"></th>
                                             </tr>
                                         </thead>
@@ -251,8 +247,7 @@
                                         </tbody>
                                     </table>
                                     <button type="button" class="btn btn-success btn-sm mt-2" onclick="addTierRow()">
-                                        <i class="fas fa-plus"></i> Agregar Tramo
-                                    </button>
+                                        <i class="fas fa-plus"></i>{{ __('Agregar Tramo') }}</button>
                                 </div>
                             </div>
                         </div>
@@ -278,7 +273,7 @@
                             <div class="row">
                                 <x-adminlte-input name="ubicacion_deposito" label="Ubicación en Depósito"
                                     value="{{ $producto->ubicacion_deposito }}"
-                                    placeholder="Ej: Estante A, Pasillo 3" fgroup-class="col-md-6" />
+                                    placeholder="{{ __('Ej: Estante A, Pasillo 3') }}" fgroup-class="col-md-6" />
                             </div>
                         </div>
                         @endcan
@@ -287,7 +282,7 @@
                     <div class="row mt-3">
                         <div class="form-group col-md-12">
                             <a class="btn btn-danger" style="float: right;"
-                                href="{{ route('producto.index') }}">Cancelar</a>
+                                href="{{ route('producto.index') }}">{{ __('Cancelar') }}</a>
                             <x-adminlte-button class="btn-group mr-2" style="float: right;" type="submit"
                                 label="Guardar" theme="primary" icon="fas fa-lg fa-save" />
                         </div>
@@ -302,9 +297,9 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class=" custom-heading" id="exampleModalLabel">Categoria del Producto</h5>
+                <h5 class=" custom-heading" id="exampleModalLabel">{{ __('Categoria del Producto') }}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                    <span aria-hidden="true">{{ __('&times;') }}</span>
                 </button>
             </div>
             <div class="modal-body">
@@ -313,7 +308,7 @@
                         @csrf
                         <div class="form-group">
                             <x-adminlte-input name="descripcion" id="descripcion" label="Descripcion"
-                                placeholder="Descripcion" fgroup-class="col-md-12" label-class="text-danger">
+                                placeholder="{{ __('Descripcion') }}" fgroup-class="col-md-12" label-class="text-danger">
                                 <x-slot name="prependSlot">
                                     <div class="input-group-text bg-danger">
                                         <i class="fas fa-tag "></i>
@@ -324,9 +319,9 @@
                                 value="3">
                         </div>
                     </form>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Cerrar') }}</button>
                     <button type="button" class="btn btn-primary"
-                        onclick="guardarCategoria('{{ route('guardar-categoria') }}','formCrearCategoria',true,'id_categoria','borrar-categoria')">Guardar</button>
+                        onclick="guardarCategoria('{{ route('guardar-categoria') }}','formCrearCategoria',true,'id_categoria','borrar-categoria')">{{ __('Guardar') }}</button>
                 </div>
             </div>
             <div class="modal-footer">
@@ -367,9 +362,9 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class=" custom-heading" id="exampleModalLabel">Unidad medida del Producto</h5>
+                <h5 class=" custom-heading" id="exampleModalLabel">{{ __('Unidad medida del Producto') }}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                    <span aria-hidden="true">{{ __('&times;') }}</span>
                 </button>
             </div>
             <div class="modal-body">
@@ -378,7 +373,7 @@
                         @csrf
                         <div class="form-group">
                             <x-adminlte-input name="descripcion" id="descripcion" label="Descripcion"
-                                placeholder="Descripcion" fgroup-class="col-md-12" label-class="text-danger">
+                                placeholder="{{ __('Descripcion') }}" fgroup-class="col-md-12" label-class="text-danger">
                                 <x-slot name="prependSlot">
                                     <div class="input-group-text bg-danger">
                                         <i class="fas fa-tag "></i>
@@ -389,9 +384,9 @@
                                 value="5">
                         </div>
                     </form>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Cerrar') }}</button>
                     <button type="button" class="btn btn-primary"
-                        onclick="guardarUnidad('{{ route('guardar-unidad') }}','formCrearUnidad',true,'id_medida','borrar-unidad')">Guardar</button>
+                        onclick="guardarUnidad('{{ route('guardar-unidad') }}','formCrearUnidad',true,'id_medida','borrar-unidad')">{{ __('Guardar') }}</button>
                 </div>
             </div>
             <div class="modal-footer">

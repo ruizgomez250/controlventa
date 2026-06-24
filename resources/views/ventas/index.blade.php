@@ -3,10 +3,10 @@
 @section('content_header')
     <div class="row">
         <div class="col-6">
-            <h1 class="m-0 custom-heading">Lista de Ventas</h1>
+            <h1 class="m-0 custom-heading">{{ __('Lista de Ventas') }}</h1>
         </div>
         <div class="col-6">
-            <a href="{{ route('venta.create') }}" class="btn btn-primary" style="float: right;">Nueva Venta</a>
+            <a href="{{ route('venta.create') }}" class="btn btn-primary" style="float: right;">{{ __('Nueva Venta') }}</a>
         </div>
     </div>
 @stop
@@ -19,17 +19,17 @@
                     <table id="table1" class="table table-bordered table-hover" theme="light">
                         <thead>
                             <tr>
-                                <th>Detalles</th> <!-- Columna para el botón de expansión -->
-                                <th>ID</th>
-                                <th>Fecha de Emisión</th>
-                                <th>Número de Factura</th>
-                                <th>Timbrado Factura</th>
-                                <th>Cliente</th>
-                                <th>Tipo de Comprobante</th>
-                                <th>Total</th>
-                                <th>Usuario</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
+                                <th>{{ __('Detalles') }}</th> <!-- Columna para el botón de expansión -->
+                                <th>{{ __('ID') }}</th>
+                                <th>{{ __('Fecha de Emisión') }}</th>
+                                <th>{{ __('Número de Factura') }}</th>
+                                <th>{{ __('Timbrado Factura') }}</th>
+                                <th>{{ __('Cliente') }}</th>
+                                <th>{{ __('Tipo de Comprobante') }}</th>
+                                <th>{{ __('Total') }}</th>
+                                <th>{{ __('Usuario') }}</th>
+                                <th>{{ __('Estado') }}</th>
+                                <th>{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
                         <tbody>

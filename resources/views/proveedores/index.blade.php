@@ -3,10 +3,10 @@
 @section('content_header')
     <div class="row">
         <div class="col-6">
-            <h1 class="m-0 custom-heading">Lista de Proveedores</h1>
+            <h1 class="m-0 custom-heading">{{ __('Lista de Proveedores') }}</h1>
         </div>
         <div class="col-6">
-            <a href="{{ route('proveedor.create') }}" class="btn btn-primary" style="float: right;">Registrar Nuevo Proveedor</a>
+            <a href="{{ route('proveedor.create') }}" class="btn btn-primary" style="float: right;">{{ __('Registrar Nuevo Proveedor') }}</a>
         </div>
     </div>
 @stop

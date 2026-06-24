@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-    <h1 class="m-0 text-dark" style="background-color:#5DBFFF ">Editar Datos Del Producto</h1>
+    <h1 class="m-0 text-dark" style="background-color:#5DBFFF ">{{ __('Editar Datos Del Producto') }}</h1>
 @stop
 
 @section('content')
@@ -19,7 +19,7 @@
                         @method('put')
                         <div class="row">  
                             <x-adminlte-input name="nombre" label="Nombre" value="{{ $mascota->nombre }}"
-                                placeholder="Ingresar nombre de paciente" fgroup-class="col-md-6" />
+                                placeholder="{{ __('Ingresar nombre de paciente') }}" fgroup-class="col-md-6" />
                             @error('nombre')
                                 <div class="alert alert-danger">{{ $message }}</div>
                             @enderror
@@ -29,7 +29,7 @@
                             <x-adminlte-input name="edad" label="Edad" fgroup-class="col-md-2"
                                 value="{{ $mascota->edad }}" />
 
-                            <x-adminlte-select name="sexo_id" label="Sexo" data-placeholder="Seleccionar sexo..."
+                            <x-adminlte-select name="sexo_id" label="Sexo" data-placeholder="{{ __('Seleccionar sexo...') }}"
                                 fgroup-class="col-md-4">
                                 @foreach ($sexo as $item)
                                     <option value={{ $item->id }}
@@ -39,7 +39,7 @@
                             </x-adminlte-select>
 
                             <x-adminlte-select id="especies_id" name="lista_especie" label="Especie"
-                                data-placeholder="Seleccionar especie..." fgroup-class="col-md-4">
+                                data-placeholder="{{ __('Seleccionar especie...') }}" fgroup-class="col-md-4">
                                 @foreach ($especie as $item)
                                     <option value={{ $item->id }}
                                         {{ $item->id == $mascota->razaanimal->claseanimal_id ? 'selected' : '' }}>
@@ -48,7 +48,7 @@
                             </x-adminlte-select>
 
                             <x-adminlte-select id="resultados_select" name="raza_id" label="Raza"
-                                data-placeholder="Seleccionar raza..." fgroup-class="col-md-4">
+                                data-placeholder="{{ __('Seleccionar raza...') }}" fgroup-class="col-md-4">
 
                             </x-adminlte-select>
                         </div>
@@ -57,13 +57,13 @@
 
                         <div class="row">
                             <x-adminlte-select name="propietario_id" label="Propietario"
-                                data-placeholder="Seleccionar propietario..." fgroup-class="col-md-5">
+                                data-placeholder="{{ __('Seleccionar propietario...') }}" fgroup-class="col-md-5">
                                 @foreach ($propietario as $item)
                                     <option value={{ $item->id }} {{ $item->id == $mascota->propietario_id? 'selected' : '' }} >{{ $item->razonsocial }}</option>
                                 @endforeach
                             </x-adminlte-select>
 
-                            <x-adminlte-select name="estado_id" label="Estado" data-placeholder="Seleccionar estado..."
+                            <x-adminlte-select name="estado_id" label="Estado" data-placeholder="{{ __('Seleccionar estado...') }}"
                                 fgroup-class="col-md-5">
                                 @foreach ($estadomascota as $item)
                                     <option value={{ $item->id }}>{{ $item->descripcion }}</option>
@@ -79,7 +79,7 @@
                         <div class="row">
                             <div class="form-group col-md-12">
                                 <a class="btn btn-danger" style="float: right;"
-                                    href="{{ route('mascota.index') }}">Cancelar</a>
+                                    href="{{ route('mascota.index') }}">{{ __('Cancelar') }}</a>
                                 <x-adminlte-button class="btn-group mr-2" style="float: right;" type="submit"
                                     label="Guardar" theme="primary" icon="fas fa-lg fa-save" />
                             </div>

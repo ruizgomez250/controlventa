@@ -4,9 +4,9 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class=" custom-heading" id="exampleModalLabel">Categoria del Producto</h5>
+                    <h5 class=" custom-heading" id="exampleModalLabel">{{ __('Categoria del Producto') }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true">{{ __('&times;') }}</span>
                     </button>
                 </div>
                 <div class="modal-body">
@@ -15,7 +15,7 @@
                             @csrf
                             <div class="form-group">
                                 <x-adminlte-input wire:model="descripcion" name="descripcion" label="Descripcion"
-                                    placeholder="Descripcion" fgroup-class="col-md-12"
+                                    placeholder="{{ __('Descripcion') }}" fgroup-class="col-md-12"
                                     label-class="form-control text-danger">
                                     {{-- <input wire:model="descripcion" type="text" class="form-control" placeholder="Descripción"> --}}
 
@@ -28,8 +28,8 @@
                                 <input wire:model="id_dominio" type="hidden" class="form-control" id="id_dominio"
                                     name="id_dominio" value="3">
                             </div>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                            <button  wire:click.prevent="storeCat()" class="btn btn-primary">Guardar</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Cerrar') }}</button>
+                            <button  wire:click.prevent="storeCat()" class="btn btn-primary">{{ __('Guardar') }}</button>
                         </form>
                         {{-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                             <button type="button" class="btn btn-primary" onclick="guardarCategoria()">Guardar</button> --}}

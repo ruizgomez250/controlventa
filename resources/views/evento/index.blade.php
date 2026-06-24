@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Eventos</h1>
+    <h1 class="m-0 text-dark">{{ __('Eventos') }}</h1>
 @stop
 
 @section('content')
@@ -28,11 +28,11 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('evento.edit', $row->id) }}" class="btn btn-warning">Editar</a>
+                                    <a href="{{ route('evento.edit', $row->id) }}" class="btn btn-warning">{{ __('Editar') }}</a>
                                     <form action="{{ route('evento.destroy', $row->id) }}" method="post" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                                        <button type="submit" class="btn btn-danger">{{ __('Eliminar') }}</button>
                                     </form>
                                 </td>
                             </tr>

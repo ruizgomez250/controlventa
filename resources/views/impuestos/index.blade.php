@@ -3,12 +3,10 @@
 @section('content_header')
     <div class="row">
         <div class="col-6">
-            <h1 class="m-0 custom-heading">Lista de Impuestos</h1>
+            <h1 class="m-0 custom-heading">{{ __('Lista de Impuestos') }}</h1>
         </div>
         <div class="col-6">
-            <a href="{{ route('impuestos.create') }}" class="btn btn-primary" style="float: right;">
-                Registrar Nuevo Impuesto
-            </a>
+            <a href="{{ route('impuestos.create') }}" class="btn btn-primary" style="float: right;">{{ __('Registrar Nuevo Impuesto') }}</a>
         </div>
     </div>
 @stop

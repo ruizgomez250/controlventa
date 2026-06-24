@@ -3,10 +3,10 @@
 @section('content_header')
     <div class="row">
         <div class="col-6">
-            <h1 class="m-0 custom-heading">Lista de Gastos</h1>
+            <h1 class="m-0 custom-heading">{{ __('Lista de Gastos') }}</h1>
         </div>
         <div class="col-6">
-            <a href="{{ route('gasto.create') }}" class="btn btn-primary" style="float: right;">Nuevo Gasto</a>
+            <a href="{{ route('gasto.create') }}" class="btn btn-primary" style="float: right;">{{ __('Nuevo Gasto') }}</a>
         </div>
     </div>
 @stop
@@ -19,15 +19,15 @@
                 <table id="table1" class="table table-bordered table-hover">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Concepto</th>
-                            <th>Monto</th>
-                            <th>Fecha</th>
-                            <th>Método de Pago</th>
-                            <th>Observación</th>
-                            <th>Estado</th>
-                            <th>Usuario</th>
-                            <th>Acciones</th>
+                            <th>{{ __('ID') }}</th>
+                            <th>{{ __('Concepto') }}</th>
+                            <th>{{ __('Monto') }}</th>
+                            <th>{{ __('Fecha') }}</th>
+                            <th>{{ __('Método de Pago') }}</th>
+                            <th>{{ __('Observación') }}</th>
+                            <th>{{ __('Estado') }}</th>
+                            <th>{{ __('Usuario') }}</th>
+                            <th>{{ __('Acciones') }}</th>
                         </tr>
                     </thead>
                     <tbody>

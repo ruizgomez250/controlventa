@@ -2,8 +2,7 @@
 
 @section('content_header')
     <h1 class="m-0 custom-heading">
-        <i class="fas fa-plus-circle"></i> Nueva Empresa
-    </h1>
+        <i class="fas fa-plus-circle"></i>{{ __('Nueva Empresa') }}</h1>
 @stop
 
 @section('content')
@@ -15,7 +14,7 @@
                         @csrf
 
                         <div class="form-group">
-                            <label for="nombre">Nombre de la Empresa <span class="text-danger">*</span></label>
+                            <label for="nombre">{{ __('Nombre de la Empresa') }}<span class="text-danger">{{ __('*') }}</span></label>
                             <input type="text" name="nombre" id="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" required>
                             @error('nombre')
                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -23,21 +22,21 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="dominio">Subdominio <span class="text-danger">*</span></label>
+                            <label for="dominio">{{ __('Subdominio') }}<span class="text-danger">{{ __('*') }}</span></label>
                             <div class="input-group">
-                                <input type="text" name="dominio" id="dominio" class="form-control @error('dominio') is-invalid @enderror" value="{{ old('dominio') }}" required placeholder="memiempresa">
+                                <input type="text" name="dominio" id="dominio" class="form-control @error('dominio') is-invalid @enderror" value="{{ old('dominio') }}" required placeholder="{{ __('memiempresa') }}">
                                 <div class="input-group-append">
-                                    <span class="input-group-text">.tudominio.com</span>
+                                    <span class="input-group-text">{{ __('.tudominio.com') }}</span>
                                 </div>
                                 @error('dominio')
                                     <span class="invalid-feedback">{{ $message }}</span>
                                 @enderror
                             </div>
-                            <small class="form-text text-muted">Solo letras minúsculas, números y guiones.</small>
+                            <small class="form-text text-muted">{{ __('Solo letras minúsculas, números y guiones.') }}</small>
                         </div>
 
                         <div class="form-group">
-                            <label for="email_admin">Email del Administrador <span class="text-danger">*</span></label>
+                            <label for="email_admin">{{ __('Email del Administrador') }}<span class="text-danger">{{ __('*') }}</span></label>
                             <input type="email" name="email_admin" id="email_admin" class="form-control @error('email_admin') is-invalid @enderror" value="{{ old('email_admin') }}" required>
                             @error('email_admin')
                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -45,7 +44,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="password_admin">Contraseña del Administrador <span class="text-danger">*</span></label>
+                            <label for="password_admin">{{ __('Contraseña del Administrador') }}<span class="text-danger">{{ __('*') }}</span></label>
                             <input type="password" name="password_admin" id="password_admin" class="form-control @error('password_admin') is-invalid @enderror" required>
                             @error('password_admin')
                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -53,17 +52,15 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="password_admin_confirmation">Confirmar Contraseña <span class="text-danger">*</span></label>
+                            <label for="password_admin_confirmation">{{ __('Confirmar Contraseña') }}<span class="text-danger">{{ __('*') }}</span></label>
                             <input type="password" name="password_admin_confirmation" id="password_admin_confirmation" class="form-control" required>
                         </div>
 
                         <div class="form-group text-center">
                             <button type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-save"></i> Crear Empresa
-                            </button>
+                                <i class="fas fa-save"></i>{{ __('Crear Empresa') }}</button>
                             <a href="{{ route('empresas.index') }}" class="btn btn-secondary btn-lg">
-                                <i class="fas fa-times"></i> Cancelar
-                            </a>
+                                <i class="fas fa-times"></i>{{ __('Cancelar') }}</a>
                         </div>
                     </form>
                 </div>

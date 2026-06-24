@@ -3,10 +3,10 @@
 @section('content_header')
     <div class="row">
         <div class="col-6">
-            <h1 class="m-0 custom-heading">Lista de Clientes</h1>
+            <h1 class="m-0 custom-heading">{{ __('Lista de Clientes') }}</h1>
         </div>
         <div class="col-6">
-            <a href="{{ route('cliente.create') }}" class="btn btn-primary" style="float: right;">Registrar Nuevo Cliente</a>
+            <a href="{{ route('cliente.create') }}" class="btn btn-primary" style="float: right;">{{ __('Registrar Nuevo Cliente') }}</a>
         </div>
     </div>
 @stop

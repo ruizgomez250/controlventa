@@ -3,7 +3,7 @@
 @section('content_header')
     <div class="row">
         <div class="col-6">
-            <h1 class="m-0 custom-heading">Lista de Ventas a Cobrar</h1>
+            <h1 class="m-0 custom-heading">{{ __('Lista de Ventas a Cobrar') }}</h1>
         </div>
 
 
@@ -18,17 +18,17 @@
                     <table id="table1" class="table table-bordered table-hover" theme="light">
                         <thead>
                             <tr>
-                                <th>Detalles</th> <!-- Columna para el botón de expansión -->
-                                <th>ID</th>
-                                <th>Fecha</th>
-                                <th>Nro Factura</th>
-                                <th>Timbrado</th>
-                                <th>Cliente</th>
-                                <th>Condición de Compra</th>
-                                <th>Monto Total</th>
-                                <th>Usuario</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
+                                <th>{{ __('Detalles') }}</th> <!-- Columna para el botón de expansión -->
+                                <th>{{ __('ID') }}</th>
+                                <th>{{ __('Fecha') }}</th>
+                                <th>{{ __('Nro Factura') }}</th>
+                                <th>{{ __('Timbrado') }}</th>
+                                <th>{{ __('Cliente') }}</th>
+                                <th>{{ __('Condición de Compra') }}</th>
+                                <th>{{ __('Monto Total') }}</th>
+                                <th>{{ __('Usuario') }}</th>
+                                <th>{{ __('Estado') }}</th>
+                                <th>{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -85,21 +85,20 @@
                                     <td>
 
                                         {{-- <a href="#" class="btn btn-sm btn-outline-secondary ver-detalle-btn"
-                                            data-compra-id="{{ $compra->id }}" title="Mostrar detalles">
+                                            data-compra-id="{{ $compra->id }}" title="{{ __('Mostrar detalles') }}">
                                             <i class="fa fa-eye"></i>
-                                        </a> --}}
-                                        @if ($compra->tipo_comprobante == 'CREDITO')
-                                            <a href="#" class="btn btn-sm btn-outline-secondary pagar-cuota-btn"
-                                                data-compra-id="{{ $compra->id }}" title="Pagar Cuota">
+                                        </a>{{ __('--}}
+                                        @if ($compra->tipo_comprobante == \'CREDITO\')') }}<a href="#" class="btn btn-sm btn-outline-secondary pagar-cuota-btn"
+                                                data-compra-id="{{ $compra->id }}" title="{{ __('Pagar Cuota') }}">
                                                 <i class="fa fa-ruble-sign"></i></a>
                                         @endif
                                         <a href="#" class="btn btn-sm btn-outline-secondary pagar-monto-btn"
-                                            data-compra-id="{{ $compra->id }}" title="Pagar por Monto">
+                                            data-compra-id="{{ $compra->id }}" title="{{ __('Pagar por Monto') }}">
                                             <i class="fa fa-sm fa-money-bill"></i></a>
                                         @if ($compra->estado == 1)
                                             <button type="button" class="btn btn-sm btn-outline-secondary"
                                                 id="delete-button" onclick="borrarCompraCombustible({{ $compra->id }})"
-                                                title="Anular pedido">
+                                                title="{{ __('Anular pedido') }}">
                                                 <i class="fa fa-sm fa-fw fa-trash"></i>
                                             </button>
                                         @endif
@@ -110,19 +109,19 @@
                         </tbody>
                     </table>
 
-                    <x-adminlte-modal id="detalleModal" title="Detalles de la Venta" theme="light" size="lg">
+                    <x-adminlte-modal id="detalleModal" title="{{ __('Detalles de la Venta') }}" theme="light" size="lg">
                         <div>
                             <table class="table table-sm table-hover">
                                 <thead class="thead-dark">
                                     <tr>
-                                        <th scope="col">Item</th>
-                                        <th scope="col">U. Medida</th>
-                                        <th scope="col">Código</th>
-                                        <th scope="col">Cantidad</th>
-                                        <th scope="col">Descripcion</th>
-                                        <th scope="col">Precio Unit.</th>
-                                        <th scope="col">Total</th>
-                                        <th scope="col">IVA %</th>
+                                        <th scope="col">{{ __('Item') }}</th>
+                                        <th scope="col">{{ __('U. Medida') }}</th>
+                                        <th scope="col">{{ __('Código') }}</th>
+                                        <th scope="col">{{ __('Cantidad') }}</th>
+                                        <th scope="col">{{ __('Descripcion') }}</th>
+                                        <th scope="col">{{ __('Precio Unit.') }}</th>
+                                        <th scope="col">{{ __('Total') }}</th>
+                                        <th scope="col">{{ __('IVA %') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detalleContent">
@@ -132,18 +131,18 @@
                         </div>
                     </x-adminlte-modal>
 
-                    <x-adminlte-modal id="documentosModal" title="PDF De documentos" theme="light" size="lg">
+                    <x-adminlte-modal id="documentosModal" title="{{ __('PDF De documentos') }}" theme="light" size="lg">
                         <div>
                             <table class="table table-sm table-hover">
                                 <thead class="thead-dark">
                                     <tr>
-                                        <th scope="col">Documento</th>
-                                        <th scope="col">PDF</th>
+                                        <th scope="col">{{ __('Documento') }}</th>
+                                        <th scope="col">{{ __('PDF') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detalleContent">
                                     <tr>
-                                        <th scope="col">Orden de Compra</th>
+                                        <th scope="col">{{ __('Orden de Compra') }}</th>
                                         <th scope="col"><a id="ordenCompraPdfLink" href="" target="_blank"
                                                 class="btn btn-sm btn-outline-secondary">
                                                 <i class="fa fa-sm fa-fw fa-file-pdf"></i>
@@ -151,14 +150,14 @@
                                     </tr>
 
                                     <tr>
-                                        <th scope="col">Nota de Recepcion</th>
+                                        <th scope="col">{{ __('Nota de Recepcion') }}</th>
                                         <th scope="col"><a id="recepcionPdfLink" href="" target="_blank"
                                                 class="btn btn-sm btn-outline-secondary">
                                                 <i class="fa fa-sm fa-fw fa-file-pdf"></i>
                                             </a></th>
                                     </tr>
                                     <tr>
-                                        <th scope="col">Solicitud de Biens y Servicio</th>
+                                        <th scope="col">{{ __('Solicitud de Biens y Servicio') }}</th>
                                         <th scope="col"><a id="bienesPdfLink" href="" target="_blank"
                                                 class="btn btn-sm btn-outline-secondary">
                                                 <i class="fa fa-sm fa-fw fa-file-pdf"></i>
@@ -169,19 +168,19 @@
                         </div>
                     </x-adminlte-modal>
                     <!--Modal-->
-                    <x-adminlte-modal id="pagocuotaModal" title="Pago de Cuotas" theme="light" size="lg">
+                    <x-adminlte-modal id="pagocuotaModal" title="{{ __('Pago de Cuotas') }}" theme="light" size="lg">
                         <div>
                             <table class="table table-sm table-hover" id="table1">
                                 <thead class="thead-dark">
                                     <tr>
-                                        <th>Nro. Cuota</th>
-                                        <th>Opciones</th>
-                                        <th>Cuota</th>
-                                        <th>Fecha Deuda</th>
-                                        <th>Fecha Vencimiento</th>
-                                        <th>Fecha Pago</th>
-                                        <th>Monto Abonado</th>
-                                        <th>Saldo</th>
+                                        <th>{{ __('Nro. Cuota') }}</th>
+                                        <th>{{ __('Opciones') }}</th>
+                                        <th>{{ __('Cuota') }}</th>
+                                        <th>{{ __('Fecha Deuda') }}</th>
+                                        <th>{{ __('Fecha Vencimiento') }}</th>
+                                        <th>{{ __('Fecha Pago') }}</th>
+                                        <th>{{ __('Monto Abonado') }}</th>
+                                        <th>{{ __('Saldo') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detallecuota">
@@ -193,15 +192,15 @@
 
                     <!-- fin Modal-->
                     <!--Modal-->
-                    <x-adminlte-modal id="pagomontoModal" title="Ingresar Monto a Pagar" theme="light" size="lg">
+                    <x-adminlte-modal id="pagomontoModal" title="{{ __('Ingresar Monto a Pagar') }}" theme="light" size="lg">
                         <div>
                             <div class="row">
                                 <div class="col-sm-12 text-center">
                                     <table id = "tablaModalFech" class="table table-hover table-bordered">
                                         <thead align="center">
                                             <tr class="fondo">
-                                                <th class="txtWhite"><b>Descripcion</b></th>
-                                                <th class="txtWhite"><b>Monto</b></th>
+                                                <th class="txtWhite"><b>{{ __('Descripcion') }}</b></th>
+                                                <th class="txtWhite"><b>{{ __('Monto') }}</b></th>
                                             </tr>
                                         </thead>
                                         <tbody id="tablaModBody">
@@ -209,41 +208,38 @@
                                     </table>
                                 </div>
                                 <div class="col-12 text-center">
-                                    <h2>
-                                        Cargar el monto a abonar
-                                    </h2>
+                                    <h2>{{ __('Cargar el monto a abonar') }}</h2>
                                 </div>
-                                <h2><label>Monto a Abonar Gs. </label>
+                                <h2><label>{{ __('Monto a Abonar Gs.') }}</label>
                                     <input type="hidden" name="idfac" id="idfac" value=""
-                                        placeholder="Numero">
+                                        placeholder="{{ __('Numero') }}">
                                     <input type="number" oninput="verifMonto()" name="montoAbonar" id="montoAbonar"
                                         class="btn-success">
                                 </h2>
                                 <input type="hidden" name="montoAbonar1" id="montoAbonar1" class="form-control"
-                                    value="" placeholder="Numero">
+                                    value="" placeholder="{{ __('Numero') }}">
 
-                                <h2><label>Descuento </label>
+                                <h2><label>{{ __('Descuento') }}</label>
                                     <input type="number" oninput="verifMonto()" name="descuent" value="0"
                                         id="descuent" class="btn-success">
                                 </h2>
                                 <h1>
-                                    <label>Diferencia Gs.</label>
-                                    <label id="diferenciaAbonar" class="btn-danger">Diferencia</label>
+                                    <label>{{ __('Diferencia Gs.') }}</label>
+                                    <label id="diferenciaAbonar" class="btn-danger">{{ __('Diferencia') }}</label>
 
                                 </h1>
-                                <h3><label>Efectivo Gs.</label>
+                                <h3><label>{{ __('Efectivo Gs.') }}</label>
                                     <input type="number" oninput="verifVuelto()" name="descUs" id="descUs"
                                         class="btn-warning">
                                 </h3>
                                 <h3>
-                                    <label>Vuelto Gs.</label>
+                                    <label>{{ __('Vuelto Gs.') }}</label>
                                     <label id="vuelto" class="btn-info">0</label>
 
                                 </h3>
 
                             </div>
-                            <button class=" btn btn-primary " id="guardarMedida" onclick="pagar1()">
-                                Guardar</button>
+                            <button class=" btn btn-primary " id="guardarMedida" onclick="pagar1()">{{ __('Guardar') }}</button>
                         </div>
 
                         <!--pie modal-->

@@ -3,7 +3,7 @@
 @section('content_header')
     <div class="row">
         <div class="col-6">
-            <h1 class="m-0 custom-heading">Cuentas a Pagar (Compras)</h1>
+            <h1 class="m-0 custom-heading">{{ __('Cuentas a Pagar (Compras)') }}</h1>
         </div>
     </div>
 @stop
@@ -16,17 +16,17 @@
                     <table id="table1" class="table table-bordered table-hover" theme="light">
                         <thead>
                             <tr>
-                                <th>Detalles</th>
-                                <th>ID</th>
-                                <th>Fecha</th>
-                                <th>Nro Factura</th>
-                                <th>Timbrado</th>
-                                <th>Proveedor</th>
-                                <th>Condición</th>
-                                <th>Total</th>
-                                <th>Usuario</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
+                                <th>{{ __('Detalles') }}</th>
+                                <th>{{ __('ID') }}</th>
+                                <th>{{ __('Fecha') }}</th>
+                                <th>{{ __('Nro Factura') }}</th>
+                                <th>{{ __('Timbrado') }}</th>
+                                <th>{{ __('Proveedor') }}</th>
+                                <th>{{ __('Condición') }}</th>
+                                <th>{{ __('Total') }}</th>
+                                <th>{{ __('Usuario') }}</th>
+                                <th>{{ __('Estado') }}</th>
+                                <th>{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -60,12 +60,12 @@
                                     <td>
                                         @if ($compra->condicion_de_compra == 'CREDITO')
                                             <a href="#" class="btn btn-sm btn-outline-secondary pagar-cuota-btn"
-                                                data-compra-id="{{ $compra->id }}" title="Pagar Cuota">
+                                                data-compra-id="{{ $compra->id }}" title="{{ __('Pagar Cuota') }}">
                                                 <i class="fa fa-ruble-sign"></i>
                                             </a>
                                         @endif
                                         <a href="#" class="btn btn-sm btn-outline-secondary pagar-monto-btn"
-                                            data-compra-id="{{ $compra->id }}" title="Pagar por Monto">
+                                            data-compra-id="{{ $compra->id }}" title="{{ __('Pagar por Monto') }}">
                                             <i class="fa fa-sm fa-money-bill"></i>
                                         </a>
                                     </td>
@@ -74,19 +74,19 @@
                         </tbody>
                     </table>
 
-                    <x-adminlte-modal id="pagocuotaModal" title="Pago de Cuotas - Compra" theme="light" size="lg">
+                    <x-adminlte-modal id="pagocuotaModal" title="{{ __('Pago de Cuotas - Compra') }}" theme="light" size="lg">
                         <div>
                             <table class="table table-sm table-hover">
                                 <thead class="thead-dark">
                                     <tr>
-                                        <th>Nro. Cuota</th>
-                                        <th>Opciones</th>
-                                        <th>Cuota</th>
-                                        <th>Fecha Emisión</th>
-                                        <th>Fecha Vencimiento</th>
-                                        <th>Fecha Pago</th>
-                                        <th>Monto Abonado</th>
-                                        <th>Saldo</th>
+                                        <th>{{ __('Nro. Cuota') }}</th>
+                                        <th>{{ __('Opciones') }}</th>
+                                        <th>{{ __('Cuota') }}</th>
+                                        <th>{{ __('Fecha Emisión') }}</th>
+                                        <th>{{ __('Fecha Vencimiento') }}</th>
+                                        <th>{{ __('Fecha Pago') }}</th>
+                                        <th>{{ __('Monto Abonado') }}</th>
+                                        <th>{{ __('Saldo') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detallecuota"></tbody>
@@ -94,46 +94,46 @@
                         </div>
                     </x-adminlte-modal>
 
-                    <x-adminlte-modal id="pagomontoModal" title="Ingresar Monto a Pagar" theme="light" size="lg">
+                    <x-adminlte-modal id="pagomontoModal" title="{{ __('Ingresar Monto a Pagar') }}" theme="light" size="lg">
                         <div>
                             <div class="row">
                                 <div class="col-sm-12 text-center">
                                     <table id="tablaModalFech" class="table table-hover table-bordered">
                                         <thead align="center">
                                             <tr class="bg-primary text-white">
-                                                <th><b>Descripción</b></th>
-                                                <th><b>Monto</b></th>
+                                                <th><b>{{ __('Descripción') }}</b></th>
+                                                <th><b>{{ __('Monto') }}</b></th>
                                             </tr>
                                         </thead>
                                         <tbody id="tablaModBody"></tbody>
                                     </table>
                                 </div>
                                 <div class="col-12 text-center mt-3">
-                                    <h4>Cargar el monto a abonar</h4>
+                                    <h4>{{ __('Cargar el monto a abonar') }}</h4>
                                 </div>
                                 <div class="col-12 text-center">
-                                    <label>Monto a Abonar Gs.</label>
+                                    <label>{{ __('Monto a Abonar Gs.') }}</label>
                                     <input type="hidden" name="idfac" id="idfac" value="">
                                     <input type="number" oninput="verifMonto()" name="montoAbonar" id="montoAbonar" class="form-control d-inline w-auto">
                                 </div>
                                 <input type="hidden" name="montoAbonar1" id="montoAbonar1" value="">
                                 <div class="col-12 text-center mt-2">
-                                    <label>Descuento </label>
+                                    <label>{{ __('Descuento') }}</label>
                                     <input type="number" oninput="verifMonto()" name="descuent" value="0" id="descuent" class="form-control d-inline w-auto">
                                 </div>
                                 <div class="col-12 text-center mt-3">
-                                    <h4>Diferencia Gs. <span id="diferenciaAbonar" class="text-danger">0</span></h4>
+                                    <h4>{{ __('Diferencia Gs.') }}<span id="diferenciaAbonar" class="text-danger">0</span></h4>
                                 </div>
                                 <div class="col-12 text-center mt-2">
-                                    <label>Efectivo Gs.</label>
+                                    <label>{{ __('Efectivo Gs.') }}</label>
                                     <input type="number" oninput="verifVuelto()" name="descUs" id="descUs" class="form-control d-inline w-auto">
                                 </div>
                                 <div class="col-12 text-center mt-2">
-                                    <h4>Vuelto Gs. <span id="vuelto" class="text-info">0</span></h4>
+                                    <h4>{{ __('Vuelto Gs.') }}<span id="vuelto" class="text-info">0</span></h4>
                                 </div>
                             </div>
                             <div class="text-center mt-3">
-                                <button class="btn btn-primary" onclick="pagar1()">Guardar</button>
+                                <button class="btn btn-primary" onclick="pagar1()">{{ __('Guardar') }}</button>
                             </div>
                         </div>
                     </x-adminlte-modal>

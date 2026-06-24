@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-    <h1 class="m-0 custom-heading">Editar Impuesto</h1>
+    <h1 class="m-0 custom-heading">{{ __('Editar Impuesto') }}</h1>
 @stop
 
 @section('plugins.Sweetalert2', true)
@@ -65,9 +65,7 @@
                     <div class="row">
                         <div class="form-group col-md-12">
                             <a class="btn btn-danger" style="float: right;"
-                               href="{{ route('impuestos.index') }}">
-                                Cancelar
-                            </a>
+                               href="{{ route('impuestos.index') }}">{{ __('Cancelar') }}</a>
 
                             <x-adminlte-button
                                 class="btn-group"

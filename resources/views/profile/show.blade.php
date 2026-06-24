@@ -4,7 +4,7 @@
 
 @section('content_header')
 
-    <h1>Perfil</h1>
+    <h1>{{ __('Perfil') }}</h1>
 @stop
 @section('plugins.Sweetalert2', true)
 @push('js')
@@ -71,11 +71,11 @@
                 <div class="form-group row text-center">
                     
                         <div class="col-md-12">
-                            <h4><strong>Nombre: </strong> {{ $user->name }}</h4>
+                            <h4><strong>{{ __('Nombre:') }}</strong> {{ $user->name }}</h4>
                         </div>
                     
                         <div class="col-md-12">
-                            <h4><strong>Correo Electrónico: </strong>{{ $user->email }}</h4>
+                            <h4><strong>{{ __('Correo Electrónico:') }}</strong>{{ $user->email }}</h4>
                         </div>
                     
                 </div>

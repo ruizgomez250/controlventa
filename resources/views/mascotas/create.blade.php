@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-    <h1 class="m-0 text-dark" style="background-color:orange ">Registrar Mascota</h1>
+    <h1 class="m-0 text-dark" style="background-color:orange ">{{ __('Registrar Mascota') }}</h1>
 @stop
 @section('css')
     <link rel="stylesheet" href="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.css') }}">
@@ -24,7 +24,7 @@
 
 
 
-                            <x-adminlte-input name="nombre" label="Nombre" placeholder="Ingresar nombre de paciente"
+                            <x-adminlte-input name="nombre" label="Nombre" placeholder="{{ __('Ingresar nombre de paciente') }}"
                                 fgroup-class="col-md-6" />
                             @error('nombre')
                                 <div class="alert alert-danger">{{ $message }}</div>
@@ -32,7 +32,7 @@
 
                             <x-adminlte-input name="edad" label="Edad" fgroup-class="col-md-2" />
 
-                            <x-adminlte-select name="sexo_id" label="Sexo" data-placeholder="Seleccionar sexo..."
+                            <x-adminlte-select name="sexo_id" label="Sexo" data-placeholder="{{ __('Seleccionar sexo...') }}"
                                 fgroup-class="col-md-4">
                                 @foreach ($sexo as $item)
                                     <option value={{ $item->id }}>{{ $item->descripcion }}</option>
@@ -40,7 +40,7 @@
                             </x-adminlte-select>
 
                             <x-adminlte-select id="especie_id" name="listaespecie" label="Especie"
-                                data-placeholder="Seleccionar especie..." fgroup-class="col-md-4">
+                                data-placeholder="{{ __('Seleccionar especie...') }}" fgroup-class="col-md-4">
                                 @foreach ($especie as $item)
                                     <option value={{ $item->id }}>{{ $item->descripcion }}</option>
                                 @endforeach
@@ -49,7 +49,7 @@
 
 
                             <x-adminlte-select id="resultado_select" name="raza_id" label="Raza"
-                                data-placeholder="Seleccionar raza..." fgroup-class="col-md-4">
+                                data-placeholder="{{ __('Seleccionar raza...') }}" fgroup-class="col-md-4">
 
                             </x-adminlte-select>
 
@@ -63,7 +63,7 @@
                                 fgroup-class="col-md-6" />
 
 
-                                <x-adminlte-select name="estado_id" label="Estado" data-placeholder="Seleccionar estado..."
+                                <x-adminlte-select name="estado_id" label="Estado" data-placeholder="{{ __('Seleccionar estado...') }}"
                                 fgroup-class="col-md-4">
                                 @foreach ($estadomascota as $item)
                                     <option value={{ $item->id }}>{{ $item->descripcion }}</option>

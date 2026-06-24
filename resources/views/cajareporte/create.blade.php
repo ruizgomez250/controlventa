@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-    <h1 class="m-0 custom-heading">Generar Reportes de Caja</h1>
+    <h1 class="m-0 custom-heading">{{ __('Generar Reportes de Caja') }}</h1>
 @stop
 @section('css')
     <link rel="stylesheet" href="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.css') }}">
@@ -24,17 +24,17 @@
                         {{-- With Label --}}
 
                         <div class="form-group">
-                            <label for="fechaemision">FECHA DESDE</label>
+                            <label for="fechaemision">{{ __('FECHA DESDE') }}</label>
                             <input type="date" class="form-control" id="desde1" name="fechaemision"
                                 value="{{ date('Y-m-d') }}" required>
                         </div>
                         <div class="form-group">
-                            <label for="fechaemision">FECHA HASTA</label>
+                            <label for="fechaemision">{{ __('FECHA HASTA') }}</label>
                             <input type="date" class="form-control" id="hasta1" name="fechaemision"
                                 value="{{ date('Y-m-d') }}" required>
                         </div>
                         <x-adminlte-select2 name="idusuario" id="idusuario" label="USUARIO DE CAJA"
-                            data-placeholder="Seleccionar un proveedor..." fgroup-class="col-md-4"
+                            data-placeholder="{{ __('Seleccionar un proveedor...') }}" fgroup-class="col-md-4"
                             onchange="actualizarNumeroDocumento()">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-secondary">
@@ -60,12 +60,12 @@
                             $config1 = ['format' => 'DD-MM-YYYY'];
                         @endphp
                         <div class="form-group">
-                            <label for="fechaemision">FECHA DESDE</label>
+                            <label for="fechaemision">{{ __('FECHA DESDE') }}</label>
                             <input type="date" class="form-control" id="desde2" name="fechaemision"
                                 value="{{ date('Y-m-d') }}" required>
                         </div>
                         <div class="form-group">
-                            <label for="fechaemision">FECHA HASTA</label>
+                            <label for="fechaemision">{{ __('FECHA HASTA') }}</label>
                             <input type="date" class="form-control" id="hasta2" name="fechaemision"
                                 value="{{ date('Y-m-d') }}" required>
                         </div>

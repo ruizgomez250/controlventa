@@ -212,18 +212,14 @@
     <div class="flex-grow-1">
         <span class="alert-text">
             @if($cantidadBajoStock > 0 && $productosSinStock > 0)
-                <strong>{{ $cantidadBajoStock }} productos</strong> están por debajo del stock mínimo y <strong>{{ $productosSinStock }} productos</strong> están sin stock.
-            @elseif($cantidadBajoStock > 0)
-                <strong>{{ $cantidadBajoStock }} productos</strong> están por debajo del stock mínimo.
-            @else
-                <strong>{{ $productosSinStock }} productos</strong> están sin stock.
-            @endif
-        </span>
+                <strong>{{ $cantidadBajoStock }} productos</strong>{{ __('están por debajo del stock mínimo y') }}<strong>{{ $productosSinStock }} productos</strong>{{ __('están sin stock.
+            @elseif($cantidadBajoStock > 0)') }}<strong>{{ $cantidadBajoStock }} productos</strong>{{ __('están por debajo del stock mínimo.
+            @else') }}<strong>{{ $productosSinStock }} productos</strong>{{ __('están sin stock.
+            @endif') }}</span>
     </div>
     <div class="flex-shrink-0">
         <a href="{{ route('producto.index') }}" class="alert-link">
-            <i class="fas fa-arrow-right"></i> Ir a productos
-        </a>
+            <i class="fas fa-arrow-right"></i>{{ __('Ir a productos') }}</a>
     </div>
 </div>
 @endif
@@ -237,7 +233,7 @@
                     <i class="fas fa-shopping-cart text-modern-primary"></i>
                 </div>
                 <div>
-                    <div class="card-label">Ventas del Día</div>
+                    <div class="card-label">{{ __('Ventas del Día') }}</div>
                     <div class="card-value">{{ number_format($ventasDelDia, 0, ',', '.') }}</div>
                 </div>
             </div>
@@ -254,7 +250,7 @@
                     <i class="fas fa-chart-line text-modern-success"></i>
                 </div>
                 <div>
-                    <div class="card-label">Ventas del Mes</div>
+                    <div class="card-label">{{ __('Ventas del Mes') }}</div>
                     <div class="card-value">{{ number_format($ventasDelMes, 0, ',', '.') }}</div>
                 </div>
             </div>
@@ -271,7 +267,7 @@
                     <i class="fas fa-hand-holding-usd text-modern-warning"></i>
                 </div>
                 <div>
-                    <div class="card-label">Cuentas por Cobrar</div>
+                    <div class="card-label">{{ __('Cuentas por Cobrar') }}</div>
                     <div class="card-value">{{ number_format($cuentasPorCobrar, 0, ',', '.') }}</div>
                 </div>
             </div>
@@ -288,7 +284,7 @@
                     <i class="fas fa-boxes text-modern-danger"></i>
                 </div>
                 <div>
-                    <div class="card-label">Stock Bajo</div>
+                    <div class="card-label">{{ __('Stock Bajo') }}</div>
                     <div class="card-value">{{ $cantidadBajoStock }}</div>
                 </div>
             </div>
@@ -304,17 +300,17 @@
     <div class="col-lg-6">
         <div class="dashboard-card">
             <div class="card-header-dash">
-                <h3><i class="fas fa-crown text-modern-warning"></i> Productos Más Vendidos</h3>
-                <a href="{{ route('reportes.vendidos') }}">Ver reporte <i class="fas fa-external-link-alt"></i></a>
+                <h3><i class="fas fa-crown text-modern-warning"></i>{{ __('Productos Más Vendidos') }}</h3>
+                <a href="{{ route('reportes.vendidos') }}">{{ __('Ver reporte') }}<i class="fas fa-external-link-alt"></i></a>
             </div>
             <div style="overflow-x: auto;">
                 <table class="dashboard-table">
                     <thead>
                         <tr>
-                            <th style="width: 36px;">#</th>
-                            <th>Producto</th>
-                            <th style="text-align:right;">Cant.</th>
-                            <th style="text-align:right;">Total</th>
+                            <th style="width: 36px;">{{ __('#') }}</th>
+                            <th>{{ __('Producto') }}</th>
+                            <th style="text-align:right;">{{ __('Cant.') }}</th>
+                            <th style="text-align:right;">{{ __('Total') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -330,7 +326,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="4" style="text-align:center; color:var(--modern-text-muted); padding:2rem;">No hay datos de ventas en los últimos 12 meses.</td></tr>
+                        <tr><td colspan="4" style="text-align:center; color:var(--modern-text-muted); padding:2rem;">{{ __('No hay datos de ventas en los últimos 12 meses.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -341,16 +337,16 @@
     <div class="col-lg-6">
         <div class="dashboard-card">
             <div class="card-header-dash">
-                <h3><i class="fas fa-clock text-modern-info"></i> Últimas Ventas</h3>
-                <a href="{{ route('venta.index') }}">Ver todas <i class="fas fa-external-link-alt"></i></a>
+                <h3><i class="fas fa-clock text-modern-info"></i>{{ __('Últimas Ventas') }}</h3>
+                <a href="{{ route('venta.index') }}">{{ __('Ver todas') }}<i class="fas fa-external-link-alt"></i></a>
             </div>
             <div style="overflow-x: auto; max-height: 380px; overflow-y: auto;">
                 <table class="dashboard-table">
                     <thead>
                         <tr>
-                            <th>Cliente</th>
-                            <th style="text-align:right;">Monto</th>
-                            <th style="text-align:right;">Fecha</th>
+                            <th>{{ __('Cliente') }}</th>
+                            <th style="text-align:right;">{{ __('Monto') }}</th>
+                            <th style="text-align:right;">{{ __('Fecha') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -359,7 +355,7 @@
                             <td>
                                 <div>{{ $venta->cliente->razonsocial ?? 'Consumidor Final' }}</div>
                                 @if($venta->numero_factura)
-                                    <div class="venta-cliente">Fact. {{ $venta->numero_factura }}</div>
+                                    <div class="venta-cliente">{{ __('Fact. {{ $venta->numero_factura }}') }}</div>
                                 @endif
                             </td>
                             <td style="text-align:right;">
@@ -370,7 +366,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="3" style="text-align:center; color:var(--modern-text-muted); padding:2rem;">No hay ventas registradas.</td></tr>
+                        <tr><td colspan="3" style="text-align:center; color:var(--modern-text-muted); padding:2rem;">{{ __('No hay ventas registradas.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -385,18 +381,18 @@
     <div class="col-12">
         <div class="dashboard-card">
             <div class="card-header-dash">
-                <h3><i class="fas fa-exclamation-triangle text-modern-danger"></i> Productos con Stock Bajo</h3>
-                <a href="{{ route('producto.index') }}">Ver inventario <i class="fas fa-external-link-alt"></i></a>
+                <h3><i class="fas fa-exclamation-triangle text-modern-danger"></i>{{ __('Productos con Stock Bajo') }}</h3>
+                <a href="{{ route('producto.index') }}">{{ __('Ver inventario') }}<i class="fas fa-external-link-alt"></i></a>
             </div>
             <div style="overflow-x: auto;">
                 <table class="dashboard-table">
                     <thead>
                         <tr>
-                            <th>Código</th>
-                            <th>Producto</th>
-                            <th style="text-align:right;">Stock Actual</th>
-                            <th style="text-align:right;">Stock Mínimo</th>
-                            <th style="text-align:right;">Estado</th>
+                            <th>{{ __('Código') }}</th>
+                            <th>{{ __('Producto') }}</th>
+                            <th style="text-align:right;">{{ __('Stock Actual') }}</th>
+                            <th style="text-align:right;">{{ __('Stock Mínimo') }}</th>
+                            <th style="text-align:right;">{{ __('Estado') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -412,11 +408,11 @@
                             </td>
                             <td style="text-align:right;">
                                 @if($p->stock <= 0)
-                                    <span class="badge-stock badge-stock-danger">Sin stock</span>
+                                    <span class="badge-stock badge-stock-danger">{{ __('Sin stock') }}</span>
                                 @elseif($p->stock <= ($p->stock_minimo ?: 5))
-                                    <span class="badge-stock badge-stock-warning">Bajo</span>
+                                    <span class="badge-stock badge-stock-warning">{{ __('Bajo') }}</span>
                                 @else
-                                    <span class="badge-stock badge-stock-ok">Regular</span>
+                                    <span class="badge-stock badge-stock-ok">{{ __('Regular') }}</span>
                                 @endif
                             </td>
                         </tr>
@@ -434,15 +430,15 @@
     <div class="col-lg-6">
         <div class="dashboard-card">
             <div class="card-header-dash">
-                <h3><i class="fas fa-history text-modern-info"></i> Historial de Actividades</h3>
+                <h3><i class="fas fa-history text-modern-info"></i>{{ __('Historial de Actividades') }}</h3>
             </div>
             <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
                 <table class="dashboard-table">
                     <thead>
                         <tr>
                             <th style="width:36px;"><i class="fas fa-user"></i></th>
-                            <th>Acción</th>
-                            <th style="text-align:right;">Fecha</th>
+                            <th>{{ __('Acción') }}</th>
+                            <th style="text-align:right;">{{ __('Fecha') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -456,11 +452,11 @@
                             <td>
                                 <div style="color:var(--modern-text-primary);font-size:0.85rem;font-weight:500;">
                                     @if($accion->accion === 'venta_creada')
-                                        <span class="badge-stock badge-stock-ok" style="font-size:0.7rem;margin-right:4px;">VENTA</span>
+                                        <span class="badge-stock badge-stock-ok" style="font-size:0.7rem;margin-right:4px;">{{ __('VENTA') }}</span>
                                     @elseif($accion->accion === 'producto_modificado')
-                                        <span class="badge-stock badge-stock-warning" style="font-size:0.7rem;margin-right:4px;">PROD</span>
+                                        <span class="badge-stock badge-stock-warning" style="font-size:0.7rem;margin-right:4px;">{{ __('PROD') }}</span>
                                     @elseif($accion->accion === 'factura_anulada')
-                                        <span class="badge-stock badge-stock-danger" style="font-size:0.7rem;margin-right:4px;">ANUL</span>
+                                        <span class="badge-stock badge-stock-danger" style="font-size:0.7rem;margin-right:4px;">{{ __('ANUL') }}</span>
                                     @endif
                                     {{ $accion->descripcion }}
                                 </div>
@@ -475,7 +471,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="3" style="text-align:center;color:var(--modern-text-muted);padding:2rem;">No hay actividades registradas.</td></tr>
+                        <tr><td colspan="3" style="text-align:center;color:var(--modern-text-muted);padding:2rem;">{{ __('No hay actividades registradas.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -486,8 +482,8 @@
     <div class="col-lg-6">
         <div class="dashboard-card">
             <div class="card-header-dash">
-                <h3><i class="fas fa-credit-card text-modern-warning"></i> Cuentas Corrientes</h3>
-                <a href="{{ route('caja.index') }}">Ir a cobros <i class="fas fa-external-link-alt"></i></a>
+                <h3><i class="fas fa-credit-card text-modern-warning"></i>{{ __('Cuentas Corrientes') }}</h3>
+                <a href="{{ route('caja.index') }}">{{ __('Ir a cobros') }}<i class="fas fa-external-link-alt"></i></a>
             </div>
             <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
                 @forelse($cuentasCorrientes as $cc)
@@ -496,15 +492,12 @@
                         <strong style="color:var(--modern-text-primary);font-size:0.9rem;">
                             <i class="fas fa-user"></i> {{ $cc->razonsocial }}
                         </strong>
-                        <span style="font-weight:700;color:var(--modern-danger);font-size:0.95rem;">
-                            Gs. {{ number_format($cc->saldo_pendiente, 0, ',', '.') }}
-                        </span>
+                        <span style="font-weight:700;color:var(--modern-danger);font-size:0.95rem;">{{ __('Gs. {{ number_format($cc->saldo_pendiente, 0, ',', '.') }}') }}</span>
                     </div>
                     @if($cc->vencimientos->count() > 0)
                     <div style="font-size:0.78rem;color:var(--modern-text-muted);margin-bottom:4px;">
-                        <i class="fas fa-calendar-alt"></i> Próximos vencimientos:
-                        @foreach($cc->vencimientos->take(3) as $venc)
-                            <span class="badge-stock {{ \Carbon\Carbon::parse($venc->fecha_vencimiento)->isPast() ? 'badge-stock-danger' : 'badge-stock-warning' }}" style="font-size:0.7rem;margin:1px;">
+                        <i class="fas fa-calendar-alt"></i>{{ __('Próximos vencimientos:
+                        @foreach($cc->vencimientos->take(3) as $venc)') }}<span class="badge-stock {{ \Carbon\Carbon::parse($venc->fecha_vencimiento)->isPast() ? 'badge-stock-danger' : 'badge-stock-warning' }}" style="font-size:0.7rem;margin:1px;">
                                 {{ \Carbon\Carbon::parse($venc->fecha_vencimiento)->isoFormat('DD/MM/YY') }}
                                 Gs. {{ number_format($venc->monto, 0, ',', '.') }}
                             </span>
@@ -514,13 +507,12 @@
                     @if($cc->historial_pagos->count() > 0)
                     <details style="font-size:0.78rem;color:var(--modern-text-muted);margin-top:2px;">
                         <summary style="cursor:pointer;color:var(--modern-primary);">
-                            <i class="fas fa-check-circle"></i> Últimos pagos ({{ $cc->historial_pagos->count() }})
-                        </summary>
+                            <i class="fas fa-check-circle"></i>{{ __('Últimos pagos ({{ $cc->historial_pagos->count() }})') }}</summary>
                         <div style="margin-top:4px;padding-left:8px;border-left:2px solid var(--modern-card-border);">
                             @foreach($cc->historial_pagos as $pago)
                             <div style="display:flex;justify-content:space-between;padding:2px 0;">
                                 <span>{{ \Carbon\Carbon::parse($pago->fecha_pago)->isoFormat('DD/MM/YYYY') }}</span>
-                                <span style="color:var(--modern-success);font-weight:600;">Gs. {{ number_format($pago->monto, 0, ',', '.') }}</span>
+                                <span style="color:var(--modern-success);font-weight:600;">{{ __('Gs. {{ number_format($pago->monto, 0, ',', '.') }}') }}</span>
                             </div>
                             @endforeach
                         </div>
@@ -529,9 +521,7 @@
                 </div>
                 @empty
                 <div style="text-align:center;color:var(--modern-text-muted);padding:2rem;">
-                    <i class="fas fa-check-circle" style="font-size:2rem;color:var(--modern-success);display:block;margin-bottom:0.5rem;"></i>
-                    No hay clientes con saldo pendiente.
-                </div>
+                    <i class="fas fa-check-circle" style="font-size:2rem;color:var(--modern-success);display:block;margin-bottom:0.5rem;"></i>{{ __('No hay clientes con saldo pendiente.') }}</div>
                 @endforelse
             </div>
         </div>
@@ -543,16 +533,14 @@
     <div class="col-md-6">
         <div class="chart-container">
             <div class="section-title">
-                <i class="fas fa-shopping-bag"></i> Compras {{ $anioActual }} vs {{ $anioAnterior }}
-            </div>
+                <i class="fas fa-shopping-bag"></i>{{ __('Compras {{ $anioActual }} vs {{ $anioAnterior }}') }}</div>
             <canvas id="chartCompras"></canvas>
         </div>
     </div>
     <div class="col-md-6">
         <div class="chart-container">
             <div class="section-title">
-                <i class="fas fa-cash-register"></i> Ventas {{ $anioActual }} vs {{ $anioAnterior }}
-            </div>
+                <i class="fas fa-cash-register"></i>{{ __('Ventas {{ $anioActual }} vs {{ $anioAnterior }}') }}</div>
             <canvas id="chartVentas"></canvas>
         </div>
     </div>

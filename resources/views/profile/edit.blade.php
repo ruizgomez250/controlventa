@@ -3,7 +3,7 @@
 @section('title', 'Editar Perfil')
 
 @section('content_header')
-    <h1>Cambiar Contraseña</h1>
+    <h1>{{ __('Cambiar Contraseña') }}</h1>
 @stop
 @section('plugins.Sweetalert2', true)
 @push('js')
@@ -70,8 +70,8 @@
 
                 <div class="form-group row">
                     <div class="form-group row">
-                        <label for="contrasena_actual" class="col-md-6 col-form-label text-md-right">Contraseña
-                            Actual</label>
+                        <label for="contrasena_actual" class="col-md-6 col-form-label text-md-right">{{ __('Contraseña
+                            Actual') }}</label>
                         <div class="col-md-6">
                             <input id="contrasena_actual" type="password"
                                 class="form-control @error('contrasena_actual') is-invalid @enderror"
@@ -85,7 +85,7 @@
                     </div>
 
                     <div class="form-group row">
-                        <label for="nueva_contrasena" class="col-md-6 col-form-label text-md-right">Nueva Contraseña</label>
+                        <label for="nueva_contrasena" class="col-md-6 col-form-label text-md-right">{{ __('Nueva Contraseña') }}</label>
                         <div class="col-md-6">
                             <input id="nueva_contrasena" type="password"
                                 class="form-control @error('nueva_contrasena') is-invalid @enderror" name="nueva_contrasena"
@@ -99,22 +99,20 @@
                     </div>
 
                     <div class="form-group row">
-                        <label for="repetir_contrasena" class="col-md-6 col-form-label text-md-right">Repetir Nueva
-                            Contraseña</label>
+                        <label for="repetir_contrasena" class="col-md-6 col-form-label text-md-right">{{ __('Repetir Nueva
+                            Contraseña') }}</label>
                         <div class="col-md-6">
                             <input id="repetir_contrasena" type="password" class="form-control" name="repetir_contrasena"
                                 required minlength="8" autocomplete="new-password" oninput="verifCont()">
-                            <span id="contrasena-mismatch" style="display: none; color: red;">Las contraseñas no
-                                coinciden.</span>
+                            <span id="contrasena-mismatch" style="display: none; color: red;">{{ __('Las contraseñas no
+                                coinciden.') }}</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group row">
                     <div class="col-md-6">
-                        <button type="submit" class="btn btn-primary">
-                            Guardar Cambios
-                        </button>
+                        <button type="submit" class="btn btn-primary">{{ __('Guardar Cambios') }}</button>
                     </div>
                 </div>
             </form>

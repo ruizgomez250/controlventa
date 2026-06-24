@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-    <h1 class="m-0 custom-heading">Registrar Cheque</h1>
+    <h1 class="m-0 custom-heading">{{ __('Registrar Cheque') }}</h1>
 @stop
 
 @section('content')
@@ -26,14 +26,14 @@
                                 </div>
                             </x-slot>
 
-                            <option value="cobrar">Cheque a Cobrar</option>
-                            <option value="pagar">Cheque a Pagar</option>
+                            <option value="cobrar">{{ __('Cheque a Cobrar') }}</option>
+                            <option value="pagar">{{ __('Cheque a Pagar') }}</option>
 
                         </x-adminlte-select>
 
 
                         <x-adminlte-input name="numero_cheque" label="Número de Cheque"
-                            placeholder="Número del cheque"
+                            placeholder="{{ __('Número del cheque') }}"
                             fgroup-class="col-md-3">
 
                             <x-slot name="prependSlot">
@@ -46,7 +46,7 @@
 
 
                         <x-adminlte-input name="banco" label="Banco"
-                            placeholder="Nombre del banco"
+                            placeholder="{{ __('Nombre del banco') }}"
                             fgroup-class="col-md-3">
 
                             <x-slot name="prependSlot">
@@ -59,7 +59,7 @@
 
 
                         <x-adminlte-input name="titular" label="Titular"
-                            placeholder="Nombre del titular"
+                            placeholder="{{ __('Nombre del titular') }}"
                             fgroup-class="col-md-3">
 
                             <x-slot name="prependSlot">
@@ -122,10 +122,10 @@
                             label="Estado del Cheque"
                             fgroup-class="col-md-3">
 
-                            <option value="pendiente">Pendiente</option>
-                            <option value="cobrado">Cobrado</option>
-                            <option value="pagado">Pagado</option>
-                            <option value="rechazado">Rechazado</option>
+                            <option value="pendiente">{{ __('Pendiente') }}</option>
+                            <option value="cobrado">{{ __('Cobrado') }}</option>
+                            <option value="pagado">{{ __('Pagado') }}</option>
+                            <option value="rechazado">{{ __('Rechazado') }}</option>
 
                         </x-adminlte-select>
 
@@ -137,7 +137,7 @@
 
                         <x-adminlte-textarea name="observacion"
                             label="Observación"
-                            placeholder="Observaciones adicionales"
+                            placeholder="{{ __('Observaciones adicionales') }}"
                             fgroup-class="col-md-12"
                             label-class="text-warning">
 
@@ -157,9 +157,7 @@
                         <div class="form-group col-md-12 text-right">
 
                             <a class="btn btn-danger mx-1"
-                                href="{{ route('cheques.index') }}">
-                                Cancelar
-                            </a>
+                                href="{{ route('cheques.index') }}">{{ __('Cancelar') }}</a>
 
                             <x-adminlte-button
                                 type="submit"

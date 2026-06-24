@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-    <h1 class="m-0 text-dark" style="background-color:orange ">Registrar Cita</h1>
+    <h1 class="m-0 text-dark" style="background-color:orange ">{{ __('Registrar Cita') }}</h1>
 @stop
 @section('css')
     <link rel="stylesheet" href="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.css') }}">
@@ -29,7 +29,7 @@
                         </div>
                         <div class="row">
                             <x-adminlte-select name="mascota_id" id="mascota_id" label="Mascota"
-                                data-placeholder="Seleccionar mascota..." fgroup-class="col-md-4">
+                                data-placeholder="{{ __('Seleccionar mascota...') }}" fgroup-class="col-md-4">
                             </x-adminlte-select>
                             <x-adminlte-input type="text" id="raza" name="raza" label="Raza" readonly
                                 fgroup-class="col-md-3" />
@@ -41,7 +41,7 @@
                         </div>
                         <div class="row">
                             <x-adminlte-select name="tipo_id" label="Tipo de Consulta"
-                                data-placeholder="Seleccionar tipo de consulta..." fgroup-class="col-md-4">
+                                data-placeholder="{{ __('Seleccionar tipo de consulta...') }}" fgroup-class="col-md-4">
                                 @foreach ($tipo as $item)
                                     <option value={{ $item->id }}>{{ $item->descripcion }}</option>
                                 @endforeach

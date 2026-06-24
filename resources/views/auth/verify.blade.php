@@ -92,28 +92,24 @@
                 </svg>
             </div>
             <h1>{{ config('app.name', 'ControlVenta') }}</h1>
-            <p>Verificación de correo electrónico</p>
+            <p>{{ __('Verificación de correo electrónico') }}</p>
         </div>
 
         <div class="login-card">
             @if (session('resent'))
-                <div class="alert alert-success">Se ha enviado un nuevo enlace de verificación a tu correo electrónico.</div>
+                <div class="alert alert-success">{{ __('Se ha enviado un nuevo enlace de verificación a tu correo electrónico.') }}</div>
             @endif
 
-            <div class="verify-text">
-                Antes de continuar, por favor verifica tu correo electrónico para obtener el enlace de verificación.
-            </div>
+            <div class="verify-text">{{ __('Antes de continuar, por favor verifica tu correo electrónico para obtener el enlace de verificación.') }}</div>
 
-            <div class="verify-text">
-                Si no recibiste el correo,
-                <form class="d-inline" method="POST" action="{{ route('verification.resend') }}" style="display:inline;">
+            <div class="verify-text">{{ __('Si no recibiste el correo,') }}<form class="d-inline" method="POST" action="{{ route('verification.resend') }}" style="display:inline;">
                     @csrf
-                    <button type="submit" class="btn-link">haz clic aquí para solicitar otro</button>.
+                    <button type="submit" class="btn-link">{{ __('haz clic aquí para solicitar otro') }}</button>.
                 </form>
             </div>
 
             <div class="login-footer">
-                <a href="{{ route('login') }}">Volver al inicio de sesión</a>
+                <a href="{{ route('login') }}">{{ __('Volver al inicio de sesión') }}</a>
             </div>
         </div>
     </div>

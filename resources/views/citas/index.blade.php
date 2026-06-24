@@ -5,7 +5,7 @@
 @section('content_header')
     <div class="row">
         <div class="col-4">
-            <h1 class="m-0 text-dark">Agenda</h1>
+            <h1 class="m-0 text-dark">{{ __('Agenda') }}</h1>
         </div>
         <div class="col-4">
             <x-adminlte-input label="Fecha" type="date" id="fecha" name="fecha" onchange="cargarDatos()"
@@ -13,8 +13,7 @@
 
         </div>
         <div class="col-4">
-            <a href="{{ route('cita.create') }}" class="btn btn-primary" style="float: right;">
-                Agendar</a>
+            <a href="{{ route('cita.create') }}" class="btn btn-primary" style="float: right;">{{ __('Agendar') }}</a>
         </div>
 
     </div>
@@ -45,9 +44,9 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Detalle</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">{{ __('Detalle') }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true">{{ __('&times;') }}</span>
                     </button>
                 </div>
                 <div class="modal-body">

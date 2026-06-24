@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-    <h1 class="m-0 custom-heading">Editar Datos Del Producto</h1>
+    <h1 class="m-0 custom-heading">{{ __('Editar Datos Del Producto') }}</h1>
 @stop
 
 @section('content')
@@ -23,7 +23,7 @@
 
                     <div class="row">
 
-                        <x-adminlte-input name="codigo" label="Código" placeholder="Código" fgroup-class="col-md-3"
+                        <x-adminlte-input name="codigo" label="Código" placeholder="{{ __('Código') }}" fgroup-class="col-md-3"
                             value="{{ $producto->codigo }}" style="text-align: center;" label-class="text-info">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-info">
@@ -40,7 +40,7 @@
                             <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
                         <x-adminlte-select name="impuesto" id="impuesto" label="Impuesto"
-                            data-placeholder="Seleccionar una categoría..." fgroup-class="col-md-2"
+                            data-placeholder="{{ __('Seleccionar una categoría...') }}" fgroup-class="col-md-2"
                             label-class="text-success">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-success">
@@ -59,7 +59,7 @@
                     <div class="row">
                         {{-- Disabled --}}
                         <x-adminlte-textarea name="detalle" label="Detalle del Producto" fgroup-class="col-md-7"
-                            placeholder="Ingresar detalle del producto" label-class="text-warning">
+                            placeholder="{{ __('Ingresar detalle del producto') }}" label-class="text-warning">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-warning">
                                     <i class="fas fa-lg fa-file-alt "></i>
@@ -69,7 +69,7 @@
                         </x-adminlte-textarea>
 
                         <x-adminlte-select2 name="id_categoria" label="Categoria"
-                            data-placeholder="Seleccionar una categoría..." fgroup-class="col-md-5"
+                            data-placeholder="{{ __('Seleccionar una categoría...') }}" fgroup-class="col-md-5"
                             label-class="text-danger">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-red">
@@ -98,7 +98,7 @@
                             step="any" min="0" value="{{ $producto->stock }}" />
 
                         <x-adminlte-select name="id_medida" label="Unidad de Medida"
-                            data-placeholder="Seleccionar una medida..." fgroup-class="col-md-3">
+                            data-placeholder="{{ __('Seleccionar una medida...') }}" fgroup-class="col-md-3">
                             @foreach ($medida as $item)
                                 <option value={{ $item->id }}
                                     {{ $item->id == $producto->id_medida ? 'selected' : '' }}>{{ $item->descripcion }}
@@ -131,16 +131,14 @@
                             @foreach ($opcion as $item)
                             <option value={{ $item->id }} {{ $item->id == $producto->id_estado ? 'selected' : '' }} >{{ $item->descripcion }}</option>
                             @endforeach
-                        </x-adminlte-select> --}}
-                    </div>
+                        </x-adminlte-select>{{ __('--}}') }}</div>
 
 
                     <div class="mt-3 col-4">
                         <?php
-                        echo '<img src="data:image/png;base64,' . DNS1D::getBarcodePNG($producto->codigo, 'PHARMA', 2, 60) . '" alt="barcode"   /></br>';
+                        echo '<img src="data:image/png;base64,' . DNS1D::getBarcodePNG($producto->{{ __('codigo, \'PHARMA\', 2, 60) . \'" alt="barcode"   />') }}</br>{{ __('\';
                         
-                        ?>
-                        <div class="row" style="justify-content: center;"> P-{{ $producto->codigo }}</div>
+                        ?>') }}<div class="row" style="justify-content: center;">{{ __('P-{{ $producto->codigo }}') }}</div>
 
                     </div>
 
@@ -149,7 +147,7 @@
                     <div class="row">
                         <div class="form-group col-md-12">
                             <a class="btn btn-danger" style="float: right;"
-                                href="{{ route('producto.index') }}">Cancelar</a>
+                                href="{{ route('producto.index') }}">{{ __('Cancelar') }}</a>
                             <x-adminlte-button class="btn-group mr-2" style="float: right;" type="submit"
                                 label="Guardar" theme="primary" icon="fas fa-lg fa-save" />
                         </div>

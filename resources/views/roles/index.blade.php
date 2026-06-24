@@ -2,8 +2,7 @@
 
 @section('content_header')
     <h1 class="m-0 custom-heading">
-        <i class="fas fa-users-cog"></i> Usuarios y Roles
-    </h1>
+        <i class="fas fa-users-cog"></i>{{ __('Usuarios y Roles') }}</h1>
 @stop
 
 @section('css')
@@ -132,25 +131,22 @@
                                     <i class="fas fa-user"></i>
                                 </div>
                             </x-slot>
-                            <option value="">-- Seleccione un usuario --</option>
+                            <option value="">{{ __('-- Seleccione un usuario --') }}</option>
                             @foreach ($usuarios as $item)
                                 <option value="{{ $item->id }}" class="info">{{ $item->name }} ({{ $item->email }})</option>
                             @endforeach
                         </x-adminlte-select2>
                         <div class="col-md-2 mb-3">
                             <button class="btn btn-info" onclick="cargarPermisos()" id="btnCargar">
-                                <i class="fas fa-sync"></i> Cargar Permisos
-                            </button>
+                                <i class="fas fa-sync"></i>{{ __('Cargar Permisos') }}</button>
                         </div>
                         <div class="col-md-2 mb-3">
                             <a href="{{ route('rol.createUser') }}" class="btn btn-success">
-                                <i class="fas fa-user-plus"></i> Crear Usuario
-                            </a>
+                                <i class="fas fa-user-plus"></i>{{ __('Crear Usuario') }}</a>
                         </div>
                         <div class="col-md-2 mb-3">
                             <button class="btn btn-warning" data-toggle="modal" data-target="#crearPermisoModal">
-                                <i class="fas fa-plus"></i> Crear Permiso
-                            </button>
+                                <i class="fas fa-plus"></i>{{ __('Crear Permiso') }}</button>
                         </div>
                     </div>
                 </div>
@@ -165,16 +161,16 @@
                 <form id="crearPermisoForm">
                     @csrf
                     <div class="modal-header">
-                        <h5 class="modal-title"><i class="fas fa-plus-circle"></i> Crear Nuevo Permiso</h5>
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h5 class="modal-title"><i class="fas fa-plus-circle"></i>{{ __('Crear Nuevo Permiso') }}</h5>
+                        <button type="button" class="close" data-dismiss="modal">{{ __('&times;') }}</button>
                     </div>
                     <div class="modal-body">
-                        <p class="text-muted">Crea un permiso nuevo para que aparezca en la lista y pueda asignarse a los usuarios.</p>
-                        <x-adminlte-input name="nombre" id="nombrePermiso" label="Nombre del Permiso" placeholder="Ej: tabla_porcentaje leer" />
+                        <p class="text-muted">{{ __('Crea un permiso nuevo para que aparezca en la lista y pueda asignarse a los usuarios.') }}</p>
+                        <x-adminlte-input name="nombre" id="nombrePermiso" label="Nombre del Permiso" placeholder="{{ __('Ej: tabla_porcentaje leer') }}" />
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Cancelar') }}</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i>{{ __('Guardar') }}</button>
                     </div>
                 </form>
             </div>
@@ -184,8 +180,8 @@
     <div id="permisos-container">
         <div class="user-info-bar" id="userInfoBar">
             <i class="fas fa-user-circle"></i>
-            <strong>Usuario:</strong> <span id="userNameDisplay"></span>
-            <span class="badge badge-info ml-2" id="permCountDisplay">0 permisos</span>
+            <strong>{{ __('Usuario:') }}</strong> <span id="userNameDisplay"></span>
+            <span class="badge badge-info ml-2" id="permCountDisplay">{{ __('0 permisos') }}</span>
         </div>
 
         <form method="POST" action="{{ route('rol.store') }}" id="permisosForm">
@@ -199,12 +195,10 @@
                             <h5>
                                 <i class="fas fa-cube"></i> {{ $displayNames[$model] ?? ucfirst($model) }}
                                 <a class="select-all-link" onclick="toggleGroup('{{ $model }}', true)">
-                                    <i class="fas fa-check-circle"></i> Todo
-                                </a>
+                                    <i class="fas fa-check-circle"></i>{{ __('Todo') }}</a>
                                 <a class="select-all-link" onclick="toggleGroup('{{ $model }}', false)">
-                                    <i class="fas fa-times-circle"></i> Nada
-                                </a>
-                                <span class="badge badge-light badge-count" id="count_{{ $model }}">0/{{ count($actions) }}</span>
+                                    <i class="fas fa-times-circle"></i>{{ __('Nada') }}</a>
+                                <span class="badge badge-light badge-count" id="count_{{ $model }}">{{ __('0/{{ count($actions) }}') }}</span>
                             </h5>
                             <div class="row">
                                 @foreach ($actions as $action)
@@ -236,8 +230,7 @@
             <div class="row mt-3">
                 <div class="col-12 text-center">
                     <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-save"></i> Guardar Permisos
-                    </button>
+                        <i class="fas fa-save"></i>{{ __('Guardar Permisos') }}</button>
                 </div>
             </div>
         </form>

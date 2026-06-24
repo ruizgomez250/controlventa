@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-    <h1 class="m-0 custom-heading">Configuracion</h1>
+    <h1 class="m-0 custom-heading">{{ __('Configuracion') }}</h1>
 @stop
 @section('plugins.Sweetalert2', true)
 
@@ -50,20 +50,22 @@
                                     <div class="card-body">
                                         <label class="custom-heading">Lector QR Webcam</label>--}}
                                         @php
-                                            /** CONDICION DE VENTA MAYORISTA**/
                                             $estadocondv = 0;
-                                            /** COBRO   SIMPLIFICADO**/
                                             $estadopagos = 0;
+                                            $idioma = 'es';
                                         @endphp
                                             @foreach ($configuraciones as $configuracion)
                                                 @if ($configuracion->descripcion == 'condicionv')
                                                     @php
                                                         $estadocondv = $configuracion->estado;
-
                                                     @endphp
                                                 @elseif ($configuracion->descripcion == 'ventas')
                                                     @php
                                                         $estadopagos = $configuracion->estado;
+                                                    @endphp
+                                                @elseif ($configuracion->descripcion == 'idioma')
+                                                    @php
+                                                        $idioma = $configuracion->observacion;
                                                     @endphp
                                                 @endif
                                             @endforeach
@@ -73,16 +75,16 @@
                             <div class="col-3">
                                 <div class="card" style="width: 14rem;margin-top: -18px">
                                     <div class="card-body">
-                                        <label for="">Venta Mayorista</label>
+                                        <label for="">{{ __('Venta Mayorista') }}</label>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" name="condicion"
                                                 id="inlineRadio1" value="apartir" {{ $estadocondv == 0 ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="inlineRadio1">A Partir</label>
+                                            <label class="form-check-label" for="inlineRadio1">{{ __('A Partir') }}</label>
                                         </div>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="radio" name="condicion"
                                                 id="inlineRadio2" value="cadavez" {{ $estadocondv == 1 ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="inlineRadio2">Cada Vez</label>
+                                            <label class="form-check-label" for="inlineRadio2">{{ __('Cada Vez') }}</label>
                                         </div>
                                     </div>
                                 </div>
@@ -90,7 +92,7 @@
                             <div class="col-3">
                                 <div class="card" style="width: 14rem;margin-top: -18px">
                                     <div class="card-body">
-                                        <label class="custom-heading">Pago Simplificado</label>
+                                        <label class="custom-heading">{{ __('Pago Simplificado') }}</label>
 
                                         <label>
                                             <input type="checkbox" name="pagos" class="configuracion-checkbox"
@@ -100,11 +102,22 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-3">
+                                <div class="card" style="width: 14rem;margin-top: -18px">
+                                    <div class="card-body">
+                                        <label for="">{{ __('Idioma / Language') }}</label>
+                                        <select name="idioma" class="form-control">
+                                            <option value="es" {{ $idioma == 'es' ? 'selected' : '' }}>{{ __('Español') }}</option>
+                                            <option value="en" {{ $idioma == 'en' ? 'selected' : '' }}>{{ __('English') }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <button class="btn
                                         btn-primary"
-                            type="submit">Guardar</button>
+                            type="submit">{{ __('Guardar') }}</button>
                     </form>
                 </div>
             </div>

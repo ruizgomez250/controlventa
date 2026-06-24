@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-    <h1 class="m-0 custom-heading">Generar Qr o codigo de barras del Producto</h1>
+    <h1 class="m-0 custom-heading">{{ __('Generar Qr o codigo de barras del Producto') }}</h1>
 @stop
 @section('css')
     <link rel="stylesheet" href="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.css') }}">
@@ -20,7 +20,7 @@
                         {{-- With Label --}}
                         
                         <x-adminlte-select2 name="idproducto" id="idproducto" label="PRODUCTO"
-                            data-placeholder="Seleccionar un producto..." fgroup-class="col-md-4"
+                            data-placeholder="{{ __('Seleccionar un producto...') }}" fgroup-class="col-md-4"
                             onchange="actualizarNumeroDocumento()">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-secondary">
@@ -34,12 +34,10 @@
                         
                         <div class="col-md-4" style="margin-top: 32px;">
                             <button class="btn btn-secondary" onclick="generarPDF()">
-                                <i class="fas fa-qrcode"></i> Generar QR
-                            </button>
+                                <i class="fas fa-qrcode"></i>{{ __('Generar QR') }}</button>
                             
                             <button class="btn btn-primary" onclick="generarCodigoBarras()" style="margin-left: 10px;">
-                                <i class="fas fa-barcode"></i> Generar Código de Barras
-                            </button>
+                                <i class="fas fa-barcode"></i>{{ __('Generar Código de Barras') }}</button>
                         </div>
                     </div>
                     <!-- Agrega este elemento para mostrar la suma total -->

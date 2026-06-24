@@ -5,11 +5,11 @@
 @section('content_header')
     <div class="row">
         <div class="col-6">
-            <h1 class="m-0 text-dark">Lista de Mascotas</h1>
+            <h1 class="m-0 text-dark">{{ __('Lista de Mascotas') }}</h1>
         </div>
         <div class="col-6">
-            <a href="{{ route('mascota.create') }}" class="btn btn-primary" style="float: right;">Registra
-                Mascota</a>
+            <a href="{{ route('mascota.create') }}" class="btn btn-primary" style="float: right;">{{ __('Registra
+                Mascota') }}</a>
         </div>
 
     </div>
@@ -79,9 +79,9 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Detalle</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">{{ __('Detalle') }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true">{{ __('&times;') }}</span>
                     </button>
                 </div>
                 <div class="modal-body">

@@ -3,7 +3,7 @@
 
 
 @section('content_header')
-    <h1 class="m-0 text-dark">Registrar Evento</h1>
+    <h1 class="m-0 text-dark">{{ __('Registrar Evento') }}</h1>
 @stop
 
 @section('content')
@@ -16,12 +16,12 @@
                         @method('POST')
                         {{-- With label, invalid feedback disabled and form group class --}}
                         <div class="row">
-                            <x-adminlte-input name="nombre" label="Nombre" placeholder="Ingrese el nombre del evento"
+                            <x-adminlte-input name="nombre" label="Nombre" placeholder="{{ __('Ingrese el nombre del evento') }}"
                                 fgroup-class="col-md-6" />
                         </div>
                         <div class="row">
                             {{-- Disabled --}}
-                            <x-adminlte-textarea name="descripcion" label="Descripción" placeholder="Descripción del evento"
+                            <x-adminlte-textarea name="descripcion" label="Descripción" placeholder="{{ __('Descripción del evento') }}"
                                 fgroup-class="col-md-6">
 
                             </x-adminlte-textarea>
@@ -29,15 +29,15 @@
 
                         <div class="row">
  
-                            <x-adminlte-select name="tipo" label="Tipo" data-placeholder="Seleccionar una opción...">
+                            <x-adminlte-select name="tipo" label="Tipo" data-placeholder="{{ __('Seleccionar una opción...') }}">
                                 <x-slot name="prependSlot">
                                     <div class="input-group-text bg-gradient-info">
                                         <i class="fas fa-building"></i>
                                     </div>
                                 </x-slot>
-                                <option value="0">Seleccione</option>
-                                <option value="1">Concierto</option>
-                                <option value="2">Fútbol</option>
+                                <option value="0">{{ __('Seleccione') }}</option>
+                                <option value="1">{{ __('Concierto') }}</option>
+                                <option value="2">{{ __('Fútbol') }}</option>
                             </x-adminlte-select>
 
                         </div>

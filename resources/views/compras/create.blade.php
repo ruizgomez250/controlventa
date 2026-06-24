@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-    <h1 class="m-0 custom-heading">Registrar Compra</h1>
+    <h1 class="m-0 custom-heading">{{ __('Registrar Compra') }}</h1>
 @stop
 
 @section('css')
@@ -80,19 +80,18 @@
             <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header bg-success text-white">
-                        <h4 class="modal-title"><i class="fa fa-calendar-alt"></i> Cuotas del Crédito</h4>
-                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title"><i class="fa fa-calendar-alt"></i>{{ __('Cuotas del Crédito') }}</h4>
+                        <button type="button" class="close text-white" data-dismiss="modal">{{ __('&times;') }}</button>
                     </div>
                     <div class="modal-body">
                         <div class="alert alert-info mb-3">
-                            <i class="fa fa-info-circle"></i> Las fechas se generan automáticamente. Puede editarlas directamente.
-                            <strong>Monto por cuota: <span id="montoPorCuota">0</span> Gs.</strong>
+                            <i class="fa fa-info-circle"></i>{{ __('Las fechas se generan automáticamente. Puede editarlas directamente.') }}<strong>{{ __('Monto por cuota:') }}<span id="montoPorCuota">0</span> Gs.</strong>
                         </div>
                         <table id="tblpagare" class="table table-striped table-bordered">
                             <thead class="thead-dark">
                                 <tr>
-                                    <th class="text-center" style="width:80px;">N° Cuota</th>
-                                    <th>Fecha de Pago</th>
+                                    <th class="text-center" style="width:80px;">{{ __('N° Cuota') }}</th>
+                                    <th>{{ __('Fecha de Pago') }}</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -100,8 +99,7 @@
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-success" type="button" data-dismiss="modal">
-                            <i class="fa fa-check"></i> Confirmar Fechas
-                        </button>
+                            <i class="fa fa-check"></i>{{ __('Confirmar Fechas') }}</button>
                     </div>
                 </div>
             </div>
@@ -111,7 +109,7 @@
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="form-group col-md-2">
-                        <label for="fechaemision">FECHA DE EMISIÓN (alt+shift+f)</label>
+                        <label for="fechaemision">{{ __('FECHA DE EMISIÓN (alt+shift+f)') }}</label>
                         <input type="date" class="form-control" id="fechaemision" name="fechaemision"
                             value="{{ date('Y-m-d') }}" required>
                     </div>
@@ -124,16 +122,16 @@
                     <div class="col-md-3">
                         <div class="card" style="margin-top: -18px">
                             <div class="card-body">
-                                <label>CONDICIÓN DE COMPRA</label>
+                                <label>{{ __('CONDICIÓN DE COMPRA') }}</label>
                                 <div class="form-check form-check-inline">
                                     <input class="form-check-input" type="radio" name="condicion" value="CONTADO"
                                         onchange="ocultarOpc()" checked>
-                                    <label class="form-check-label">Contado</label>
+                                    <label class="form-check-label">{{ __('Contado') }}</label>
                                 </div>
                                 <div class="form-check form-check-inline">
                                     <input class="form-check-input" type="radio" name="condicion" value="CREDITO"
                                         onchange="mostrarOpc()">
-                                    <label class="form-check-label">Crédito</label>
+                                    <label class="form-check-label">{{ __('Crédito') }}</label>
                                 </div>
                             </div>
                         </div>
@@ -144,19 +142,18 @@
                     <div class="col-md-2 d-flex align-items-end">
                         <a data-toggle="modal" id="fechasButton" href="#modalPagare" style="display:none;">
                             <button class="btn btn-success" type="button" onclick="cargarPag()">
-                                <i class="fa fa-plus-circle"></i> Fechas Pagos
-                            </button>
+                                <i class="fa fa-plus-circle"></i>{{ __('Fechas Pagos') }}</button>
                         </a>
                     </div>
                 </div>
 
-                <x-adminlte-card title="Proveedor" class="text-primary mb-3">
+                <x-adminlte-card title="{{ __('Proveedor') }}" class="text-primary mb-3">
                     <div class="row">
                         <x-adminlte-input type="number" id="cod_proveedor" name="cod_proveedor"
-                            onchange="cambiarCod()" placeholder="Código" label="COD." fgroup-class="col-md-1"
+                            onchange="cambiarCod()" placeholder="{{ __('Código') }}" label="COD." fgroup-class="col-md-1"
                             required />
                         <x-adminlte-select2 name="id_proveedor" id="id_proveedor" label="RAZON SOCIAL"
-                            data-placeholder="Seleccionar un proveedor..." fgroup-class="col-md-7"
+                            data-placeholder="{{ __('Seleccionar un proveedor...') }}" fgroup-class="col-md-7"
                             onchange="actualizarNumeroDocumento()">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-primary">
@@ -169,7 +166,7 @@
                             @endforeach
                         </x-adminlte-select2>
                         <x-adminlte-input type="text" id="numero_documento" name="numero_documento"
-                            placeholder="RUC" label="RUC" readonly fgroup-class="col-md-1" />
+                            placeholder="{{ __('RUC') }}" label="RUC" readonly fgroup-class="col-md-1" />
                     </div>
                 </x-adminlte-card>
 
@@ -178,14 +175,14 @@
                 <!-- 🔥 CONTENEDOR QUE GARANTIZA EL SCROLL -->
                 <div class="scroll-area">
                     <div class="header-row">
-                        <div class="col-small">ITEM</div>
-                        <div class="col-small">UNDM</div>
-                        <div class="col-medium">CÓDIGO</div>
-                        <div class="col-fixed">CANTIDAD</div>
-                        <div class="col-large">DESCRIPCIÓN</div>
-                        <div class="col-medium">PRECIO UNIT.</div>
-                        <div class="col-fixed">PRECIO TOTAL</div>
-                        <div class="col-small">IVA</div>
+                        <div class="col-small">{{ __('ITEM') }}</div>
+                        <div class="col-small">{{ __('UNDM') }}</div>
+                        <div class="col-medium">{{ __('CÓDIGO') }}</div>
+                        <div class="col-fixed">{{ __('CANTIDAD') }}</div>
+                        <div class="col-large">{{ __('DESCRIPCIÓN') }}</div>
+                        <div class="col-medium">{{ __('PRECIO UNIT.') }}</div>
+                        <div class="col-fixed">{{ __('PRECIO TOTAL') }}</div>
+                        <div class="col-small">{{ __('IVA') }}</div>
                         <div class="col-small"></div>
                     </div>
 
@@ -194,19 +191,19 @@
 
                 <div class="row mb-3">
                     <div class="col-6">
-                        <button type="button" class="btn btn-primary" onclick="addNewItem()">Agregar Ítem</button>
+                        <button type="button" class="btn btn-primary" onclick="addNewItem()">{{ __('Agregar Ítem') }}</button>
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-12">
-                        <h5>Suma Total: <span id="total-sum">0.00</span></h5>
+                        <h5>{{ __('Suma Total:') }}<span id="total-sum">0.00</span></h5>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-12 text-right">
-                        <a class="btn btn-danger mx-1" href="{{ route('compra.index') }}">Cancelar</a>
+                        <a class="btn btn-danger mx-1" href="{{ route('compra.index') }}">{{ __('Cancelar') }}</a>
                         <x-adminlte-button type="submit" label="Registrar" theme="primary" icon="fas fa-lg fa-save" />
                     </div>
                 </div>

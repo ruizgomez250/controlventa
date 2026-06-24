@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-    <h1 class="m-0 custom-heading">Registrar Gasto</h1>
+    <h1 class="m-0 custom-heading">{{ __('Registrar Gasto') }}</h1>
 @stop
 
 @section('content')
@@ -9,13 +9,13 @@
     <div class="card-body">
 
         @if(session('success'))
-            <x-adminlte-alert theme="success" title="Éxito">
+            <x-adminlte-alert theme="success" title="{{ __('Éxito') }}">
                 {{ session('success') }}
             </x-adminlte-alert>
         @endif
 
         @if(session('error'))
-            <x-adminlte-alert theme="danger" title="Error">
+            <x-adminlte-alert theme="danger" title="{{ __('Error') }}">
                 {{ session('error') }}
             </x-adminlte-alert>
         @endif
@@ -54,18 +54,18 @@
                     name="metodo_pago"
                     label="Método de Pago"
                     fgroup-class="col-md-4">
-                    <option value="efectivo" selected>Efectivo</option>
-                    <option value="transferencia">Transferencia</option>
-                    <option value="tarjeta">Tarjeta</option>
+                    <option value="efectivo" selected>{{ __('Efectivo') }}</option>
+                    <option value="transferencia">{{ __('Transferencia') }}</option>
+                    <option value="tarjeta">{{ __('Tarjeta') }}</option>
                 </x-adminlte-select>
 
                 <x-adminlte-select
                     name="estado"
                     label="Estado"
                     fgroup-class="col-md-4">
-                    <option value="pendiente" >Pendiente</option>
-                    <option value="aprobado" selected>Aprobado</option>
-                    <option value="rechazado" >Rechazado</option>
+                    <option value="pendiente" >{{ __('Pendiente') }}</option>
+                    <option value="aprobado" selected>{{ __('Aprobado') }}</option>
+                    <option value="rechazado" >{{ __('Rechazado') }}</option>
                 </x-adminlte-select>
             </div>
 
@@ -79,9 +79,7 @@
             </div>
 
             <div class="text-right mt-3">
-                <a href="{{ url()->previous() }}" class="btn btn-danger">
-                    Cancelar
-                </a>
+                <a href="{{ url()->previous() }}" class="btn btn-danger">{{ __('Cancelar') }}</a>
 
                 <x-adminlte-button
                     type="submit"

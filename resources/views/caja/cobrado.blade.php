@@ -3,16 +3,16 @@
 @section('content_header')
     <div class="row">
         <div class="col-6">
-            <h1 class="m-0 custom-heading">Lista Cobrados</h1>
+            <h1 class="m-0 custom-heading">{{ __('Lista Cobrados') }}</h1>
         </div>
         <div class="col-6">
             <form action="{{ url('/caja/cobrado') }}" method="get">
                 <!-- Utilizamos la función url() para generar la URL completa -->
                 @csrf <!-- Agregamos el campo CSRF token -->
-                <label for="fecha">Fecha:</label>
+                <label for="fecha">{{ __('Fecha:') }}</label>
                 <input type="date" id="fecha" name="fecha" value="{{ $fecha }}">
                 <!-- Ajustamos la fecha predeterminada según sea necesario -->
-                <button class="btn btn-primary" type="submit">Filtrar</button>
+                <button class="btn btn-primary" type="submit">{{ __('Filtrar') }}</button>
             </form>
         </div>
 
@@ -28,17 +28,17 @@
                     <table id="table1" class="table table-bordered table-hover" theme="light">
                         <thead>
                             <tr>
-                                <th>Detalles</th> <!-- Columna para el botón de expansión -->
-                                <th>ID</th>
-                                <th>Fecha</th>
-                                <th>Nro Factura</th>
-                                <th>Timbrado</th>
-                                <th>Proveedor</th>
-                                <th>Condición de Compra</th>
-                                <th>Monto Total</th>
-                                <th>Usuario</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
+                                <th>{{ __('Detalles') }}</th> <!-- Columna para el botón de expansión -->
+                                <th>{{ __('ID') }}</th>
+                                <th>{{ __('Fecha') }}</th>
+                                <th>{{ __('Nro Factura') }}</th>
+                                <th>{{ __('Timbrado') }}</th>
+                                <th>{{ __('Proveedor') }}</th>
+                                <th>{{ __('Condición de Compra') }}</th>
+                                <th>{{ __('Monto Total') }}</th>
+                                <th>{{ __('Usuario') }}</th>
+                                <th>{{ __('Estado') }}</th>
+                                <th>{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -64,16 +64,14 @@
                                 <td>
 
                                     {{-- <a href="#" class="btn btn-sm btn-outline-secondary ver-detalle-btn"
-                                        data-compra-id="{{ $compra->id }}" title="Mostrar detalles">
+                                        data-compra-id="{{ $compra->id }}" title="{{ __('Mostrar detalles') }}">
                                         <i class="fa fa-eye"></i>
-                                    </a> --}}
-                                    
-                                    <a href="#" class="btn btn-sm btn-outline-secondary pagar-monto-btn"
-                                        data-compra-id="{{ $compra->id }}" title="Ver Comprobantes">
+                                    </a>{{ __('--}}') }}<a href="#" class="btn btn-sm btn-outline-secondary pagar-monto-btn"
+                                        data-compra-id="{{ $compra->id }}" title="{{ __('Ver Comprobantes') }}">
                                         <i class="fa fa-sm fa-print"></i></a>
                                     @if ($compra->estado == 1)
                                         <button type="button" class="btn btn-sm btn-outline-secondary" id="delete-button"
-                                            onclick="borrarCompraCombustible({{ $compra->id }})" title="Anular pedido">
+                                            onclick="borrarCompraCombustible({{ $compra->id }})" title="{{ __('Anular pedido') }}">
                                             <i class="fa fa-sm fa-fw fa-trash"></i>
                                         </button>
                                     @endif
@@ -85,19 +83,19 @@
                     </table>
 
                     
-                    <x-adminlte-modal id="detalleModal" title="Detalles de la Venta" theme="light" size="lg">
+                    <x-adminlte-modal id="detalleModal" title="{{ __('Detalles de la Venta') }}" theme="light" size="lg">
                         <div>
                             <table class="table table-sm table-hover">
                                 <thead class="thead-dark">
                                     <tr>
-                                        <th scope="col">Item</th>
-                                        <th scope="col">U. Medida</th>
-                                        <th scope="col">Código</th>
-                                        <th scope="col">Cantidad</th>
-                                        <th scope="col">Descripcion</th>
-                                        <th scope="col">Precio Unit.</th>
-                                        <th scope="col">Total</th>
-                                        <th scope="col">IVA %</th>
+                                        <th scope="col">{{ __('Item') }}</th>
+                                        <th scope="col">{{ __('U. Medida') }}</th>
+                                        <th scope="col">{{ __('Código') }}</th>
+                                        <th scope="col">{{ __('Cantidad') }}</th>
+                                        <th scope="col">{{ __('Descripcion') }}</th>
+                                        <th scope="col">{{ __('Precio Unit.') }}</th>
+                                        <th scope="col">{{ __('Total') }}</th>
+                                        <th scope="col">{{ __('IVA %') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detalleContent">
@@ -107,18 +105,18 @@
                         </div>
                     </x-adminlte-modal>
 
-                    <x-adminlte-modal id="documentosModal" title="PDF De documentos" theme="light" size="lg">
+                    <x-adminlte-modal id="documentosModal" title="{{ __('PDF De documentos') }}" theme="light" size="lg">
                         <div>
                             <table class="table table-sm table-hover">
                                 <thead class="thead-dark">
                                     <tr>
-                                        <th scope="col">Documento</th>
-                                        <th scope="col">PDF</th>
+                                        <th scope="col">{{ __('Documento') }}</th>
+                                        <th scope="col">{{ __('PDF') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detalleContent">
                                     <tr>
-                                        <th scope="col">Orden de Compra</th>
+                                        <th scope="col">{{ __('Orden de Compra') }}</th>
                                         <th scope="col"><a id="ordenCompraPdfLink" href="" target="_blank"
                                                 class="btn btn-sm btn-outline-secondary">
                                                 <i class="fa fa-sm fa-fw fa-file-pdf"></i>
@@ -126,14 +124,14 @@
                                     </tr>
 
                                     <tr>
-                                        <th scope="col">Nota de Recepcion</th>
+                                        <th scope="col">{{ __('Nota de Recepcion') }}</th>
                                         <th scope="col"><a id="recepcionPdfLink" href="" target="_blank"
                                                 class="btn btn-sm btn-outline-secondary">
                                                 <i class="fa fa-sm fa-fw fa-file-pdf"></i>
                                             </a></th>
                                     </tr>
                                     <tr>
-                                        <th scope="col">Solicitud de Biens y Servicio</th>
+                                        <th scope="col">{{ __('Solicitud de Biens y Servicio') }}</th>
                                         <th scope="col"><a id="bienesPdfLink" href="" target="_blank"
                                                 class="btn btn-sm btn-outline-secondary">
                                                 <i class="fa fa-sm fa-fw fa-file-pdf"></i>
@@ -144,19 +142,19 @@
                         </div>
                     </x-adminlte-modal>
                     <!--Modal-->
-                    <x-adminlte-modal id="pagocuotaModal" title="Pago de Cuotas" theme="light" size="lg">
+                    <x-adminlte-modal id="pagocuotaModal" title="{{ __('Pago de Cuotas') }}" theme="light" size="lg">
                         <div>
                             <table class="table table-sm table-hover" id="table1">
                                 <thead class="thead-dark">
                                     <tr>
-                                        <th>Nro. Cuota</th>
-                                        <th>Opciones</th>
-                                        <th>Cuota</th>
-                                        <th>Fecha Deuda</th>
-                                        <th>Fecha Vencimiento</th>
-                                        <th>Fecha Pago</th>
-                                        <th>Monto Abonado</th>
-                                        <th>Saldo</th>
+                                        <th>{{ __('Nro. Cuota') }}</th>
+                                        <th>{{ __('Opciones') }}</th>
+                                        <th>{{ __('Cuota') }}</th>
+                                        <th>{{ __('Fecha Deuda') }}</th>
+                                        <th>{{ __('Fecha Vencimiento') }}</th>
+                                        <th>{{ __('Fecha Pago') }}</th>
+                                        <th>{{ __('Monto Abonado') }}</th>
+                                        <th>{{ __('Saldo') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detallecuota">
@@ -168,15 +166,15 @@
 
                     <!-- fin Modal-->
                     <!--Modal-->
-                    <x-adminlte-modal id="pagomontoModal" title="Comprobantes" theme="light" size="lg">
+                    <x-adminlte-modal id="pagomontoModal" title="{{ __('Comprobantes') }}" theme="light" size="lg">
                         <div>
                             <table class="table table-sm table-hover" id="table1">
                                 <thead class="thead-dark">
                                     <tr>
-                                        <th>Nro. Pago</th>
-                                        <th>Opciones</th>
-                                        <th>Monto</th>
-                                        <th>Fecha Pago</th>
+                                        <th>{{ __('Nro. Pago') }}</th>
+                                        <th>{{ __('Opciones') }}</th>
+                                        <th>{{ __('Monto') }}</th>
+                                        <th>{{ __('Fecha Pago') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaModBod">

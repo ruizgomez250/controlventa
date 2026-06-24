@@ -124,7 +124,7 @@
                 </svg>
             </div>
             <h1>{{ config('app.name', 'ControlVenta') }}</h1>
-            <p>Registra una nueva cuenta</p>
+            <p>{{ __('Registra una nueva cuenta') }}</p>
         </div>
 
         <div class="login-card">
@@ -136,13 +136,13 @@
                 @csrf
 
                 <div class="form-group">
-                    <label for="name">Nombre completo</label>
+                    <label for="name">{{ __('Nombre completo') }}</label>
                     <div class="input-wrapper">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                             <circle cx="12" cy="7" r="4"/>
                         </svg>
-                        <input type="text" id="name" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" placeholder="Tu nombre completo" required autofocus autocomplete="name">
+                        <input type="text" id="name" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" placeholder="{{ __('Tu nombre completo') }}" required autofocus autocomplete="name">
                     </div>
                     @error('name')
                         <span class="invalid-feedback">{{ $message }}</span>
@@ -150,13 +150,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="email">Correo electrónico</label>
+                    <label for="email">{{ __('Correo electrónico') }}</label>
                     <div class="input-wrapper">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="4" width="20" height="16" rx="2"/>
                             <path d="M22 4L12 13 2 4"/>
                         </svg>
-                        <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" placeholder="tu@correo.com" required autocomplete="email">
+                        <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" placeholder="{{ __('tu@correo.com') }}" required autocomplete="email">
                     </div>
                     @error('email')
                         <span class="invalid-feedback">{{ $message }}</span>
@@ -164,13 +164,13 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Contraseña</label>
+                    <label for="password">{{ __('Contraseña') }}</label>
                     <div class="input-wrapper">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                             <path d="M7 11V7a5 5 0 0110 0v4"/>
                         </svg>
-                        <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="••••••••" required autocomplete="new-password">
+                        <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="{{ __('••••••••') }}" required autocomplete="new-password">
                     </div>
                     @error('password')
                         <span class="invalid-feedback">{{ $message }}</span>
@@ -178,21 +178,21 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="password-confirm">Confirmar contraseña</label>
+                    <label for="password-confirm">{{ __('Confirmar contraseña') }}</label>
                     <div class="input-wrapper">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                             <path d="M7 11V7a5 5 0 0110 0v4"/>
                         </svg>
-                        <input type="password" id="password-confirm" name="password_confirmation" class="form-control" placeholder="••••••••" required autocomplete="new-password">
+                        <input type="password" id="password-confirm" name="password_confirmation" class="form-control" placeholder="{{ __('••••••••') }}" required autocomplete="new-password">
                     </div>
                 </div>
 
-                <button type="submit" class="btn-login">Registrarse</button>
+                <button type="submit" class="btn-login">{{ __('Registrarse') }}</button>
             </form>
 
             <div class="login-footer">
-                <a href="{{ route('login') }}">¿Ya tienes cuenta? Inicia sesión</a>
+                <a href="{{ route('login') }}">{{ __('¿Ya tienes cuenta? Inicia sesión') }}</a>
             </div>
         </div>
     </div>
