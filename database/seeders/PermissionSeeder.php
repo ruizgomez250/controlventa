@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 class PermissionSeeder extends Seeder
 {
@@ -29,14 +28,23 @@ class PermissionSeeder extends Seeder
         ];
 
         $allPermissions = [];
+
         foreach ($permissionsByModel as $model => $actions) {
             foreach ($actions as $action) {
                 $permissionName = strtolower($model) . ' ' . $action;
                 $allPermissions[] = $permissionName;
-                Permission::create(['name' => $permissionName, 'guard_name' => 'web']);
+
+                Permission::firstOrCreate(
+                    [
+                        'name' => $permissionName,
+                        'guard_name' => 'web',
+                    ]
+                );
             }
         }
 
-        $this->command->info('Permisos creados: ' . implode(', ', $allPermissions));
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        $this->command->info('Permisos verificados/creados: ' . implode(', ', $allPermissions));
     }
 }

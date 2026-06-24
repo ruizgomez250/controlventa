@@ -34,7 +34,7 @@
                                 <td>{{ $row->stock  }}</td>
                                 <td>{{ $row->pcosto }}</td>
                                 <td>{{ $row->pventa }}</td>
-                                <td>{{ number_format($row->impuesto->valor, 2, ',', '.') }} %</td>
+                                <td>{{ number_format($row->impuesto ?? 0, 2, ',', '.') }} %</td>
                                 <td>{{ ($row->estado === 0) ? "Inactivo" : "Activo" }}</td>
                                 <td>
                                     @if ($row->precioTiers->count() > 0)
@@ -53,7 +53,7 @@
                                     <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal"
                                         data-target="#exampleModal"
                                         data-whatever="{{ $row->detalle }}"><i class="fa fa-sm fa-fw fa-eye"></i></button>
-                          
+
 
                                     <a href="{{ route('producto.edit', $row->id) }}"
                                         class="btn btn-sm btn-outline-secondary"><i class="fa fa-sm fa-fw fa-pen"></i></a>
@@ -87,10 +87,10 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">                    
-                        <div class="form-group"> 
+                <div class="modal-body">
+                        <div class="form-group">
                             <textarea style="background-color: blue;color:white;" class="form-control romeo" id="detalle" rows="20" disabled></textarea>
-                        </div>                       
+                        </div>
                 </div>
             </div>
         </div>
@@ -127,7 +127,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById('delete-form').submit();
-                    
+
                 }
         });
     }

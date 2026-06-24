@@ -9,25 +9,34 @@ class ImpuestosSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('impuestos')->insert([
+        $impuestos = [
             [
                 'descripcion' => 'I.V.A.',
                 'valor' => 10.00,
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'descripcion' => 'I.V.A.',
                 'valor' => 5.00,
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'descripcion' => 'EXENTA',
                 'valor' => 0.00,
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
-        ]);
+        ];
+
+        foreach ($impuestos as $impuesto) {
+            DB::table('impuestos')->updateOrInsert(
+                [
+                    'descripcion' => $impuesto['descripcion'],
+                    'valor' => $impuesto['valor'],
+                ],
+                [
+                    'updated_at' => now(),
+                    'created_at' => now(),
+                ]
+            );
+        }
+
+        $this->command->info('Impuestos verificados/creados correctamente.');
     }
 }
