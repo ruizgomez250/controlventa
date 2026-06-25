@@ -575,6 +575,17 @@ select.form-control {
     text-shadow: none !important;
 }
 
+.modal-body,
+.modal-body h1,
+.modal-body h2,
+.modal-body h3,
+.modal-body h4,
+.modal-body h5,
+.modal-body h6,
+.modal-body label {
+    color: var(--modern-text-primary) !important;
+}
+
 /* ============ SELECT2 ============ */
 .select2-container--default .select2-selection--single,
 .select2-container--default .select2-selection--multiple {

@@ -63,10 +63,7 @@
                                 </td>
                                 <td>
 
-                                    {{-- <a href="#" class="btn btn-sm btn-outline-secondary ver-detalle-btn"
-                                        data-compra-id="{{ $compra->id }}" title="{{ __('Mostrar detalles') }}">
-                                        <i class="fa fa-eye"></i>
-                                    </a>{{ __('--}}') }}<a href="#" class="btn btn-sm btn-outline-secondary pagar-monto-btn"
+                                    <a href="#" class="btn btn-sm btn-outline-secondary pagar-monto-btn"
                                         data-compra-id="{{ $compra->id }}" title="{{ __('Ver Comprobantes') }}">
                                         <i class="fa fa-sm fa-print"></i></a>
                                     @if ($compra->estado == 1)
@@ -114,7 +111,7 @@
                                         <th scope="col">{{ __('PDF') }}</th>
                                     </tr>
                                 </thead>
-                                <tbody id="detalleContent">
+                                <tbody id="documentosContent">
                                     <tr>
                                         <th scope="col">{{ __('Orden de Compra') }}</th>
                                         <th scope="col"><a id="ordenCompraPdfLink" href="" target="_blank"
@@ -144,7 +141,7 @@
                     <!--Modal-->
                     <x-adminlte-modal id="pagocuotaModal" title="{{ __('Pago de Cuotas') }}" theme="light" size="lg">
                         <div>
-                            <table class="table table-sm table-hover" id="table1">
+                            <table class="table table-sm table-hover" id="tableCuotas">
                                 <thead class="thead-dark">
                                     <tr>
                                         <th>{{ __('Nro. Cuota') }}</th>
@@ -168,7 +165,7 @@
                     <!--Modal-->
                     <x-adminlte-modal id="pagomontoModal" title="{{ __('Comprobantes') }}" theme="light" size="lg">
                         <div>
-                            <table class="table table-sm table-hover" id="table1">
+                            <table class="table table-sm table-hover" id="tablePagos">
                                 <thead class="thead-dark">
                                     <tr>
                                         <th>{{ __('Nro. Pago') }}</th>
@@ -278,12 +275,11 @@
                 });
 
                 function openDocumentosModal(compraId) {
-                    // Cambia el atributo href del enlace dentro del modal dinámicamente
-                    //document.getElementById('ordenCompraPdfLink').href = " route('ordenescomprapdf', '') }}" + '/' + compraId;
-
-
-                    // Abre el modal
-                    $('#documentosModal').modal('show');
+                    var modal = $('#documentosModal');
+                    $('.modal-backdrop').remove();
+                    modal.removeClass('fade');
+                    modal.appendTo('body');
+                    modal.modal('show');
                 }
                 var cabeceraId = {{ isset($_GET['id']) ? $_GET['id'] : '0' }};
 
@@ -360,30 +356,36 @@
                                 // Agrega más campos según tus necesidades
                             });
 
-                            // Llena el contenido del modal con los detalles
                             $('#detalleContent').html(detalleHTML);
-
-                            // Muestra el modal
-                            $('#detalleModal').modal('show');
+                            var modal = $('#detalleModal');
+                            $('.modal-backdrop').remove();
+                            modal.removeClass('fade');
+                            modal.appendTo('body');
+                            modal.modal('show');
                         },
                         error: function() {
                             console.log('Error al obtener detalles de la compra');
                         }
                     });
                 });
+                $('#detalleModal').on('hidden.bs.modal', function () {
+                    $(this).addClass('fade');
+                });
                 $('.pagar-monto-btn').click(function() {
                     var compraId = $(this).data('compra-id');
-                    // Realiza una petición AJAX para obtener los detalles de la compra
+                    var modal = $('#pagomontoModal');
+
+                    $('.modal-backdrop').remove();
+                    modal.removeClass('fade');
+                    modal.appendTo('body');
+
                     $.ajax({
                         url: 'venta/' + compraId + '/pagomontos',
                         method: 'GET',
                         success: function(response) {
-                            var cajas = response; // Aquí response contiene las cajas relacionadas con la venta
-
+                            var cajas = response;
                             var detalleHTML = '';
-                            var total = 0;
 
-                            // Construye el HTML de los detalles de la compra utilizando los datos obtenidos 
                             cajas.forEach(function(caja, index) {
                                 boton = '<a id="documentoPagomontoPdfLink' +caja.id +
                                         '" href="{{ route('documentopagomontopdf', '') }}' + '/' +caja.id +
@@ -396,21 +398,18 @@
                                     '<td>'+boton+'</td>' +
                                     '<td>' + caja.monto + '</td>' +
                                     '<td>' + caja.fecha_cobro + '</td></tr>';
-
-                                
                             });
 
-
-                            // Llena el contenido del modal con los detalles
                             $('#tablaModBod').html(detalleHTML);
-
-                            // Muestra el modal
-                            $('#pagomontoModal').modal('show');
+                            modal.modal('show');
                         },
                         error: function() {
                             console.log('Error al obtener detalles de la compra');
                         }
                     });
+                });
+                $('#pagomontoModal').on('hidden.bs.modal', function () {
+                    $(this).addClass('fade');
                 });
 
                 function verifMonto() {
@@ -441,7 +440,12 @@
 
                     var compraId = $(this).data('compra-id');
                     item = 1;
-                    // Realiza una petición AJAX para obtener los detalles de la compra
+                    var modal = $('#pagocuotaModal');
+
+                    $('.modal-backdrop').remove();
+                    modal.removeClass('fade');
+                    modal.appendTo('body');
+
                     var baseUrl = window.location.origin;
                     var url = baseUrl + '/sisventa/public/venta/' + compraId + '/cuotas';
                     $.ajax({
@@ -449,7 +453,6 @@
                         method: 'GET',
                         success: function(response) {
                             var detalleHTML = '';
-                            // Construye el HTML de los detalles de la compra utilizando los datos obtenidos 
                             response.forEach(function(detalle) {
 
                                 fechap = detalle.fecha_pago;
@@ -474,19 +477,18 @@
                                         ' </td><td>' + saldo + ' </td></tr>';
                                     item++;
                                 }
-                                // Agrega más campos según tus necesidades
                             });
 
-                            // Llena el contenido del modal con los detalles
                             document.getElementById('detallecuota').innerHTML = detalleHTML;
-
-                            // Muestra el modal
-                            $('#pagocuotaModal').modal('show');
+                            modal.modal('show');
                         },
                         error: function() {
                             console.log('Error al obtener detalles de la compra');
                         }
                     });
+                });
+                $('#pagocuotaModal').on('hidden.bs.modal', function () {
+                    $(this).addClass('fade');
                 });
 
                 function pagar(idcuota) {

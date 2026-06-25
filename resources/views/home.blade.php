@@ -199,7 +199,6 @@
 @section('content')
 @php
     $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    $moneda = 'Gs. ';
     $hoy = now();
 @endphp
 
@@ -212,10 +211,12 @@
     <div class="flex-grow-1">
         <span class="alert-text">
             @if($cantidadBajoStock > 0 && $productosSinStock > 0)
-                <strong>{{ $cantidadBajoStock }} productos</strong>{{ __('están por debajo del stock mínimo y') }}<strong>{{ $productosSinStock }} productos</strong>{{ __('están sin stock.
-            @elseif($cantidadBajoStock > 0)') }}<strong>{{ $cantidadBajoStock }} productos</strong>{{ __('están por debajo del stock mínimo.
-            @else') }}<strong>{{ $productosSinStock }} productos</strong>{{ __('están sin stock.
-            @endif') }}</span>
+                <strong>{{ $cantidadBajoStock }} productos</strong> {{ __('están por debajo del stock mínimo y') }} <strong>{{ $productosSinStock }} productos</strong> {{ __('están sin stock.') }}
+            @elseif($cantidadBajoStock > 0)
+                <strong>{{ $cantidadBajoStock }} productos</strong> {{ __('están por debajo del stock mínimo.') }}
+            @else
+                <strong>{{ $productosSinStock }} productos</strong> {{ __('están sin stock.') }}
+            @endif</span>
     </div>
     <div class="flex-shrink-0">
         <a href="{{ route('producto.index') }}" class="alert-link">
@@ -355,7 +356,7 @@
                             <td>
                                 <div>{{ $venta->cliente->razonsocial ?? 'Consumidor Final' }}</div>
                                 @if($venta->numero_factura)
-                                    <div class="venta-cliente">{{ __('Fact. {{ $venta->numero_factura }}') }}</div>
+                                    <div class="venta-cliente">{{ __('Fact. ') . $venta->numero_factura }}</div>
                                 @endif
                             </td>
                             <td style="text-align:right;">
@@ -492,14 +493,15 @@
                         <strong style="color:var(--modern-text-primary);font-size:0.9rem;">
                             <i class="fas fa-user"></i> {{ $cc->razonsocial }}
                         </strong>
-                        <span style="font-weight:700;color:var(--modern-danger);font-size:0.95rem;">{{ __('Gs. {{ number_format($cc->saldo_pendiente, 0, ',', '.') }}') }}</span>
+                        <span style="font-weight:700;color:var(--modern-danger);font-size:0.95rem;">{{ $moneda }} {{ number_format($cc->saldo_pendiente, 0, ',', '.') }}</span>
                     </div>
                     @if($cc->vencimientos->count() > 0)
                     <div style="font-size:0.78rem;color:var(--modern-text-muted);margin-bottom:4px;">
-                        <i class="fas fa-calendar-alt"></i>{{ __('Próximos vencimientos:
-                        @foreach($cc->vencimientos->take(3) as $venc)') }}<span class="badge-stock {{ \Carbon\Carbon::parse($venc->fecha_vencimiento)->isPast() ? 'badge-stock-danger' : 'badge-stock-warning' }}" style="font-size:0.7rem;margin:1px;">
+                        <i class="fas fa-calendar-alt"></i>{{ __('Próximos vencimientos:') }}
+                        @foreach($cc->vencimientos->take(3) as $venc)
+                            <span class="badge-stock {{ \Carbon\Carbon::parse($venc->fecha_vencimiento)->isPast() ? 'badge-stock-danger' : 'badge-stock-warning' }}" style="font-size:0.7rem;margin:1px;">
                                 {{ \Carbon\Carbon::parse($venc->fecha_vencimiento)->isoFormat('DD/MM/YY') }}
-                                Gs. {{ number_format($venc->monto, 0, ',', '.') }}
+                                {{ $moneda }} {{ number_format($venc->monto, 0, ',', '.') }}
                             </span>
                         @endforeach
                     </div>
@@ -507,12 +509,12 @@
                     @if($cc->historial_pagos->count() > 0)
                     <details style="font-size:0.78rem;color:var(--modern-text-muted);margin-top:2px;">
                         <summary style="cursor:pointer;color:var(--modern-primary);">
-                            <i class="fas fa-check-circle"></i>{{ __('Últimos pagos ({{ $cc->historial_pagos->count() }})') }}</summary>
+                            <i class="fas fa-check-circle"></i>{{ __('Últimos pagos') }} ({{ $cc->historial_pagos->count() }})</summary>
                         <div style="margin-top:4px;padding-left:8px;border-left:2px solid var(--modern-card-border);">
                             @foreach($cc->historial_pagos as $pago)
                             <div style="display:flex;justify-content:space-between;padding:2px 0;">
                                 <span>{{ \Carbon\Carbon::parse($pago->fecha_pago)->isoFormat('DD/MM/YYYY') }}</span>
-                                <span style="color:var(--modern-success);font-weight:600;">{{ __('Gs. {{ number_format($pago->monto, 0, ',', '.') }}') }}</span>
+                                <span style="color:var(--modern-success);font-weight:600;">{{ $moneda }} {{ number_format($pago->monto, 0, ',', '.') }}</span>
                             </div>
                             @endforeach
                         </div>
@@ -533,14 +535,14 @@
     <div class="col-md-6">
         <div class="chart-container">
             <div class="section-title">
-                <i class="fas fa-shopping-bag"></i>{{ __('Compras {{ $anioActual }} vs {{ $anioAnterior }}') }}</div>
+                <i class="fas fa-shopping-bag"></i>{{ __('Compras') }} {{ $anioActual }} vs {{ $anioAnterior }}</div>
             <canvas id="chartCompras"></canvas>
         </div>
     </div>
     <div class="col-md-6">
         <div class="chart-container">
             <div class="section-title">
-                <i class="fas fa-cash-register"></i>{{ __('Ventas {{ $anioActual }} vs {{ $anioAnterior }}') }}</div>
+                <i class="fas fa-cash-register"></i>{{ __('Ventas') }} {{ $anioActual }} vs {{ $anioAnterior }}</div>
             <canvas id="chartVentas"></canvas>
         </div>
     </div>
@@ -555,6 +557,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var comprasAntes = @json(array_values($comprasAnhoAnterior));
     var ventasEste = @json(array_values($ventasEsteAnio));
     var ventasAntes = @json(array_values($ventasAnhoAnterior));
+
+    var moneda = @json($moneda);
 
     function formatNumber(n) {
         return n.toLocaleString('es-PY');
@@ -592,7 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 tooltip: {
                     callbacks: {
                         label: function(ctx) {
-                            return ctx.dataset.label + ': Gs. ' + formatNumber(ctx.raw);
+                            return ctx.dataset.label + ': ' + moneda + ' ' + formatNumber(ctx.raw);
                         }
                     }
                 }
@@ -643,7 +647,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 tooltip: {
                     callbacks: {
                         label: function(ctx) {
-                            return ctx.dataset.label + ': Gs. ' + formatNumber(ctx.raw);
+                            return ctx.dataset.label + ': ' + moneda + ' ' + formatNumber(ctx.raw);
                         }
                     }
                 }

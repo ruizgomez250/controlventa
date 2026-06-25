@@ -102,7 +102,7 @@
             var desde = document.getElementById('desde2').value;
             var hasta = document.getElementById('hasta2').value;
 
-            var url = `/sisventa/public/cajareportepdf/${desde}/${hasta}`;
+            var url = `{{ url('/') }}/cajareportepdf/${desde}/${hasta}`;
             window.open(url, '_blank');
         }
     </script>

@@ -63,6 +63,16 @@ class ConfiguracionController extends Controller
                     $idioma->save();
                     session(['app_locale' => $request->input('idioma')]);
                 }
+
+                // Moneda
+                if ($request->has('moneda')) {
+                    $moneda = Configuracion::firstOrCreate(
+                        ['descripcion' => 'moneda'],
+                        ['observacion' => 'Gs.']
+                    );
+                    $moneda->observacion = $request->input('moneda');
+                    $moneda->save();
+                }
             });
 
             return redirect()->route('configuracion.index')

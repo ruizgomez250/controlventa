@@ -85,7 +85,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="alert alert-info mb-3">
-                            <i class="fa fa-info-circle"></i>{{ __('Las fechas se generan automáticamente. Puede editarlas directamente.') }}<strong>{{ __('Monto por cuota:') }}<span id="montoPorCuota">0</span> Gs.</strong>
+                            <i class="fa fa-info-circle"></i>{{ __('Las fechas se generan automáticamente. Puede editarlas directamente.') }}<strong>{{ __('Monto por cuota:') }}<span id="montoPorCuota">0</span> {{ $moneda }}</strong>
                         </div>
                         <table id="tblpagare" class="table table-striped table-bordered">
                             <thead class="thead-dark">
@@ -495,11 +495,10 @@
                     row.find('input[name="codigo[]"]').val(p.id);
                     row.find('input[name="codigo1[]"]').val(p.codigo);
                     row.find('input[name="unidad[]"]').val(p.unidaddemedida?.descripcion || 'UNIDAD');
-                    row.find('input[name="iva[]"]').val(p.impuesto);
+                    row.find('input[name="iva[]"]').val(p.impuesto?.valor ?? 0);
                     row.find('input[name="precio[]"]').val(p.pventa);
                     row.find('input[name="precioorig[]"]').val(p.pventa);
                     row.find('input[name="tipo_impuesto[]"]').val(p.id_impuesto);
-                    console.log(row.find('input[name="tipo_impuesto[]"]').val());
 
                 }
                 actualizarSumaTotal();

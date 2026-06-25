@@ -46,9 +46,16 @@
                                     <td>{{ $compra->tipo_comprobante }}</td>
                                     <td>{{ number_format($compra->total, 0, '.', ',') }}</td>
                                     <td>{{ $compra->usuario->name }}</td>
-                                    <td
-                                        class="{{ $compra->estado == 1 ? 'text-info' : ($compra->estado == 0 ? 'text-danger' : ($compra->estado == 4 ? 'text-primary' : 'text-success')) }}">
-                                        {{ $compra->estado == 1 ? 'Pedido Generado' : ($compra->estado == 0 ? 'Anulado' : ($compra->estado == 4 ? 'Pago parcial' : 'Pagado')) }}
+                                    <td>
+                                        @if ($compra->estado == 1)
+                                            <span class="badge badge-warning">Pedido Generado</span>
+                                        @elseif ($compra->estado == 0)
+                                            <span class="badge badge-danger">Anulado</span>
+                                        @elseif ($compra->estado == 4)
+                                            <span class="badge badge-info">Pago parcial</span>
+                                        @else
+                                            <span class="badge badge-success">Pagado</span>
+                                        @endif
                                     </td>
                                     <td>
                                         @if ($compra->estado == 1)

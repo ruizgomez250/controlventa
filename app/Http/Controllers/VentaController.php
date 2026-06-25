@@ -288,8 +288,10 @@ class VentaController extends Controller
         if (!auth()->user()->can('caja crear')) {
             return redirect()->route('sinpermiso');
         }
+            if ($montoabonado <= 0) {
+                return response()->json(['error' => 'El monto a abonar debe ser mayor a 0.'], 400);
+            }
             try {
-
                 DB::beginTransaction();
                 $montocondesc = $montoabonado + $descuento;
                 $venta = Venta::find($id);
@@ -493,52 +495,78 @@ class VentaController extends Controller
         if (!auth()->user()->can('caja leer')) {
             return redirect()->route('sinpermiso');
         }
-            $caja = Caja::find($id);
+            $caja = Caja::with(['usuario', 'venta.cliente', 'compra.proveedor'])->find($id);
+            //dd($caja);
             if (!$caja) {
                 abort(404, 'Pago no encontrado');
             }
+
+            $moneda = Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
             $ancho = 88.9;
-            $pdf = new TCPDF('P', 'mm', array($ancho, 139.7), true, 'UTF-8', false);
-            //$pdf = new TCPDF('P', 'mm', array(215.9, 355.6), true, 'UTF-8', false);
+            $alto = 139.7;
+            $pdf = new TCPDF('P', 'mm', [$ancho, $alto], true, 'UTF-8', false);
 
-
-            $pdf->SetCreator('Your Creator');
-            $pdf->SetTitle('Cobranza Ticket Cod.: ' . $caja->id);
-            $pdf->SetMargins(1, 10, 1);
-            $pdf->SetAutoPageBreak(true, 10);
-            $pdf->SetFont('helvetica', 'B', 9);
+            $pdf->SetCreator('Sistema');
+            $pdf->SetTitle(__('Comprobante de Pago') . ' #' . $caja->id);
+            $anchoUtil = $ancho - 6;
+            $pdf->SetMargins(3, 5, 3);
+            $pdf->SetAutoPageBreak(true, 8);
             $pdf->AddPage();
 
-            $pdf->Cell(0, 10, 'Ticket Cod.: ' . $caja->id, 0, 1, 'C');
-            $pdf->Cell(0, 10, '---------------------------------------------', 0, 1, 'C');
-            // Definir el ancho de la celda como el 20% del ancho de la página
-            // Establecer la fuente en negrita
+            $pdf->SetFont('helvetica', 'B', 10);
+            $pdf->Cell(0, 5, __('COMPROBANTE DE PAGO'), 0, 1, 'C');
+            $pdf->SetFont('helvetica', '', 7);
+            $pdf->Cell(0, 4, __('Ticket') . ' #' . $caja->id, 0, 1, 'C');
 
+            $y1 = $pdf->GetY();
+            $pdf->Line(3, $y1, $ancho - 3, $y1);
+            $pdf->Ln(2);
 
+            $pdf->Cell(0, 4, __('Fecha') . ': ' . Carbon::parse($caja->fecha_cobro)->format('d/m/Y H:i'), 0, 1, 'L');
+            $pdf->Cell(0, 4, __('Usuario') . ': ' . ($caja->usuario->name ?? '—'), 0, 1, 'L');
 
+            if ($caja->venta) {
+                $cliente = optional($caja->venta->cliente)->razonsocial ?? __('Consumidor Final');
+                $pdf->Cell(0, 4, __('Cliente') . ': ' . $cliente, 0, 1, 'L');
+                $pdf->Cell(0, 4, __('Nro Factura') . ': ' . ($caja->venta->numero_factura ?? '—'), 0, 1, 'L');
+            } elseif ($caja->compra) {
+                $proveedor = optional($caja->compra->proveedor)->razonsocial ?? '—';
+                $pdf->Cell(0, 4, __('Proveedor') . ': ' . $proveedor, 0, 1, 'L');
+                $pdf->Cell(0, 4, __('Compra Nro') . ': ' . ($caja->compra->nro_factura ?? $caja->compra->id), 0, 1, 'L');
+            }
 
-            // Imprimir las celdas del título sin relleno y sin bordes visibles
-            $pdf->Cell(0.1 * $ancho, 10, 'CANT.', 'B', 0, 'C'); // Sin relleno, sin bordes visibles
-            $pdf->Cell(0.47 * $ancho, 10, 'ARTICULO', 'B', 0, 'C');
-            $pdf->Cell(0.2 * $ancho, 10, 'PRECIO', 'B', 0, 'C');
-            $pdf->Cell(0.2 * $ancho, 10, 'TOTAL', 'B', 1, 'C'); // Última celda, con salto de línea al final
+            $pdf->Ln(2);
+            $y2 = $pdf->GetY();
+            $pdf->Line(3, $y2, $ancho - 3, $y2);
+            $pdf->Ln(2);
 
+            $pdf->SetFont('helvetica', 'B', 7);
+            $pdf->Cell(0.6 * $anchoUtil, 5, __('CONCEPTO'), 0, 0, 'L');
+            $pdf->Cell(0.4 * $anchoUtil, 5, __('MONTO'), 0, 1, 'R');
+            $pdf->SetFont('helvetica', '', 7);
+            $pdf->Cell(0.6 * $anchoUtil, 5, __('Pago realizado'), 0, 0, 'L');
+            $pdf->Cell(0.4 * $anchoUtil, 5, $moneda . ' ' . number_format($caja->monto, 0, ',', '.'), 0, 1, 'R');
 
-            // Dibujar la línea horizontal
+            $pdf->Ln(2);
+            $y3 = $pdf->GetY();
+            $pdf->Line(3, $y3, $ancho - 3, $y3);
+            $pdf->Ln(2);
 
-            $pdf->SetFont('helvetica', '', 9);
-
-            $pdf->Cell(0.1 * $ancho, 10, 1, 'B', 0, 'C');
-            $pdf->Cell(0.47 * $ancho, 10, 'PAGO', 'B', 0, 'C');
-            $pdf->Cell(0.2 * $ancho, 10, number_format($caja->monto, 0, '', '.'), 'B', 0, 'C');
-            $pdf->Cell(0.2 * $ancho, 10, number_format($caja->monto, 0, '', '.'), 'B', 1, 'C');
             $pdf->SetFont('helvetica', 'B', 9);
+            $pdf->Cell(0.5 * $anchoUtil, 6, __('Total') . ':', 0, 0, 'L');
+            $pdf->Cell(0.5 * $anchoUtil, 6, $moneda . ' ' . number_format($caja->monto, 0, ',', '.'), 0, 1, 'R');
+
+            $pdf->Ln(1);
+            $pdf->SetFont('helvetica', '', 6);
             $formatter = new NumberToWords();
             $words = $formatter->toWords($caja->monto, 0);
-            $pdf->Cell(0, 10, ' TOTAL: Gs. ' . number_format($caja->monto, 0, '', '.'), 0, 1, 'R');
-            $pdf->Cell(0, 10, $words . ' Gs.', 0, 1, 'R');
-            $pdf->Cell(0, 10, 'GRACIAS POR TU PAGO!!!', 0, 1, 'C');
-            $pdf->Output('ordendecompra.pdf', 'I');
+            $pdf->MultiCell(0, 4, $words . ' ' . $moneda, 0, 'L');
+
+            $pdf->Ln(4);
+            $pdf->SetFont('helvetica', 'B', 8);
+            $pdf->Cell(0, 5, __('GRACIAS POR TU PAGO!!!'), 0, 1, 'C');
+
+            $pdf->Output('comprobante_pago_' . $caja->id . '.pdf', 'I');
             exit;
     }
     public function cargarDet(Request $request, $id)

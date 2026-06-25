@@ -50,7 +50,7 @@
                                     'cmayorista' => $row->cmayorista ?? 0,
                                     'dmayorista' => number_format($row->dmayorista ?? 0, 0, ',', '.'),
 
-                                    'impuesto' => number_format($row->impuesto ?? 0, 2, ',', '.'),
+                                    'impuesto' => number_format($row->impuesto?->valor ?? 0, 2, ',', '.'),
                                     'estado' => $row->estado == 1 ? 'Activo' : 'Inactivo',
                                     'tipo' => match($row->tipo) {
                                         'venta' => 'Para la Venta',
@@ -95,7 +95,7 @@
 
                                 <td>{{ number_format($row->pventa ?? 0, 0, ',', '.') }}</td>
 
-                                <td>{{ number_format($row->impuesto ?? 0, 2, ',', '.') }} %</td>
+                                <td>{{ number_format($row->impuesto?->valor ?? 0, 2, ',', '.') }} %</td>
 
                                 <td>
                                     @if ($row->estado == 1)
@@ -203,6 +203,8 @@
 
 @push('js')
 <script>
+    var moneda = @json($moneda);
+
     function escapeHtml(value) {
         if (value === null || value === undefined || value === '') {
             return '—';
@@ -225,7 +227,7 @@
                     <tr>
                         <td>${index + 1}</td>
                         <td>${escapeHtml(tier.cantidad_desde)}+</td>
-                        <td>Gs. ${escapeHtml(tier.precio_unitario)}</td>
+                        <td>${moneda} ${escapeHtml(tier.precio_unitario)}</td>
                     </tr>
                 `;
             }).join('');
@@ -308,15 +310,15 @@
                                         <tbody>
                                             <tr>
                                                 <th>Precio Costo</th>
-                                                <td>Gs. ${escapeHtml(producto.pcosto)}</td>
+                                                <td>${moneda} ${escapeHtml(producto.pcosto)}</td>
                                             </tr>
                                             <tr>
                                                 <th>Precio Venta</th>
-                                                <td>Gs. ${escapeHtml(producto.pventa)}</td>
+                                                <td>${moneda} ${escapeHtml(producto.pventa)}</td>
                                             </tr>
                                             <tr>
                                                 <th>Precio Mayorista</th>
-                                                <td>Gs. ${escapeHtml(producto.pmayorista)}</td>
+                                                <td>${moneda} ${escapeHtml(producto.pmayorista)}</td>
                                             </tr>
                                             <tr>
                                                 <th>Cant. Mayorista</th>
@@ -324,7 +326,7 @@
                                             </tr>
                                             <tr>
                                                 <th>Desc. Mayorista</th>
-                                                <td>Gs. ${escapeHtml(producto.dmayorista)}</td>
+                                                <td>${moneda} ${escapeHtml(producto.dmayorista)}</td>
                                             </tr>
                                         </tbody>
                                     </table>

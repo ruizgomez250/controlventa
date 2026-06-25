@@ -46,16 +46,18 @@
                                     <td>{{ $compra->condicion_de_compra }}</td>
                                     <td>{{ number_format($compra->total_compra, 0, '.', ',') }}</td>
                                     <td>{{ $compra->usuario->name }}</td>
-                                    <td class="{{ $compra->id_estado == 1 ? 'text-success' : 'text-danger' }}">
-                                        {{ $compra->id_estado == 1 ? 'Activo' : 'Anulado' }}
+                                    <td>
+                                        @if ($compra->id_estado == 1)
+                                            <span class="badge badge-success">Activo</span>
+                                        @else
+                                            <span class="badge badge-danger">Anulado</span>
+                                        @endif
                                     </td>
                                     <td>
-                                        {{-- <a href="#" class="btn btn-sm btn-outline-secondary ver-detalle-btn"
-                                            data-compra-id="{{ $compra->id }}">
-                                            <i class="fa fa-eye"></i>
-                                        </a>{{ __('--}}
-                                        @if ($compra->id_estado == 1)') }}<button type="button" class="btn btn-sm btn-outline-secondary"
-                                                id="delete-button" onclick="borrarCompraCombustible({{ $compra->id }})">
+                                        @if ($compra->id_estado == 1)
+                                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                id="delete-button"
+                                                onclick="borrarCompraCombustible({{ $compra->id }})">
                                                 <i class="fa fa-sm fa-fw fa-trash"></i>
                                             </button>
                                         @endif

@@ -126,9 +126,6 @@ class ProductoController extends Controller
                 'tier_precio',
             ]);
 
-            $impuesto = Impuesto::findOrFail($data['id_impuesto']);
-            $data['impuesto'] = $impuesto->valor;
-
             $data['tipo'] = $data['tipo'] ?? 'venta';
             $data['pcosto'] = $data['pcosto'] ?? 0;
             $data['pventa'] = $data['pventa'] ?? 0;
@@ -297,11 +294,6 @@ class ProductoController extends Controller
             'imagen'              => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        // Obtener el valor real del impuesto seleccionado.
-        // Ejemplo: id_impuesto = 1, impuesto = 10.
-        $impuesto = Impuesto::findOrFail($validated['id_impuesto']);
-        $validated['impuesto'] = $impuesto->valor;
-
         // Si viene una nueva imagen, borrar la anterior y guardar la nueva.
         if ($request->hasFile('imagen')) {
             if ($producto->imagen && Storage::disk('public')->exists($producto->imagen)) {
@@ -382,7 +374,7 @@ class ProductoController extends Controller
         try {
             $codigo = $request->input('codigo');
             $cantpago = $request->input('cantpago');
-            $producto = Producto::with(['unidaddemedida', 'precioTiers'])->where('codigo', $codigo)->first();
+            $producto = Producto::with(['unidaddemedida', 'precioTiers', 'impuesto'])->where('codigo', $codigo)->first();
             $configuracion = Configuracion::firstOrNew(
                 ['descripcion' => 'condicionv'],
                 ['estado' => 0]
@@ -426,7 +418,7 @@ class ProductoController extends Controller
                 ->where('user_id', $idUsuarioLogueado)
                 ->first();
             if ($temporales) {
-                $producto = Producto::with(['unidaddemedida', 'precioTiers'])->where('id', $temporales->producto_id)->first();
+                $producto = Producto::with(['unidaddemedida', 'precioTiers', 'impuesto'])->where('id', $temporales->producto_id)->first();
                 $temporales->delete();
                 //dd($producto);
                 $configuracion = Configuracion::firstOrNew(
@@ -563,14 +555,14 @@ class ProductoController extends Controller
 
     public function indexl()
     {
-        $productos = Producto::with(['categoriaproducto', 'unidaddemedida'])
-            ->select('id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'stock', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'impuesto', 'imagen')
+        $productos = Producto::with(['categoriaproducto', 'unidaddemedida', 'impuesto'])
+            ->select('id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'stock', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'imagen', 'id_impuesto')
             ->get()
             ->map(function ($producto) {
                 $producto->stock = (int) $producto->stock;
                 $producto->pcosto = (int) round($producto->pcosto);
                 $producto->pventa = (int) round($producto->pventa);
-                $producto->impuesto = (int) round($producto->impuesto);
+                $producto->impuesto_valor = $producto->impuesto?->valor ?? 0;
 
                 return $producto;
             });
@@ -580,8 +572,8 @@ class ProductoController extends Controller
 
     public function showl($id)
     {
-        $producto = Producto::with(['categoriaproducto', 'unidaddemedida'])
-            ->select('id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'stock', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'impuesto')
+        $producto = Producto::with(['categoriaproducto', 'unidaddemedida', 'impuesto'])
+            ->select('id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'stock', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'id_impuesto')
             ->findOrFail($id);
 
         return response()->json($producto);

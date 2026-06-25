@@ -373,7 +373,7 @@
                                                 <tr>
                                                     <th style="width:40px;">{{ __('#') }}</th>
                                                     <th>{{ __('Desde Cantidad') }}</th>
-                                                    <th>{{ __('Precio Unitario Gs.') }}</th>
+                                                    <th>{{ __('Precio Unitario') }} ({{ $moneda }})</th>
                                                     <th style="width:50px;"></th>
                                                 </tr>
                                             </thead>

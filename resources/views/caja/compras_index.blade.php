@@ -112,7 +112,7 @@
                                     <h4>{{ __('Cargar el monto a abonar') }}</h4>
                                 </div>
                                 <div class="col-12 text-center">
-                                    <label>{{ __('Monto a Abonar Gs.') }}</label>
+                                    <label>{{ __('Monto a Abonar') }} {{ $moneda }}</label>
                                     <input type="hidden" name="idfac" id="idfac" value="">
                                     <input type="number" oninput="verifMonto()" name="montoAbonar" id="montoAbonar" class="form-control d-inline w-auto">
                                 </div>
@@ -122,14 +122,14 @@
                                     <input type="number" oninput="verifMonto()" name="descuent" value="0" id="descuent" class="form-control d-inline w-auto">
                                 </div>
                                 <div class="col-12 text-center mt-3">
-                                    <h4>{{ __('Diferencia Gs.') }}<span id="diferenciaAbonar" class="text-danger">0</span></h4>
+                                    <h4>{{ __('Diferencia') }} {{ $moneda }}<span id="diferenciaAbonar" class="text-danger">0</span></h4>
                                 </div>
                                 <div class="col-12 text-center mt-2">
-                                    <label>{{ __('Efectivo Gs.') }}</label>
+                                    <label>{{ __('Efectivo') }} {{ $moneda }}</label>
                                     <input type="number" oninput="verifVuelto()" name="descUs" id="descUs" class="form-control d-inline w-auto">
                                 </div>
                                 <div class="col-12 text-center mt-2">
-                                    <h4>{{ __('Vuelto Gs.') }}<span id="vuelto" class="text-info">0</span></h4>
+                                    <h4>{{ __('Vuelto') }} {{ $moneda }}<span id="vuelto" class="text-info">0</span></h4>
                                 </div>
                             </div>
                             <div class="text-center mt-3">

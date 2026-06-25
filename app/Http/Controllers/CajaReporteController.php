@@ -61,22 +61,22 @@ class CajaReporteController extends Controller
         $pdf->SetCreator('easyStock');
 
         // Establecer título del documento
-        $pdf->SetTitle('Reporte de Caja');
-        $pdf->SetY(10); // Mover el cursor a la posición vertical 10mm
-        $pdf->Cell(0, 10, 'Reporte de Caja', 0, 1, 'C'); // Celda centrada con el título
+        $moneda = \App\Models\Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
+        $pdf->SetTitle(__('Cash Report'));
+        $pdf->SetY(10);
+        $pdf->Cell(0, 10, __('Cash Report'), 0, 1, 'C');
 
         // Crear tabla con títulos
         $pdf->SetFillColor(1, 0, 0);
         $pdf->SetTextColor(255, 255, 255);
-        // Dibujar las celdas con un color de fondo más suave
-        $pdf->Cell(20, 10, 'Número', 1, 0, 'C', true); // El último parámetro true indica que se debe aplicar el color de fondo
-        $pdf->Cell(49, 10, 'Fecha de Cobro', 1, 0, 'C', true);
-        $pdf->Cell(59, 10, 'Monto Gs.', 1, 0, 'C', true);
-        $pdf->Cell(80, 10, 'Cajero', 1, 1, 'C', true);
+        $pdf->Cell(20, 10, __('Number'), 1, 0, 'C', true);
+        $pdf->Cell(49, 10, __('Collection Date'), 1, 0, 'C', true);
+        $pdf->Cell(59, 10, __('Amount') . ' (' . $moneda . ')', 1, 0, 'C', true);
+        $pdf->Cell(80, 10, __('Cashier'), 1, 1, 'C', true);
         $pdf->SetFont('helvetica', '', 9);
-        $pdf->SetTextColor(0, 0, 0); // RGB: negro
+        $pdf->SetTextColor(0, 0, 0);
         if ($cajas->isEmpty()) {
-            $pdf->Cell(0, 10, 'No hay datos disponibles', 1, 1, 'C');
+            $pdf->Cell(0, 10, __('No data available'), 1, 1, 'C');
         } else {
             $cont = 0;
             $total = 0;
@@ -96,8 +96,8 @@ class CajaReporteController extends Controller
                 $total = $total + $caja->monto;
             }
             $pdf->SetFont('helvetica', 'B', 9);
-            $pdf->Cell(69, 10, 'TOTAL', 0, 0, 'C');
-            $pdf->Cell(59, 10, number_format($total, 0, ',', '.') . ' Gs.', 0, 1, 'C');
+            $pdf->Cell(69, 10, __('TOTAL'), 0, 0, 'C');
+            $pdf->Cell(59, 10, number_format($total, 0, ',', '.') . ' ' . $moneda, 0, 1, 'C');
             $formatter = new NumberToWords();
             $pdf->Cell(200, 10, '( ' . $formatter->toWords($total, 0) . ' )', 0, 0, 'C');
         }

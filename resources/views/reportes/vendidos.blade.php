@@ -43,7 +43,7 @@
                         </div>
                         
                         <div class="form-group col-md-2">
-                            <label>{{ __('&nbsp;') }}</label>
+                            <label>&nbsp;</label>
                             <button class="btn btn-secondary form-control" onclick="generarPDF()">
                                 <i class="fas fa-file-pdf"></i>{{ __('Generar') }}</button>
                         </div>
@@ -68,7 +68,7 @@
                         </div>
                         
                         <div class="form-group col-md-4">
-                            <label>{{ __('&nbsp;') }}</label>
+                            <label>&nbsp;</label>
                             <button class="btn btn-secondary form-control" onclick="generarPDFsinuser()">
                                 <i class="fas fa-file-pdf"></i>{{ __('Generar') }}</button>
                         </div>

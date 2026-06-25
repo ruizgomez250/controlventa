@@ -23,7 +23,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="alert alert-info mb-3">
-                            <i class="fa fa-info-circle"></i>{{ __('Las fechas se generan automáticamente. Puede editarlas directamente.') }}<strong>{{ __('Recargo:') }}<span id="recargoLabel">0</span>%</strong>{{ __('|') }}<strong>{{ __('Total c/recargo:') }}<span id="totalConRecargo">0</span> Gs.</strong>{{ __('|') }}<strong>{{ __('Monto por cuota:') }}<span id="montoPorCuota">0</span> Gs.</strong>
+                            <i class="fa fa-info-circle"></i>{{ __('Las fechas se generan automáticamente. Puede editarlas directamente.') }}<strong>{{ __('Recargo:') }}<span id="recargoLabel">0</span>%</strong>{{ __('|') }}<strong>{{ __('Total c/recargo:') }}<span id="totalConRecargo">0</span> {{ $moneda }}</strong>{{ __('|') }}<strong>{{ __('Monto por cuota:') }}<span id="montoPorCuota">0</span> {{ $moneda }}</strong>
                         </div>
                         <table id="tblpagare" class="table table-striped table-bordered">
                             <thead class="thead-dark">
@@ -57,7 +57,7 @@
                     <tbody id="tablaModBody"></tbody>
                 </table>
                 <h2>{{ __('Cargar el monto a abonar') }}</h2>
-                <h2>{{ __('Monto a Abonar Gs.') }}<input type="hidden" name="idfac" id="idfac" value="">
+                <h2>{{ __('Monto a Abonar') }} {{ $moneda }}<input type="hidden" name="idfac" id="idfac" value="">
                     <input type="number" oninput="verifMonto()" name="montoAbonar" id="montoAbonar"
                         class="form-control d-inline w-auto">
                 </h2>
@@ -65,12 +65,12 @@
                 <h2>{{ __('Descuento') }}<input type="number" oninput="verifMonto()" name="descuent" id="descuent" value="0"
                         class="form-control d-inline w-auto">
                 </h2>
-                <h1>{{ __('Diferencia Gs.') }}<span id="diferenciaAbonar" class="text-danger">0</span>
+                <h1>{{ __('Diferencia') }} {{ $moneda }}<span id="diferenciaAbonar" class="text-danger">0</span>
                 </h1>
-                <h3>{{ __('Efectivo Gs.') }}<input type="number" oninput="verifVuelto()" name="descUs" id="descUs"
+                <h3>{{ __('Efectivo') }} {{ $moneda }}<input type="number" oninput="verifVuelto()" name="descUs" id="descUs"
                         class="form-control d-inline w-auto">
                 </h3>
-                <h3>{{ __('Vuelto Gs.') }}<span id="vuelto" class="text-info">0</span>
+                <h3>{{ __('Vuelto') }} {{ $moneda }}<span id="vuelto" class="text-info">0</span>
                 </h3>
                 <button type="button" class="btn btn-primary" onclick="pagar1()">{{ __('Guardar') }}</button>
             </div>
@@ -265,7 +265,8 @@
                         total += monto;
                     });
                     $('#tablaModBody').html(rows);
-                    $('#montoAbonar, #montoAbonar1').val(total.toFixed(2));
+                    $('#montoAbonar1').val(total.toFixed(2));
+                    $('#montoAbonar').val(total.toFixed(2));
                     $('#idfac').val(compraId);
                     $('#pagomontoModal').modal('show');
                 }).fail(() => console.error('Error al cargar detalles.'));
@@ -629,7 +630,7 @@
                     row.find('input[name="codigo[]"]').val(p.id);
                     row.find('input[name="codigo1[]"]').val(p.codigo);
                     row.find('input[name="unidad[]"]').val(p.unidaddemedida?.descripcion || 'UNIDAD');
-                    row.find('input[name="iva[]"]').val(p.impuesto);
+                    row.find('input[name="iva[]"]').val(p.impuesto?.valor ?? 0);
                     row.find('input[name="precio[]"]').val(p.pventa);
                     row.find('input[name="precioorig[]"]').val(p.pventa);
                     row.find('input[name="precio_tiers[]"]').val(JSON.stringify(p.precio_tiers || []));
@@ -640,11 +641,20 @@
 
         // --- Funciones de modal de pago ---
         function verifMonto() {
-            let monto = parseFloat($('#montoAbonar').val()) || 0;
-            let real = (parseFloat($('#montoAbonar1').val()) || 0) - (parseFloat($('#descuent').val()) || 0);
-            monto = Math.max(0, Math.min(monto, real));
-            $('#montoAbonar').val(monto.toFixed(2));
-            $('#diferenciaAbonar').text((real - monto).toFixed(2));
+            let montoingresado = parseFloat($('#montoAbonar').val()) || 0;
+            let montoreal = parseFloat($('#montoAbonar1').val()) || 0;
+            let descuento = parseFloat($('#descuent').val()) || 0;
+            montoreal = montoreal - descuento;
+            if (montoreal < 0) montoreal = 0;
+            if (montoingresado > montoreal) {
+                $('#montoAbonar').val(montoreal.toFixed(2));
+                montoingresado = montoreal;
+            } else if (montoingresado < 0) {
+                $('#montoAbonar').val(0);
+                montoingresado = 0;
+            }
+            let diferencia = montoreal - montoingresado;
+            $('#diferenciaAbonar').text(diferencia.toFixed(2));
         }
 
         function verifVuelto() {
@@ -654,9 +664,14 @@
         }
 
         function pagar1() {
+            const montoVal = parseFloat($('#montoAbonar').val()) || 0;
+            if (montoVal <= 0) {
+                Swal.fire('Error', 'El monto a abonar debe ser mayor a 0', 'error');
+                return;
+            }
             Swal.fire({
                 title: '¿Seguro que desea realizar el pago?',
-                text: `Monto a Abonar: ${$('#montoAbonar').val()}`,
+                text: `Monto a Abonar: ${montoVal.toFixed(2)}`,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Sí, realizar pago',
@@ -664,8 +679,8 @@
             }).then(result => {
                 if (result.isConfirmed) {
                     const id = $('#idfac').val();
-                    const monto = $('#montoAbonar').val();
-                    const desc = $('#descuent').val() || 0;
+                    const monto = montoVal;
+                    const desc = parseFloat($('#descuent').val()) || 0;
                     $.post(`{{ url('/') }}/caja/${id}/${monto}/${desc}`, {
                             _token: '{{ csrf_token() }}'
                         })

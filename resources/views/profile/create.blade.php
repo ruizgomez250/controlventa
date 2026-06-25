@@ -539,7 +539,7 @@
                     if (response && response.id && response.descripcion) {
                         var descripcion = response.descripcion;
                         var id = response.id;
-                        var iva = response.impuesto;
+                        var iva = response.impuesto?.valor ?? 0;
                         var unidadMedida = response.unidaddemedida.descripcion;
                         var precio = response.pcosto;
                         $(inputCodigo).closest('.row').find('input[name="descripcion[]"]').val(descripcion);

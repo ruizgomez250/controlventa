@@ -210,7 +210,7 @@
                                 <div class="col-12 text-center">
                                     <h2>{{ __('Cargar el monto a abonar') }}</h2>
                                 </div>
-                                <h2><label>{{ __('Monto a Abonar Gs.') }}</label>
+                                <h2><label>{{ __('Monto a Abonar') }} {{ $moneda }}</label>
                                     <input type="hidden" name="idfac" id="idfac" value=""
                                         placeholder="{{ __('Numero') }}">
                                     <input type="number" oninput="verifMonto()" name="montoAbonar" id="montoAbonar"
@@ -224,16 +224,16 @@
                                         id="descuent" class="btn-success">
                                 </h2>
                                 <h1>
-                                    <label>{{ __('Diferencia Gs.') }}</label>
+                                    <label>{{ __('Diferencia') }} {{ $moneda }}</label>
                                     <label id="diferenciaAbonar" class="btn-danger">{{ __('Diferencia') }}</label>
 
                                 </h1>
-                                <h3><label>{{ __('Efectivo Gs.') }}</label>
+                                <h3><label>{{ __('Efectivo') }} {{ $moneda }}</label>
                                     <input type="number" oninput="verifVuelto()" name="descUs" id="descUs"
                                         class="btn-warning">
                                 </h3>
                                 <h3>
-                                    <label>{{ __('Vuelto Gs.') }}</label>
+                                    <label>{{ __('Vuelto') }} {{ $moneda }}</label>
                                     <label id="vuelto" class="btn-info">0</label>
 
                                 </h3>

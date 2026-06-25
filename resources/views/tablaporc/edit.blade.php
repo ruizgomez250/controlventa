@@ -39,17 +39,21 @@
                         @error('descripcion')
                             <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
-                        <x-adminlte-select name="impuesto" id="impuesto" label="Impuesto"
-                            data-placeholder="{{ __('Seleccionar una categoría...') }}" fgroup-class="col-md-2"
+                        <x-adminlte-select name="id_impuesto" id="id_impuesto" label="Impuesto"
+                            data-placeholder="{{ __('Seleccionar un impuesto...') }}" fgroup-class="col-md-2"
                             label-class="text-success">
                             <x-slot name="prependSlot">
                                 <div class="input-group-text bg-gradient-success">
                                     <i class="fas fa-money-bill-wave"></i>
                                 </div>
                             </x-slot>
-                            <option value="10" {{ $producto->impuesto == 10 ? 'selected' : '' }}>10 %</option>
-                            <option value="5" {{ $producto->impuesto == 5 ? 'selected' : '' }}>5 %</option>
-                            <option value="0" {{ $producto->impuesto == 0 ? 'selected' : '' }}>0 %</option>
+                            @foreach ($impuestos as $imp)
+                                <option value="{{ $imp->id }}"
+                                    {{ $producto->id_impuesto == $imp->id ? 'selected' : '' }}>
+                                    {{ $imp->valor_formateado ?? number_format($imp->valor, 2, ',', '.') }}%
+                                    ({{ $imp->descripcion }})
+                                </option>
+                            @endforeach
                         </x-adminlte-select>
 
                     </div>

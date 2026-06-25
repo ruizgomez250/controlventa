@@ -53,6 +53,7 @@
                                             $estadocondv = 0;
                                             $estadopagos = 0;
                                             $idioma = 'es';
+                                            $moneda = 'Gs.';
                                         @endphp
                                             @foreach ($configuraciones as $configuracion)
                                                 @if ($configuracion->descripcion == 'condicionv')
@@ -66,6 +67,10 @@
                                                 @elseif ($configuracion->descripcion == 'idioma')
                                                     @php
                                                         $idioma = $configuracion->observacion;
+                                                    @endphp
+                                                @elseif ($configuracion->descripcion == 'moneda')
+                                                    @php
+                                                        $moneda = $configuracion->observacion;
                                                     @endphp
                                                 @endif
                                             @endforeach
@@ -110,6 +115,16 @@
                                             <option value="es" {{ $idioma == 'es' ? 'selected' : '' }}>{{ __('Español') }}</option>
                                             <option value="en" {{ $idioma == 'en' ? 'selected' : '' }}>{{ __('English') }}</option>
                                         </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="card" style="width: 14rem;margin-top: -18px">
+                                    <div class="card-body">
+                                        <label for="">{{ __('Símbolo de Moneda') }}</label>
+                                        <input type="text" name="moneda" class="form-control"
+                                            value="{{ $moneda }}" maxlength="10"
+                                            placeholder="{{ __('Ej: Gs., $, €') }}">
                                     </div>
                                 </div>
                             </div>
