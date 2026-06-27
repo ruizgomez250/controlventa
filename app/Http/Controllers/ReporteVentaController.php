@@ -45,23 +45,24 @@ class ReporteVentaController extends Controller
         $pdf->AddPage();
         $pdf->SetCreator('easyStock');
 
+        $moneda = \App\Models\Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
+
         // Establecer título del documento
-        $pdf->SetTitle('Reporte de Caja');
-        $pdf->SetY(10); // Mover el cursor a la posición vertical 10mm
-        $pdf->Cell(0, 10, 'Reporte de Caja', 0, 1, 'C'); // Celda centrada con el título
+        $pdf->SetTitle(__('Reporte de Caja'));
+        $pdf->SetY(10);
+        $pdf->Cell(0, 10, __('Reporte de Caja'), 0, 1, 'C');
 
         // Crear tabla con títulos
         $pdf->SetFillColor(1, 0, 0);
         $pdf->SetTextColor(255, 255, 255);
-        // Dibujar las celdas con un color de fondo más suave
-        $pdf->Cell(20, 10, 'Número', 1, 0, 'C', true); // El último parámetro true indica que se debe aplicar el color de fondo
-        $pdf->Cell(49, 10, 'Fecha de Cobro', 1, 0, 'C', true);
-        $pdf->Cell(59, 10, 'Monto Gs.', 1, 0, 'C', true);
-        $pdf->Cell(80, 10, 'Cajero', 1, 1, 'C', true);
+        $pdf->Cell(20, 10, __('Numero'), 1, 0, 'C', true);
+        $pdf->Cell(49, 10, __('Fecha de Cobro'), 1, 0, 'C', true);
+        $pdf->Cell(59, 10, __('Monto') . ' (' . $moneda . ')', 1, 0, 'C', true);
+        $pdf->Cell(80, 10, __('Cajero'), 1, 1, 'C', true);
         $pdf->SetFont('helvetica', '', 9);
-        $pdf->SetTextColor(0, 0, 0); // RGB: negro
+        $pdf->SetTextColor(0, 0, 0);
         if ($cajas->isEmpty()) {
-            $pdf->Cell(0, 10, 'No hay datos disponibles', 1, 1, 'C');
+            $pdf->Cell(0, 10, __('No hay datos disponibles'), 1, 1, 'C');
         } else {
             $cont = 0;
             $total = 0;
@@ -72,7 +73,6 @@ class ReporteVentaController extends Controller
                 }
                 $cont++;
                 $fecha = new DateTime($caja->fecha_cobro);
-                // Formatear la fecha en el formato deseado
                 $fechaFormateada = $fecha->format('d/m/Y');
                 $pdf->Cell(20, 10, $cont, 1, 0, 'C');
                 $pdf->Cell(49, 10, $fechaFormateada, 1, 0, 'C');
@@ -81,8 +81,8 @@ class ReporteVentaController extends Controller
                 $total = $total + $caja->monto;
             }
             $pdf->SetFont('helvetica', 'B', 9);
-            $pdf->Cell(69, 10, 'TOTAL', 0, 0, 'C');
-            $pdf->Cell(59, 10, number_format($total, 0, ',', '.') . ' Gs.', 0, 1, 'C');
+            $pdf->Cell(69, 10, __('TOTAL'), 0, 0, 'C');
+            $pdf->Cell(59, 10, number_format($total, 0, ',', '.') . ' ' . $moneda, 0, 1, 'C');
             $formatter = new NumberToWords();
             $pdf->Cell(200, 10, '( ' . $formatter->toWords($total, 0) . ' )', 0, 0, 'C');
         }
@@ -126,31 +126,31 @@ class ReporteVentaController extends Controller
         $pdf->SetFont('helvetica', 'B', 10);
         $pdf->AddPage();
         $pdf->SetCreator('easyStock');
-        $pdf->SetTitle('Reporte de Ventas');
+        $pdf->SetTitle(__('Reporte de Ventas'));
 
         $moneda = \App\Models\Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
 
         // Título
         $pdf->SetY(10);
-        $pdf->Cell(0, 10, __('SALES REPORT'), 0, 1, 'C');
+        $pdf->Cell(0, 10, __('Reporte de Ventas'), 0, 1, 'C');
         $pdf->SetFont('helvetica', '', 9);
-        $pdf->Cell(0, 6, __('Period') . ': ' . date('d/m/Y', strtotime($fechadesde)) . ' ' . __('to') . ' ' . date('d/m/Y', strtotime($fechahasta)), 0, 1, 'C');
-        $pdf->Cell(0, 6, __('User') . ': ' . $usuarioNombre, 0, 1, 'C');
+        $pdf->Cell(0, 6, __('Periodo') . ': ' . date('d/m/Y', strtotime($fechadesde)) . ' ' . __('a') . ' ' . date('d/m/Y', strtotime($fechahasta)), 0, 1, 'C');
+        $pdf->Cell(0, 6, __('Usuario') . ': ' . $usuarioNombre, 0, 1, 'C');
         $pdf->Ln(5);
 
         // ========== SOLD SALES (STATUS 1) ==========
         $pdf->SetFont('helvetica', 'B', 10);
         $pdf->SetFillColor(255, 193, 7);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->Cell(0, 8, __('SOLD SALES') . ' (Estado 1)', 0, 1, 'L', true);
+        $pdf->Cell(0, 8, __('Ventas Vendidas') . ' (Estado 1)', 0, 1, 'L', true);
 
         if ($ventasVendido->count() > 0) {
-            $this->generarTablaVentas($pdf, $ventasVendido, __('Sold'), $moneda);
+            $this->generarTablaVentas($pdf, $ventasVendido, __('Vendido'), $moneda);
             $pdf->SetFont('helvetica', 'B', 9);
-            $pdf->Cell(250, 8, __('TOTAL SOLD SALES') . ':', 1, 0, 'R', true);
+            $pdf->Cell(250, 8, __('TOTAL VENTAS VENDIDAS') . ':', 1, 0, 'R', true);
             $pdf->Cell(40, 8, number_format($totalVendido, 0, ',', '.') . ' ' . $moneda, 1, 1, 'R', true);
         } else {
-            $pdf->Cell(0, 8, __('No sales with "Sold" status in this period.'), 1, 1, 'C');
+            $pdf->Cell(0, 8, __('Sin ventas con estado Vendido en este período.'), 1, 1, 'C');
         }
 
         $pdf->Ln(5);
@@ -159,16 +159,16 @@ class ReporteVentaController extends Controller
         $pdf->SetFont('helvetica', 'B', 10);
         $pdf->SetFillColor(40, 167, 69);
         $pdf->SetTextColor(255, 255, 255);
-        $pdf->Cell(0, 8, __('COLLECTED SALES') . ' (Estado 2)', 0, 1, 'L', true);
+        $pdf->Cell(0, 8, __('Ventas Cobradas') . ' (Estado 2)', 0, 1, 'L', true);
         $pdf->SetTextColor(0, 0, 0);
 
         if ($ventasCobrado->count() > 0) {
-            $this->generarTablaVentas($pdf, $ventasCobrado, __('Collected'), $moneda);
+            $this->generarTablaVentas($pdf, $ventasCobrado, __('Cobrado'), $moneda);
             $pdf->SetFont('helvetica', 'B', 9);
-            $pdf->Cell(250, 8, __('TOTAL COLLECTED SALES') . ':', 1, 0, 'R', true);
+            $pdf->Cell(250, 8, __('TOTAL VENTAS COBRADAS') . ':', 1, 0, 'R', true);
             $pdf->Cell(40, 8, number_format($totalCobrado, 0, ',', '.') . ' ' . $moneda, 1, 1, 'R', true);
         } else {
-            $pdf->Cell(0, 8, __('No sales with "Collected" status in this period.'), 1, 1, 'C');
+            $pdf->Cell(0, 8, __('Sin ventas con estado Cobrado en este período.'), 1, 1, 'C');
         }
 
         $pdf->Ln(5);
@@ -177,29 +177,29 @@ class ReporteVentaController extends Controller
         $pdf->SetFont('helvetica', 'B', 10);
         $pdf->SetFillColor(52, 58, 64);
         $pdf->SetTextColor(255, 255, 255);
-        $pdf->Cell(0, 8, __('GENERAL SUMMARY'), 0, 1, 'L', true);
+        $pdf->Cell(0, 8, __('Resumen General'), 0, 1, 'L', true);
         $pdf->SetTextColor(0, 0, 0);
         $pdf->SetFont('helvetica', '', 9);
 
-        $pdf->Cell(100, 7, __('Total Sold Sales') . ':', 0, 0, 'L');
+        $pdf->Cell(100, 7, __('Total Ventas Vendidas') . ':', 0, 0, 'L');
         $pdf->Cell(50, 7, number_format($totalVendido, 0, ',', '.') . ' ' . $moneda, 0, 1, 'L');
 
-        $pdf->Cell(100, 7, __('Total Collected Sales') . ':', 0, 0, 'L');
+        $pdf->Cell(100, 7, __('Total Ventas Cobradas') . ':', 0, 0, 'L');
         $pdf->Cell(50, 7, number_format($totalCobrado, 0, ',', '.') . ' ' . $moneda, 0, 1, 'L');
 
         $pdf->SetFont('helvetica', 'B', 10);
-        $pdf->Cell(100, 8, __('GRAND TOTAL') . ':', 0, 0, 'L');
+        $pdf->Cell(100, 8, __('Total General') . ':', 0, 0, 'L');
         $pdf->Cell(50, 8, number_format($totalGeneral, 0, ',', '.') . ' ' . $moneda, 0, 1, 'L');
 
         $pdf->SetFont('helvetica', '', 9);
-        $pdf->Cell(100, 7, __('Quantity Sold') . ':', 0, 0, 'L');
-        $pdf->Cell(50, 7, $ventasVendido->count() . ' ' . __('sales'), 0, 1, 'L');
+        $pdf->Cell(100, 7, __('Cantidad Vendida') . ':', 0, 0, 'L');
+        $pdf->Cell(50, 7, $ventasVendido->count() . ' ' . __('ventas'), 0, 1, 'L');
 
-        $pdf->Cell(100, 7, __('Quantity Collected') . ':', 0, 0, 'L');
-        $pdf->Cell(50, 7, $ventasCobrado->count() . ' ' . __('sales'), 0, 1, 'L');
+        $pdf->Cell(100, 7, __('Cantidad Cobrada') . ':', 0, 0, 'L');
+        $pdf->Cell(50, 7, $ventasCobrado->count() . ' ' . __('ventas'), 0, 1, 'L');
 
-        $pdf->Cell(100, 7, __('Total Transactions') . ':', 0, 0, 'L');
-        $pdf->Cell(50, 7, $ventas->count() . ' ' . __('sales'), 0, 1, 'L');
+        $pdf->Cell(100, 7, __('Transacciones Totales') . ':', 0, 0, 'L');
+        $pdf->Cell(50, 7, $ventas->count() . ' ' . __('ventas'), 0, 1, 'L');
 
         // Total en letras
         $pdf->Ln(5);
@@ -218,13 +218,13 @@ class ReporteVentaController extends Controller
 
         // Cabecera
         $pdf->Cell(15, 8, '#', 1, 0, 'C', true);
-        $pdf->Cell(30, 8, __('Date'), 1, 0, 'C', true);
-        $pdf->Cell(50, 8, __('Client'), 1, 0, 'C', true);
-        $pdf->Cell(45, 8, __('User'), 1, 0, 'C', true);
-        $pdf->Cell(35, 8, __('Voucher Type'), 1, 0, 'C', true);
-        $pdf->Cell(35, 8, __('Invoice No.'), 1, 0, 'C', true);
+        $pdf->Cell(30, 8, __('Fecha'), 1, 0, 'C', true);
+        $pdf->Cell(50, 8, __('Cliente'), 1, 0, 'C', true);
+        $pdf->Cell(45, 8, __('Usuario'), 1, 0, 'C', true);
+        $pdf->Cell(35, 8, __('Tipo Comprobante'), 1, 0, 'C', true);
+        $pdf->Cell(35, 8, __('Nro Factura'), 1, 0, 'C', true);
         $pdf->Cell(40, 8, __('Total') . ' (' . $moneda . ')', 1, 0, 'C', true);
-        $pdf->Cell(35, 8, __('Status'), 1, 1, 'C', true);
+        $pdf->Cell(35, 8, __('Estado'), 1, 1, 'C', true);
 
         $pdf->SetFont('helvetica', '', 8);
         $cont = 0;
@@ -232,7 +232,7 @@ class ReporteVentaController extends Controller
         foreach ($ventas as $venta) {
             $cont++;
             $fechaFormateada = date('d/m/Y', strtotime($venta->fecha_emision));
-            $nombreCliente = $venta->cliente ? $venta->cliente->nombre : __('Final Consumer');
+            $nombreCliente = $venta->cliente ? $venta->cliente->nombre : __('Consumidor Final');
             $nombreUsuario = $venta->usuario ? $venta->usuario->name : 'N/A';
 
             $pdf->Cell(15, 7, $cont, 1, 0, 'C');

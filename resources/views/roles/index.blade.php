@@ -198,7 +198,7 @@
                                     <i class="fas fa-check-circle"></i>{{ __('Todo') }}</a>
                                 <a class="select-all-link" onclick="toggleGroup('{{ $model }}', false)">
                                     <i class="fas fa-times-circle"></i>{{ __('Nada') }}</a>
-                                <span class="badge badge-light badge-count" id="count_{{ $model }}">{{ __('0/{{ count($actions) }}') }}</span>
+                                <span class="badge badge-light badge-count" id="count_{{ $model }}">0/{{ count($actions) }}</span>
                             </h5>
                             <div class="row">
                                 @foreach ($actions as $action)

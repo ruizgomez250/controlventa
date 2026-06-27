@@ -19,6 +19,8 @@ use App\Http\Controllers\TablaPorcentajeController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ImpuestoController;
+use App\Http\Controllers\PersonaController;
+use App\Http\Controllers\EntregaInsumoController;
 use App\Http\Controllers\ReporteVentaController;
 use App\Http\Controllers\ReporteVentaNuevoController;
 
@@ -98,6 +100,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('/cajareporte', CajaReporteController::class);
     Route::resource('/rol', RolController::class);
     Route::resource('/configuracion', ConfiguracionController::class);
+    Route::resource('/persona', PersonaController::class);
+    Route::resource('/entrega_insumo', EntregaInsumoController::class);
+    Route::get('/entrega_insumo/{id}/detalles', [EntregaInsumoController::class, 'getDetalles']);
     Route::get('/reportes/vendidos', [ReporteVentaNuevoController::class, 'index'])->name('reportes.vendidos');
     Route::get('/reporteventasnuevo/{fechadesde}/{fechahasta}/{idusuario?}', [ReporteVentaController::class, 'generarReporte']);
 

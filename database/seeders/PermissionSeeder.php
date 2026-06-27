@@ -27,6 +27,8 @@ class PermissionSeeder extends Seeder
             'tabla_porcentaje' => ['leer', 'modificar'],
             'configuracion' => ['modificar'],
             'empresa' => ['leer', 'crear', 'editar', 'borrar'],
+            'persona' => ['leer', 'crear', 'editar', 'borrar'],
+            'entrega_insumo' => ['leer', 'crear', 'editar', 'borrar'],
         ];
 
         $allPermissions = [];

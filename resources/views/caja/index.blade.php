@@ -88,7 +88,7 @@
                                             data-compra-id="{{ $compra->id }}" title="{{ __('Mostrar detalles') }}">
                                             <i class="fa fa-eye"></i>
                                         </a>{{ __('--}}
-                                        @if ($compra->tipo_comprobante == \'CREDITO\')') }}<a href="#" class="btn btn-sm btn-outline-secondary pagar-cuota-btn"
+                                        @if ($compra->tipo_comprobante == 'CREDITO')<a href="#" class="btn btn-sm btn-outline-secondary pagar-cuota-btn"
                                                 data-compra-id="{{ $compra->id }}" title="{{ __('Pagar Cuota') }}">
                                                 <i class="fa fa-ruble-sign"></i></a>
                                         @endif

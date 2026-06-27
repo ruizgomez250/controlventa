@@ -33,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
                 'tabla_porcentaje' => ['leer', 'modificar'],
                 'configuracion' => ['modificar'],
                 'empresa' => ['leer', 'crear', 'editar', 'borrar'],
+                'persona' => ['leer', 'crear', 'editar', 'borrar'],
+                'entrega_insumo' => ['leer', 'crear', 'editar', 'borrar'],
             ];
             $creado = false;
             foreach ($grupos as $model => $acciones) {

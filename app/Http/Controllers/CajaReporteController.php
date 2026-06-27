@@ -62,21 +62,21 @@ class CajaReporteController extends Controller
 
         // Establecer título del documento
         $moneda = \App\Models\Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
-        $pdf->SetTitle(__('Cash Report'));
+        $pdf->SetTitle(__('Reporte de Caja'));
         $pdf->SetY(10);
-        $pdf->Cell(0, 10, __('Cash Report'), 0, 1, 'C');
+        $pdf->Cell(0, 10, __('Reporte de Caja'), 0, 1, 'C');
 
         // Crear tabla con títulos
         $pdf->SetFillColor(1, 0, 0);
         $pdf->SetTextColor(255, 255, 255);
-        $pdf->Cell(20, 10, __('Number'), 1, 0, 'C', true);
-        $pdf->Cell(49, 10, __('Collection Date'), 1, 0, 'C', true);
-        $pdf->Cell(59, 10, __('Amount') . ' (' . $moneda . ')', 1, 0, 'C', true);
-        $pdf->Cell(80, 10, __('Cashier'), 1, 1, 'C', true);
+        $pdf->Cell(20, 10, __('Numero'), 1, 0, 'C', true);
+        $pdf->Cell(49, 10, __('Fecha de Cobro'), 1, 0, 'C', true);
+        $pdf->Cell(59, 10, __('Monto') . ' (' . $moneda . ')', 1, 0, 'C', true);
+        $pdf->Cell(80, 10, __('Cajero'), 1, 1, 'C', true);
         $pdf->SetFont('helvetica', '', 9);
         $pdf->SetTextColor(0, 0, 0);
         if ($cajas->isEmpty()) {
-            $pdf->Cell(0, 10, __('No data available'), 1, 1, 'C');
+            $pdf->Cell(0, 10, __('No hay datos disponibles'), 1, 1, 'C');
         } else {
             $cont = 0;
             $total = 0;

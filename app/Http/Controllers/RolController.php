@@ -29,6 +29,8 @@ class RolController extends Controller
         'tabla_porcentaje' => ['leer', 'modificar'],
         'configuracion' => ['modificar'],
         'empresa' => ['leer', 'crear', 'editar', 'borrar'],
+        'persona' => ['leer', 'crear', 'editar', 'borrar'],
+        'entrega_insumo' => ['leer', 'crear', 'editar', 'borrar'],
     ];
 
     public function index(): View
@@ -54,6 +56,8 @@ class RolController extends Controller
             'tabla_porcentaje' => 'Tabla Porcentaje',
             'configuracion' => 'Configuración',
             'empresa' => 'Empresa',
+            'persona' => 'Persona',
+            'entrega_insumo' => 'Entrega Insumo',
         ];
         $actionLabels = [
             'leer' => 'Ver',
