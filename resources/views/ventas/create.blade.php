@@ -574,7 +574,7 @@
                 minLength: 0,
                 source: function(request, response) {
                     $.ajax({
-                        url: "{{ route('obtenerproducto') }}",
+                        url: "{{ route('obtenerproductoventa') }}",
                         dataType: "json",
                         data: {
                             term: request.term

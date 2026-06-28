@@ -31,6 +31,10 @@ class RolController extends Controller
         'empresa' => ['leer', 'crear', 'editar', 'borrar'],
         'persona' => ['leer', 'crear', 'editar', 'borrar'],
         'entrega_insumo' => ['leer', 'crear', 'editar', 'borrar'],
+        'reporte_stock' => ['leer'],
+        'reporte_venta' => ['leer'],
+        'reporte_financiero' => ['leer'],
+        'reporte_management' => ['leer'],
     ];
 
     public function index(): View
@@ -58,6 +62,10 @@ class RolController extends Controller
             'empresa' => 'Empresa',
             'persona' => 'Persona',
             'entrega_insumo' => 'Entrega Insumo',
+            'reporte_stock' => 'Reporte Stock',
+            'reporte_venta' => 'Reporte Ventas',
+            'reporte_financiero' => 'Reporte Financiero',
+            'reporte_management' => 'Reporte Gestión',
         ];
         $actionLabels = [
             'leer' => 'Ver',

@@ -334,6 +334,18 @@ return [
             ],
         ],
 
+        [
+            'text'       => 'Personas Receptoras',
+            'icon'       => 'fas fa-user-friends',
+            'icon_color' => 'teal',
+            'classes'    => 'custom-icon-box-black',
+            'can'        => 'persona leer',
+            'submenu'    => [
+                ['text' => 'Lista de Personas',   'url' => '/persona', 'can' => 'persona leer'],
+                ['text' => 'Registrar Persona',   'url' => '/persona/create', 'can' => 'persona crear'],
+            ],
+        ],
+
         ['header' => 'Movimientos'],
         [
             'text'       => 'Compras',
@@ -380,6 +392,18 @@ return [
             ],
         ],
 
+        [
+            'text'       => 'Entrega de Insumos',
+            'icon'       => 'fas fa-clipboard-list',
+            'icon_color' => 'indigo',
+            'classes'    => 'custom-icon-box-black',
+            'can'        => 'entrega_insumo leer',
+            'submenu'    => [
+                ['text' => 'Lista de Entregas',   'url' => '/entrega_insumo', 'can' => 'entrega_insumo leer'],
+                ['text' => 'Nueva Entrega',        'url' => '/entrega_insumo/create', 'can' => 'entrega_insumo crear'],
+            ],
+        ],
+
         ['header' => 'Caja'],
         [
             'text'       => 'Cobranzas',
@@ -401,8 +425,12 @@ return [
             'icon_color' => 'purple',
             'classes'    => 'custom-icon-box-black',
             'submenu'    => [
-                ['text' => 'Cobros por Fecha',           'url' => '/cajareporte/create', 'can' => 'cajareporte leer'],
-                ['text' => 'Ventas por Estado',          'url' => '/reportes/vendidos', 'icon' => 'fas fa-file-invoice', 'can' => 'venta leer'],
+                ['text' => 'Cobros por Fecha',            'url' => '/cajareporte/create', 'can' => 'cajareporte leer'],
+                ['text' => 'Ventas por Estado',           'url' => '/reportes/vendidos', 'icon' => 'fas fa-file-invoice', 'can' => 'venta leer'],
+                ['text' => 'Gestión de Stock',            'url' => '/reportes/gestion/stock', 'can' => 'reporte_stock leer'],
+                ['text' => 'Reportes de Ventas',          'url' => '/reportes/gestion/ventas', 'can' => 'reporte_venta leer'],
+                ['text' => 'Reportes Financieros',        'url' => '/reportes/gestion/financiero', 'can' => 'reporte_financiero leer'],
+                ['text' => 'Reportes de Gestión',         'url' => '/reportes/gestion/management', 'can' => 'reporte_management leer'],
             ],
         ],
 

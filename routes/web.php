@@ -23,6 +23,7 @@ use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\EntregaInsumoController;
 use App\Http\Controllers\ReporteVentaController;
 use App\Http\Controllers\ReporteVentaNuevoController;
+use App\Http\Controllers\ReporteGestionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -103,6 +104,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('/persona', PersonaController::class);
     Route::resource('/entrega_insumo', EntregaInsumoController::class);
     Route::get('/entrega_insumo/{id}/detalles', [EntregaInsumoController::class, 'getDetalles']);
+    Route::get('/entrega_insumo/{id}/comprobante', [EntregaInsumoController::class, 'generarComprobante'])->name('entrega_insumo.comprobante');
     Route::get('/reportes/vendidos', [ReporteVentaNuevoController::class, 'index'])->name('reportes.vendidos');
     Route::get('/reporteventasnuevo/{fechadesde}/{fechahasta}/{idusuario?}', [ReporteVentaController::class, 'generarReporte']);
 
@@ -111,6 +113,30 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/update', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 
     Route::post('/cargardetalleventa/{id}', [VentaController::class, 'cargarDet'])->name('cargardetalleventa');
+
+    // ===== Reportes de Gestión =====
+    Route::prefix('reportes/gestion')->name('reportes.gestion.')->group(function () {
+        // Stock
+        Route::get('stock', [ReporteGestionController::class, 'stockIndex'])->name('stock');
+        Route::get('stock/inventario', [ReporteGestionController::class, 'pdfInventarioActual'])->name('stock.inventario');
+        Route::get('stock/bajo', [ReporteGestionController::class, 'pdfStockBajo'])->name('stock.bajo');
+        Route::get('stock/movimientos', [ReporteGestionController::class, 'pdfMovimientosStock'])->name('stock.movimientos');
+        Route::get('stock/rotacion', [ReporteGestionController::class, 'pdfRotacionProductos'])->name('stock.rotacion');
+        // Ventas
+        Route::get('ventas', [ReporteGestionController::class, 'ventasIndex'])->name('ventas');
+        Route::get('ventas/periodo', [ReporteGestionController::class, 'pdfVentasPeriodo'])->name('ventas.periodo');
+        Route::get('ventas/cliente', [ReporteGestionController::class, 'pdfVentasCliente'])->name('ventas.cliente');
+        Route::get('ventas/producto', [ReporteGestionController::class, 'pdfVentasProducto'])->name('ventas.producto');
+        // Financiero
+        Route::get('financiero', [ReporteGestionController::class, 'financieroIndex'])->name('financiero');
+        Route::get('financiero/cobrar', [ReporteGestionController::class, 'pdfCuentasCobrar'])->name('financiero.cobrar');
+        Route::get('financiero/pagar', [ReporteGestionController::class, 'pdfCuentasPagar'])->name('financiero.pagar');
+        Route::get('financiero/margen', [ReporteGestionController::class, 'pdfMargenGanancia'])->name('financiero.margen');
+        // Management
+        Route::get('management', [ReporteGestionController::class, 'managementIndex'])->name('management');
+        Route::get('management/vendedores', [ReporteGestionController::class, 'pdfRendimientoVendedores'])->name('management.vendedores');
+        Route::get('management/clientes', [ReporteGestionController::class, 'pdfAnalisisClientes'])->name('management.clientes');
+    });
 });
 Route::get('/sinpermiso', function () {
     return view('sinpermiso.index');
@@ -119,6 +145,7 @@ Route::get('/sinpermiso', function () {
 Route::get('/autocomplete',  [AutocompleteController::class, 'autocomplete'])->name('autocomplete');
 Route::get('/autocomplete/proveedor',  [AutocompleteController::class, 'proveedor'])->name('obtenerproveedor');
 Route::get('/autocomplete/producto',  [AutocompleteController::class, 'getproducto'])->name('obtenerproducto');
+Route::get('/autocomplete/productoventa',  [AutocompleteController::class, 'getproductoventa'])->name('obtenerproductoventa');
 Route::post('/guardar-categoria',  [CategoriaController::class, 'storeCat'])->name('guardar-categoria');
 Route::post('/guardar-unidad',  [CategoriaController::class, 'storeCat'])->name('guardar-unidad');
 Route::delete('/borrar-categoria/{id}', [CategoriaController::class, 'destroy'])->name('borrar-categoria');

@@ -45,4 +45,16 @@ class AutocompleteController extends Controller
 
     }
 
+    public function getproductoventa(Request $request)
+    {
+        $search = $request->get('term');       
+        $results = Producto::where(function($query) use ($search) {
+            $query->where('descripcion', 'LIKE', '%' . $search . '%')
+                  ->orWhere('codigo', 'LIKE', '%' . $search . '%');
+        })
+        ->whereIn('tipo', ['venta', 'ambos'])
+        ->get();          
+        return response()->json($results);
+    }
+
 }

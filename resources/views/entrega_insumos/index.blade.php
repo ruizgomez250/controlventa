@@ -77,6 +77,7 @@
                                 <td class="{{ $row->estado == 1 ? 'text-success' : 'text-danger' }}">
                                     {{ $row->estado == 1 ? 'Activo' : 'Inactivo' }}</td>
                                 <td style="float:right;">
+                                    <a href="{{ route('entrega_insumo.comprobante', $row->id) }}" class="btn btn-outline-secondary" target="_blank" title="Imprimir comprobante"><i class="fa fa-sm fa-fw fa-print"></i></a>
                                     <a href="{{ route('entrega_insumo.edit', $row->id) }}" class="btn btn-outline-secondary"><i
                                             class="fa fa-sm fa-fw fa-pen"></i></a>
                                     <form action="{{ route('entrega_insumo.destroy', $row->id) }}" method="post"

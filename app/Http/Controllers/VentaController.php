@@ -573,7 +573,7 @@ class VentaController extends Controller
     {
         $producto = Producto::where('codigo', $id)
                     ->where('stock', '>', 0)
-                    ->where('tipo', 'venta')
+                    ->whereIn('tipo', ['venta', 'ambos'])
                     ->first();
 
 
