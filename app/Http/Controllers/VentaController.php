@@ -20,6 +20,7 @@ use DragonCode\Contracts\Cashier\Auth\Auth;
 use Illuminate\Support\Facades\Auth as FacadesAuth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\SifenPkuatiaService;
 
 
 class VentaController extends Controller
@@ -277,6 +278,18 @@ class VentaController extends Controller
 
                 DB::commit();
 
+                // Emitir factura electrónica SIFEN al recibir el primer pago (CRÉDITO)
+                if ($cabecera->tipo_comprobante == 'CREDITO' && !$cabecera->sifen_cdc) {
+                    try {
+                        $sifenService = app(SifenPkuatiaService::class);
+                        if ($sifenService->isHabilitado()) {
+                            $sifenService->emitir($cabecera);
+                        }
+                    } catch (\Exception $sifenError) {
+                        Log::warning('Error al emitir factura electrónica SIFEN en cobro cuota: ' . $sifenError->getMessage());
+                    }
+                }
+
                 return response()->json(['ventaycuotas' => $ventaycuotas, 'idcaja' => $caja->id, 'success' => 'Cuota pagada en forma exitosa.'], 200);
             } catch (Exception $e) {
                 DB::rollBack();
@@ -328,6 +341,18 @@ class VentaController extends Controller
                 $caja->save();
 
                 DB::commit();
+
+                // Emitir factura electrónica SIFEN al cobrar (CONTADO)
+                if ($venta->tipo_comprobante == 'CONTADO' && !$venta->sifen_cdc) {
+                    try {
+                        $sifenService = app(SifenPkuatiaService::class);
+                        if ($sifenService->isHabilitado()) {
+                            $sifenService->emitir($venta);
+                        }
+                    } catch (\Exception $sifenError) {
+                        Log::warning('Error al emitir factura electrónica SIFEN en cobro: ' . $sifenError->getMessage());
+                    }
+                }
 
                 return response()->json(['caja' => $caja->id, 'success' => 'Cuota pagada en forma exitosa.'], 200);
             } catch (Exception $e) {

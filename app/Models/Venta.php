@@ -17,7 +17,10 @@ class Venta extends Model
         'numero_factura',
         'timbrado_factura',
         'fecha_vencimiento',
-        'estado'
+        'estado',
+        'sifen_cdc',
+        'sifen_cde',
+        'sifen_estado',
     ];
 
     protected static function booted()

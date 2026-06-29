@@ -10,6 +10,7 @@
         "endroid/qr-code": "^5.0",
         "guzzlehttp/guzzle": "^7.2",
         "intervention/image": "~2.0",
+        "ionysdev/pkuatia": "^0.1.1",
         "jeroennoten/laravel-adminlte": "^3.9",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.2",
