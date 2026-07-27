@@ -47,6 +47,17 @@ class VentaController extends Controller
     }
 
 
+    public function indexEmitidas()
+    {
+        if (!auth()->user()->can('venta leer')) {
+            return view('sinpermiso.index');
+        }
+        $cabecera = Venta::with('cliente', 'usuario')
+            ->whereIn('estado', [2, 4])
+            ->get();
+        return view('ventas.emitidas', compact('cabecera'));
+    }
+
     public function create()
     {
         if (!auth()->user()->can('venta crear')) {
@@ -163,6 +174,16 @@ class VentaController extends Controller
         }
     }
 
+    /**
+     * ============================================================
+     *  ANULACIÓN DE VENTA → CANCELACIÓN DE FACTURA ELECTRÓNICA
+     * ============================================================
+     * 1. Marca la venta como inactiva (estado=0)
+     * 2. Restaura el stock de los productos
+     * 3. Si es CRÉDITO, cancela los pagarés pendientes
+     * 4. Si la venta tiene CDC (ya fue emitida a SET), llama a
+     *    SifenPkuatiaService::cancelarDE() para anularla electrónicamente
+     */
     public function destroy(string $id)
     {
         if (!auth()->user()->can('venta borrar')) {
@@ -175,10 +196,9 @@ class VentaController extends Controller
                 $cabecera->estado = 0;
                 $cabecera->save();
 
-                // Datos para el detalle
+                // Restaurar stock de cada producto vendido
                 $detalles = VentaDetalle::where('id_venta', $id)->get();
                 foreach ($detalles as $detalle) {
-                    // Accede a los atributos de cada detalle de compra
                     $idprod = $detalle->id_producto;
                     $cantidad = $detalle->cantidad;
                     $producto = Producto::find($idprod);
@@ -187,6 +207,7 @@ class VentaController extends Controller
                     $producto->save();
                 }
 
+                // Si es crédito, desactivar todos los pagarés
                 if ($cabecera->tipo_comprobante == 'CREDITO') {
 
                     $pagare = Pagare::where('id_venta', $id)->get();
@@ -197,13 +218,38 @@ class VentaController extends Controller
                         $pagare[$i]->save();
                     }
                 }
+
+                // ==========================================
+                // CANCELACIÓN SIFEN
+                // Si la venta fue emitida electrónicamente
+                // (tiene CDC), se cancela también en SET.
+                // ==========================================
+                if ($cabecera->sifen_cdc) {
+                    try {
+                        $sifenService = app(SifenPkuatiaService::class);
+                        $sifenService->cancelarDE($cabecera);
+                    } catch (\Exception $sifenError) {
+                        // No interrumpe el flujo si SIFEN falla
+                        Log::warning('Error al cancelar factura electrónica SIFEN: ' . $sifenError->getMessage());
+                    }
+                }
+
                 DB::commit();
-                return redirect()->route('venta.index')->with('success', 'La compra se ha desactivado correctamente.');
+
+                $redirectRoute = 'venta.index';
+                if (request()->header('referer') && str_contains(request()->header('referer'), 'venta/emitidas')) {
+                    $redirectRoute = 'venta.emitidas';
+                }
+                return redirect()->route($redirectRoute)->with('success', 'La compra se ha desactivado correctamente.');
             } catch (Exception $e) {
 
                 DB::rollBack();
                 Log::error($e->getMessage());
-                return redirect()->route('venta.index')->with('error', 'Ha ocurrido un error al registrar la compra. Por favor, inténtelo de nuevo.');
+                $redirectRoute = 'venta.index';
+                if (request()->header('referer') && str_contains(request()->header('referer'), 'venta/emitidas')) {
+                    $redirectRoute = 'venta.emitidas';
+                }
+                return redirect()->route($redirectRoute)->with('error', 'Ha ocurrido un error al registrar la compra. Por favor, inténtelo de nuevo.');
             }
     }
     public function getDetalles($id)
@@ -278,7 +324,13 @@ class VentaController extends Controller
 
                 DB::commit();
 
-                // Emitir factura electrónica SIFEN al recibir el primer pago (CRÉDITO)
+                // ==========================================
+                // EMISIÓN SIFEN (solo para CRÉDITO)
+                // Al pagar la primera cuota (cuando ya no quedan
+                // cuotas pendientes = primer pago), se emite la
+                // factura electrónica si SIFEN está habilitado
+                // y aún no se emitió (no tiene CDC).
+                // ==========================================
                 if ($cabecera->tipo_comprobante == 'CREDITO' && !$cabecera->sifen_cdc) {
                     try {
                         $sifenService = app(SifenPkuatiaService::class);
@@ -286,6 +338,7 @@ class VentaController extends Controller
                             $sifenService->emitir($cabecera);
                         }
                     } catch (\Exception $sifenError) {
+                        // No interrumpe el flujo si SIFEN falla
                         Log::warning('Error al emitir factura electrónica SIFEN en cobro cuota: ' . $sifenError->getMessage());
                     }
                 }
@@ -342,7 +395,12 @@ class VentaController extends Controller
 
                 DB::commit();
 
-                // Emitir factura electrónica SIFEN al cobrar (CONTADO)
+                // ==========================================
+                // EMISIÓN SIFEN (para CONTADO)
+                // Al cobrar una venta al contado, se emite la
+                // factura electrónica si SIFEN está habilitado
+                // y aún no se emitió (no tiene CDC).
+                // ==========================================
                 if ($venta->tipo_comprobante == 'CONTADO' && !$venta->sifen_cdc) {
                     try {
                         $sifenService = app(SifenPkuatiaService::class);
@@ -350,6 +408,7 @@ class VentaController extends Controller
                             $sifenService->emitir($venta);
                         }
                     } catch (\Exception $sifenError) {
+                        // No interrumpe el flujo si SIFEN falla
                         Log::warning('Error al emitir factura electrónica SIFEN en cobro: ' . $sifenError->getMessage());
                     }
                 }

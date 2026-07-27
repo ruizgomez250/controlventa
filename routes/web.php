@@ -13,6 +13,7 @@ use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\ChequeController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\SifenController;
 use App\Http\Controllers\ProductoreporteController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\TablaPorcentajeController;
@@ -74,6 +75,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/qrproducto/{id}', [ProductoController::class, 'qrproducto'])->name('qrproducto');
     Route::get('/barcodeproducto/{id}', [ProductoController::class, 'barcodeproducto'])->name('barcodeproducto');
     Route::resource('/compra', CompraController::class);
+    Route::get('/venta/emitidas', [VentaController::class, 'indexEmitidas'])->name('venta.emitidas');
     Route::resource('/venta', VentaController::class);
 
     Route::get('/compra/{id}/detalles', [CompraController::class, 'getDetalles']);
@@ -113,6 +115,21 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/update', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 
     Route::post('/cargardetalleventa/{id}', [VentaController::class, 'cargarDet'])->name('cargardetalleventa');
+
+    Route::prefix('geografico')->name('geografico.')->group(function () {
+        Route::get('departamentos', [\App\Http\Controllers\GeograficoController::class, 'departamentos'])->name('departamentos');
+        Route::get('distritos', [\App\Http\Controllers\GeograficoController::class, 'distritos'])->name('distritos');
+        Route::get('ciudades', [\App\Http\Controllers\GeograficoController::class, 'ciudades'])->name('ciudades');
+    });
+
+    Route::prefix('sifen')->name('sifen.')->group(function () {
+        Route::get('estado', [SifenController::class, 'estado'])->name('estado');
+        Route::get('consultar-ruc', [SifenController::class, 'consultarRUC'])->name('consultar.ruc');
+        Route::get('consultar-cdc/{id}', [SifenController::class, 'consultarCDC'])->name('consultar.cdc');
+        Route::post('reemitir/{venta}', [SifenController::class, 'reemitir'])->name('reemitir');
+        Route::post('inutilizar', [SifenController::class, 'inutilizar'])->name('inutilizar');
+        Route::post('validar-ruc', [SifenController::class, 'validarRUC'])->name('validar.ruc');
+    });
 
     // ===== Reportes de Gestión =====
     Route::prefix('reportes/gestion')->name('reportes.gestion.')->group(function () {

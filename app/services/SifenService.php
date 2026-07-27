@@ -10,6 +10,11 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @deprecated Usar SifenPkuatiaService en su lugar.
+ * Esta implementación manual queda solo como respaldo.
+ * La migración a PKuatia es la vía recomendada.
+ */
 class SifenService
 {
     protected SifenConfiguracion $config;

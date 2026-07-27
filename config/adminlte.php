@@ -366,6 +366,7 @@ return [
             'can'        => 'venta leer',
             'submenu'    => [
                 ['text' => 'Lista de Ventas',   'url' => '/venta', 'can' => 'venta leer'],
+                ['text' => 'Facturas Emitidas', 'url' => '/venta/emitidas', 'can' => 'venta leer'],
                 ['text' => 'Registrar Venta',   'url' => '/venta/create', 'can' => 'venta crear'],
             ],
         ],
