@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Empresa;
+use App\Services\TenantConnectionManager;
+use App\Services\TenantProvisioner;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
@@ -18,6 +16,7 @@ class EmpresaController extends Controller
     public function index(): View
     {
         $empresas = Empresa::all();
+
         return view('empresas.index', compact('empresas'));
     }
 
@@ -26,7 +25,7 @@ class EmpresaController extends Controller
         return view('empresas.create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, TenantProvisioner $provisioner): RedirectResponse
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
@@ -35,81 +34,22 @@ class EmpresaController extends Controller
             'password_admin' => 'required|string|min:8|confirmed',
         ]);
 
-        $slug = Str::slug($request->nombre);
-        $timestamp = now()->format('Ymd_His');
-        $databaseName = 'empresa_' . $slug . '_' . $timestamp;
-        $databaseUsername = 'user_' . $slug . '_' . now()->format('Ymd');
-        $databasePassword = Str::random(16);
-
-        $host = config('database.connections.mysql.host');
-        $port = config('database.connections.mysql.port');
-
         try {
-            DB::statement("CREATE DATABASE IF NOT EXISTS `{$databaseName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-
-            DB::statement("CREATE USER IF NOT EXISTS '{$databaseUsername}'@'%' IDENTIFIED BY '{$databasePassword}'");
-            DB::statement("GRANT ALL PRIVILEGES ON `{$databaseName}`.* TO '{$databaseUsername}'@'%'");
-            DB::statement("FLUSH PRIVILEGES");
-
-            $empresa = Empresa::create([
-                'nombre' => $request->nombre,
-                'dominio' => $request->dominio,
-                'database_name' => $databaseName,
-                'database_host' => $host,
-                'database_port' => $port,
-                'database_username' => $databaseUsername,
-                'database_password' => $databasePassword,
-                'email_admin' => $request->email_admin,
-                'password_admin' => $request->password_admin,
-                'activo' => true,
-            ]);
-
-            Config::set('database.connections.tenant', [
-                'driver' => 'mysql',
-                'host' => $host,
-                'port' => $port,
-                'database' => $databaseName,
-                'username' => $databaseUsername,
-                'password' => $databasePassword,
-                'charset' => 'utf8mb4',
-                'collation' => 'utf8mb4_unicode_ci',
-                'prefix' => '',
-                'prefix_indexes' => true,
-                'strict' => true,
-                'engine' => null,
-            ]);
-
-            Config::set('database.default', 'tenant');
-
-            Artisan::call('migrate', [
-                '--force' => true,
-                '--path' => 'database/migrations',
-            ]);
-
-            $adminUser = \App\Models\User::create([
-                'name' => 'Administrador',
-                'email' => $request->email_admin,
-                'password' => $request->password_admin,
-            ]);
-
-            $this->crearPermisosBase($adminUser);
-
-            Config::set('database.default', 'mysql');
-
-            $adminUserCentral = \App\Models\User::create([
-                'empresa_id' => $empresa->id,
-                'name' => 'Administrador',
-                'email' => $request->email_admin,
-                'password' => $request->password_admin,
-            ]);
-
-            app(PermissionRegistrar::class)->forgetCachedPermissions();
-            $this->asignarTodosPermisos($adminUserCentral);
+            $provisioner->provision($request->only([
+                'nombre',
+                'dominio',
+                'email_admin',
+                'password_admin',
+            ]));
 
             return redirect()->route('empresas.index')->with('success', 'Empresa creada exitosamente.');
         } catch (\Exception $e) {
-            Config::set('database.default', 'mysql');
-            return redirect()->route('empresas.create')->with('error', 'Error al crear la empresa: ' . $e->getMessage());
+            report($e);
+
+            return redirect()
+                ->route('empresas.create')
+                ->withInput($request->except(['password_admin', 'password_admin_confirmation']))
+                ->with('error', 'No se pudo crear la empresa. Revisá el registro del sistema.');
         }
     }
 
@@ -118,11 +58,14 @@ class EmpresaController extends Controller
         return view('empresas.edit', compact('empresa'));
     }
 
-    public function update(Request $request, Empresa $empresa): RedirectResponse
-    {
+    public function update(
+        Request $request,
+        Empresa $empresa,
+        TenantConnectionManager $connections,
+    ): RedirectResponse {
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'dominio' => 'required|string|max:255|unique:empresas,dominio,' . $empresa->id . '|regex:/^[a-z0-9\-]+$/',
+            'dominio' => 'required|string|max:255|unique:empresas,dominio,'.$empresa->id.'|regex:/^[a-z0-9\-]+$/',
             'password_admin' => 'nullable|string|min:8|confirmed',
             'activo' => 'boolean',
             'fecha_expiracion' => 'nullable|date',
@@ -132,33 +75,25 @@ class EmpresaController extends Controller
             'nombre', 'dominio', 'activo', 'fecha_expiracion',
         ]));
 
+        if ($request->has('activo')) {
+            $empresa->update([
+                'estado' => $request->boolean('activo') ? 'activa' : 'suspendida',
+                'suspendida_at' => $request->boolean('activo') ? null : now(),
+                'eliminable_at' => $request->boolean('activo')
+                    ? null
+                    : now()->addDays(config('tenancy.retention_days')),
+            ]);
+        }
+
         if ($request->filled('password_admin')) {
             $empresa->update(['password_admin' => $request->password_admin]);
 
-            Config::set('database.connections.tenant', [
-                'driver' => 'mysql',
-                'host' => $empresa->database_host,
-                'port' => $empresa->database_port,
-                'database' => $empresa->database_name,
-                'username' => $empresa->database_username,
-                'password' => $empresa->database_password,
-                'charset' => 'utf8mb4',
-                'collation' => 'utf8mb4_unicode_ci',
-                'prefix' => '',
-                'prefix_indexes' => true,
-                'strict' => true,
-                'engine' => null,
-            ]);
-
-            Config::set('database.default', 'tenant');
+            $connections->connect($empresa);
 
             \App\Models\User::where('email', $empresa->email_admin)
                 ->update(['password' => $request->password_admin]);
 
-            Config::set('database.default', 'mysql');
-
-            \App\Models\User::where('empresa_id', $empresa->id)
-                ->update(['password' => $request->password_admin]);
+            $connections->central();
         }
 
         return redirect()->route('empresas.index')->with('success', 'Empresa actualizada exitosamente.');
@@ -166,20 +101,16 @@ class EmpresaController extends Controller
 
     public function destroy(Empresa $empresa): RedirectResponse
     {
-        try {
-            $databaseName = $empresa->database_name;
-            $databaseUsername = $empresa->database_username;
+        $empresa->update([
+            'activo' => false,
+            'estado' => 'suspendida',
+            'suspendida_at' => now(),
+            'eliminable_at' => now()->addDays(config('tenancy.retention_days')),
+        ]);
 
-            $empresa->delete();
-
-            DB::statement("DROP DATABASE IF EXISTS `{$databaseName}`");
-            DB::statement("DROP USER IF EXISTS '{$databaseUsername}'@'%'");
-            DB::statement("FLUSH PRIVILEGES");
-
-            return redirect()->route('empresas.index')->with('success', 'Empresa eliminada exitosamente.');
-        } catch (\Exception $e) {
-            return redirect()->route('empresas.index')->with('error', 'Error al eliminar la empresa: ' . $e->getMessage());
-        }
+        return redirect()
+            ->route('empresas.index')
+            ->with('success', 'Empresa suspendida. Sus datos se conservarán durante el periodo de retención.');
     }
 
     private function crearPermisosBase(\App\Models\User $adminUser = null): void
@@ -205,8 +136,8 @@ class EmpresaController extends Controller
 
         foreach ($grupos as $model => $acciones) {
             foreach ($acciones as $accion) {
-                $permiso = $model . ' ' . $accion;
-                if (!Permission::where('name', $permiso)->exists()) {
+                $permiso = $model.' '.$accion;
+                if (! Permission::where('name', $permiso)->exists()) {
                     Permission::create(['name' => $permiso]);
                 }
                 $allPermissions[] = $permiso;

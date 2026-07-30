@@ -1,26 +1,25 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CitaController;
-use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\MascotaController;
-use App\Http\Controllers\ProductoController;
-use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\AutocompleteController;
 use App\Http\Controllers\CajaReporteController;
 use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\ChangePasswordController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ChequeController;
+use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\GastoController;
+use App\Http\Controllers\ImpuestoController;
+use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProductoreporteController;
+use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\ReporteVentaController;
+use App\Http\Controllers\ReporteVentaNuevoController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\TablaPorcentajeController;
 use App\Http\Controllers\VentaController;
-use App\Http\Controllers\GastoController;
-use App\Http\Controllers\ImpuestoController;
-use App\Http\Controllers\ReporteVentaController;
-use App\Http\Controllers\ReporteVentaNuevoController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,28 +33,25 @@ use App\Http\Controllers\ReporteVentaNuevoController;
 */
 
 // Depuración - verificar conexión y usuarios
-Route::get('/debug-login', function () {
-    $dbName = DB::connection()->getDatabaseName();
-    $users = \App\Models\User::all();
-    $output = "DB: {$dbName}<br>";
-    $output .= "Usuarios (" . $users->count() . "):<br>";
-    foreach ($users as $u) {
-        $hashPreview = strlen($u->password) . ' chars, starts with: ' . substr($u->password, 0, 10);
-        $output .= "- {$u->email} | password: {$hashPreview}<br>";
-    }
-    return $output;
-});
-
 // Redirigir raíz al login
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
 // Rutas del panel de administración multi-empresa (dominio principal)
-Route::resource('empresas', App\Http\Controllers\EmpresaController::class);
-
 // Rutas principales de la aplicación (funcionan en localhost/dominio principal)
-Auth::routes();
+Auth::routes(['register' => false]);
+
+Route::middleware(['central', 'throttle:10,1'])->group(function () {
+    Route::get('/suscribirme', [CheckoutController::class, 'show'])->name('checkout.show');
+    Route::post('/suscribirme', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/activar/{token}', [OnboardingController::class, 'show'])->name('onboarding.show');
+    Route::post('/activar/{token}', [OnboardingController::class, 'store'])->name('onboarding.store');
+});
+
+Route::middleware(['auth', 'central.admin'])->group(function () {
+    Route::resource('empresas', App\Http\Controllers\EmpresaController::class)->except('show');
+});
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home')->middleware('auth');
 
@@ -106,29 +102,28 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/update', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 
     Route::post('/cargardetalleventa/{id}', [VentaController::class, 'cargarDet'])->name('cargardetalleventa');
-});
-Route::get('/sinpermiso', function () {
-    return view('sinpermiso.index');
-})->name('sinpermiso');
 
-Route::get('/autocomplete',  [AutocompleteController::class, 'autocomplete'])->name('autocomplete');
-Route::get('/autocomplete/proveedor',  [AutocompleteController::class, 'proveedor'])->name('obtenerproveedor');
-Route::get('/autocomplete/producto',  [AutocompleteController::class, 'getproducto'])->name('obtenerproducto');
-Route::post('/guardar-categoria',  [CategoriaController::class, 'storeCat'])->name('guardar-categoria');
-Route::post('/guardar-unidad',  [CategoriaController::class, 'storeCat'])->name('guardar-unidad');
-Route::delete('/borrar-categoria/{id}', [CategoriaController::class, 'destroy'])->name('borrar-categoria');
-Route::delete('/borrar-unidad/{id}', [CategoriaController::class, 'destroy'])->name('borrar-unidad');
-Route::post('/autocomplete/obtenercodprod',  [ProductoController::class, 'verifcod'])->name('obtenercodproducto');
-Route::post('/autocomplete/obtenercodtemporal',  [ProductoController::class, 'desdetemporal'])->name('obtenercodtemporal');
-Route::get('/create', function () {
-    return view('create');
+    Route::get('/sinpermiso', function () {
+        return view('sinpermiso.index');
+    })->name('sinpermiso');
+
+    Route::get('/autocomplete', [AutocompleteController::class, 'autocomplete'])->name('autocomplete');
+    Route::get('/autocomplete/proveedor', [AutocompleteController::class, 'proveedor'])->name('obtenerproveedor');
+    Route::get('/autocomplete/producto', [AutocompleteController::class, 'getproducto'])->name('obtenerproducto');
+    Route::post('/guardar-categoria', [CategoriaController::class, 'storeCat'])->name('guardar-categoria');
+    Route::post('/guardar-unidad', [CategoriaController::class, 'storeCat'])->name('guardar-unidad');
+    Route::delete('/borrar-categoria/{id}', [CategoriaController::class, 'destroy'])->name('borrar-categoria');
+    Route::delete('/borrar-unidad/{id}', [CategoriaController::class, 'destroy'])->name('borrar-unidad');
+    Route::post('/autocomplete/obtenercodprod', [ProductoController::class, 'verifcod'])->name('obtenercodproducto');
+    Route::post('/autocomplete/obtenercodtemporal', [ProductoController::class, 'desdetemporal'])->name('obtenercodtemporal');
+    Route::resource('cheques', ChequeController::class);
 });
-Route::resource('cheques', ChequeController::class);
 
 Route::get('/idioma/{locale}', function ($locale) {
     if (in_array($locale, ['es', 'en'])) {
         session(['app_locale' => $locale]);
         app()->setLocale($locale);
     }
+
     return redirect()->back();
 })->name('idioma');

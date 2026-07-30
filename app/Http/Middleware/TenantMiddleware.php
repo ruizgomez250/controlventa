@@ -3,98 +3,55 @@
 namespace App\Http\Middleware;
 
 use App\Models\Empresa;
+use App\Services\TenantConnectionManager;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\View;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 
 class TenantMiddleware
 {
+    public function __construct(
+        private readonly TenantConnectionManager $connections,
+    ) {
+    }
+
     public function handle(Request $request, Closure $next): Response
     {
         $host = $request->getHost();
-        $parts = explode('.', $host);
 
-        $subdominio = $parts[0] ?? null;
-
-        if (!$subdominio || $subdominio === 'www' || $subdominio === 'localhost') {
+        if (in_array($host, config('tenancy.central_hosts'), true)) {
             return $next($request);
         }
 
-        $empresa = Empresa::where('dominio', $subdominio)->first();
+        $suffix = '.'.config('tenancy.base_domain');
+        abort_unless(str_ends_with($host, $suffix), 404);
 
-        if (!$empresa) {
-            return $next($request);
-        }
+        $subdomain = substr($host, 0, -strlen($suffix));
+        abort_unless(
+            $subdomain !== ''
+            && ! str_contains($subdomain, '.')
+            && preg_match('/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/', $subdomain),
+            404
+        );
 
-        if (!$empresa->activo) {
-            abort(403, 'La empresa está desactivada.');
-        }
+        $empresa = Empresa::query()->where('dominio', $subdomain)->firstOrFail();
 
-        if ($empresa->fecha_expiracion && now()->greaterThan($empresa->fecha_expiracion)) {
-            abort(403, 'La suscripción de la empresa ha expirado.');
-        }
+        abort_unless(
+            $empresa->activo && $empresa->estado === 'activa',
+            403,
+            'La empresa está suspendida.'
+        );
+        abort_if(
+            $empresa->fecha_expiracion?->isPast(),
+            402,
+            'La suscripción de la empresa está vencida.'
+        );
 
-        Config::set('database.connections.tenant', [
-            'driver' => 'mysql',
-            'host' => $empresa->database_host,
-            'port' => $empresa->database_port,
-            'database' => $empresa->database_name,
-            'username' => $empresa->database_username,
-            'password' => $empresa->database_password,
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
-        ]);
-
-        Config::set('database.default', 'tenant');
-
-        $this->asegurarPermisos();
-
+        $this->connections->connect($empresa);
         View::share('empresa', $empresa);
+        app()->instance(Empresa::class, $empresa);
 
         return $next($request);
-    }
-
-    private function asegurarPermisos(): void
-    {
-        try {
-            $grupos = [
-                'cliente' => ['leer', 'crear', 'editar', 'borrar'],
-                'proveedor' => ['leer', 'crear', 'editar', 'borrar'],
-                'producto' => ['leer', 'crear', 'editar', 'borrar'],
-                'compra' => ['leer', 'crear', 'editar', 'borrar'],
-                'venta' => ['leer', 'crear', 'editar', 'borrar'],
-                'caja' => ['leer', 'crear', 'editar', 'borrar'],
-                'cajareporte' => ['leer', 'crear', 'editar', 'borrar'],
-                'reporte' => ['leer', 'crear', 'editar', 'borrar'],
-                'rol' => ['leer', 'crear', 'editar', 'borrar'],
-                'gasto' => ['leer', 'crear', 'editar', 'borrar'],
-                'cheque' => ['leer', 'crear', 'editar', 'borrar'],
-                'tabla_porcentaje' => ['leer', 'modificar'],
-                'configuracion' => ['modificar'],
-                'empresa' => ['leer', 'crear', 'editar', 'borrar'],
-            ];
-            $creado = false;
-            foreach ($grupos as $model => $acciones) {
-                foreach ($acciones as $accion) {
-                    $permiso = $model . ' ' . $accion;
-                    if (!Permission::where('name', $permiso)->exists()) {
-                        Permission::create(['name' => $permiso]);
-                        $creado = true;
-                    }
-                }
-            }
-            if ($creado) {
-                app(PermissionRegistrar::class)->forgetCachedPermissions();
-            }
-        } catch (\Exception $e) {
-        }
     }
 }
