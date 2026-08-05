@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Models\Venta;
-use App\Models\Producto;
-use App\Models\Pagare;
-use App\Models\Compra_cab;
 use App\Models\Auditoria;
+use App\Models\Compra_cab;
+use App\Models\Pagare;
+use App\Models\Producto;
+use App\Models\Venta;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -19,6 +18,12 @@ class HomeController extends Controller
 
     public function index()
     {
+        if (in_array(request()->getHost(), config('tenancy.central_hosts'), true)) {
+            abort_unless(auth()->user()->empresa_id === null, 403);
+
+            return redirect()->route('empresas.index');
+        }
+
         $hoy = now()->toDateString();
         $anioActual = now()->year;
         $anioAnterior = $anioActual - 1;
@@ -145,10 +150,10 @@ class HomeController extends Controller
         $comprasEsteAnio = array_fill(1, 12, 0);
         $comprasAnhoAnterior = array_fill(1, 12, 0);
         foreach ($comprasAnual as $item) {
-            if ((int)$item->anio === $anioActual) {
-                $comprasEsteAnio[(int)$item->mes] = (float)$item->total;
+            if ((int) $item->anio === $anioActual) {
+                $comprasEsteAnio[(int) $item->mes] = (float) $item->total;
             } else {
-                $comprasAnhoAnterior[(int)$item->mes] = (float)$item->total;
+                $comprasAnhoAnterior[(int) $item->mes] = (float) $item->total;
             }
         }
 
@@ -166,10 +171,10 @@ class HomeController extends Controller
         $ventasEsteAnio = array_fill(1, 12, 0);
         $ventasAnhoAnterior = array_fill(1, 12, 0);
         foreach ($ventasAnual as $item) {
-            if ((int)$item->anio === $anioActual) {
-                $ventasEsteAnio[(int)$item->mes] = (float)$item->total;
+            if ((int) $item->anio === $anioActual) {
+                $ventasEsteAnio[(int) $item->mes] = (float) $item->total;
             } else {
-                $ventasAnhoAnterior[(int)$item->mes] = (float)$item->total;
+                $ventasAnhoAnterior[(int) $item->mes] = (float) $item->total;
             }
         }
 

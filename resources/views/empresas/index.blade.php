@@ -36,7 +36,11 @@
                                         <tr>
                                             <td>{{ $empresa->id }}</td>
                                             <td>{{ $empresa->nombre }}</td>
-                                            <td><code>{{ $empresa->dominio }}</code></td>
+                                            <td>
+                                                <a href="{{ request()->getScheme() }}://{{ $empresa->dominio }}.{{ config('tenancy.base_domain') }}{{ in_array(request()->getPort(), [80, 443], true) ? '' : ':'.request()->getPort() }}/login" target="_blank" rel="noopener">
+                                                    {{ $empresa->dominio }}.{{ config('tenancy.base_domain') }}{{ in_array(request()->getPort(), [80, 443], true) ? '' : ':'.request()->getPort() }}
+                                                </a>
+                                            </td>
                                             <td>{{ $empresa->email_admin }}</td>
                                             <td><code>{{ $empresa->database_name }}</code></td>
                                             <td>
@@ -60,8 +64,8 @@
                                                 <form action="{{ route('empresas.destroy', $empresa) }}" method="POST" style="display:inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger" title="{{ __('Eliminar') }}" onclick="return confirm('¿Está seguro de eliminar esta empresa? Se eliminará también su base de datos.')">
-                                                        <i class="fas fa-trash"></i>
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="{{ __('Suspender') }}" onclick="return confirm('¿Está seguro de suspender esta empresa? El acceso quedará bloqueado, pero sus datos se conservarán durante el periodo de retención.')">
+                                                        <i class="fas fa-ban"></i>
                                                     </button>
                                                 </form>
                                             </td>

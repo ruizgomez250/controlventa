@@ -2,12 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\Configuracion;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\PermissionRegistrar;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,8 +28,6 @@ class AppServiceProvider extends ServiceProvider
                 'tabla_porcentaje' => ['leer', 'modificar'],
                 'configuracion' => ['modificar'],
                 'empresa' => ['leer', 'crear', 'editar', 'borrar'],
-                'persona' => ['leer', 'crear', 'editar', 'borrar'],
-                'entrega_insumo' => ['leer', 'crear', 'editar', 'borrar'],
             ];
             $creado = false;
             foreach ($grupos as $model => $acciones) {
@@ -50,13 +43,6 @@ class AppServiceProvider extends ServiceProvider
                 app(PermissionRegistrar::class)->forgetCachedPermissions();
             }
         } catch (\Exception $e) {
-        }
-
-        try {
-            $moneda = Configuracion::where('descripcion', 'moneda')->first()->observacion ?? 'Gs.';
-            View::share('moneda', $moneda);
-        } catch (\Exception $e) {
-            View::share('moneda', 'Gs.');
         }
     }
 }

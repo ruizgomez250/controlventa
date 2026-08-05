@@ -12,6 +12,8 @@ class Empresa extends Model
 {
     use HasFactory;
 
+    protected $connection = 'mysql';
+
     protected $fillable = [
         'nombre',
         'dominio',
@@ -23,7 +25,10 @@ class Empresa extends Model
         'email_admin',
         'password_admin',
         'activo',
+        'estado',
         'fecha_expiracion',
+        'suspendida_at',
+        'eliminable_at',
     ];
 
     protected $hidden = [
@@ -31,14 +36,13 @@ class Empresa extends Model
         'password_admin',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'activo' => 'boolean',
-            'fecha_expiracion' => 'datetime',
-            'password_admin' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'activo' => 'boolean',
+        'fecha_expiracion' => 'datetime',
+        'suspendida_at' => 'datetime',
+        'eliminable_at' => 'datetime',
+        'password_admin' => 'hashed',
+    ];
 
     public function users(): HasMany
     {
@@ -57,6 +61,12 @@ class Empresa extends Model
 
     public function scopeActivo(Builder $query): Builder
     {
-        return $query->where('activo', true);
+        return $query
+            ->where('activo', true)
+            ->where('estado', 'activa')
+            ->where(function (Builder $query) {
+                $query->whereNull('fecha_expiracion')
+                    ->orWhere('fecha_expiracion', '>', now());
+            });
     }
 }

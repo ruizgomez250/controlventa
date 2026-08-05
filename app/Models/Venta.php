@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Venta extends Model
 {
-    protected $table = "ventas"; //le personalizo el nombre de la tabla
+    protected $table = 'ventas'; //le personalizo el nombre de la tabla
+
     protected $fillable = [
         'id_usuario',
         'id_cliente',
@@ -18,9 +18,6 @@ class Venta extends Model
         'timbrado_factura',
         'fecha_vencimiento',
         'estado',
-        'sifen_cdc',
-        'sifen_cde',
-        'sifen_estado',
     ];
 
     protected static function booted()
@@ -31,7 +28,7 @@ class Venta extends Model
                 'accion' => 'venta_creada',
                 'entidad_tipo' => 'Venta',
                 'entidad_id' => $venta->id,
-                'descripcion' => 'Creó la venta N° ' . ($venta->numero_factura ?: $venta->id) . ' por Gs. ' . number_format($venta->total, 0, ',', '.'),
+                'descripcion' => 'Creó la venta N° '.($venta->numero_factura ?: $venta->id).' por Gs. '.number_format($venta->total, 0, ',', '.'),
             ]);
         });
 
@@ -42,7 +39,7 @@ class Venta extends Model
                     'accion' => 'factura_anulada',
                     'entidad_tipo' => 'Venta',
                     'entidad_id' => $venta->id,
-                    'descripcion' => 'Anuló la factura N° ' . ($venta->numero_factura ?: $venta->id) . ' del cliente ' . ($venta->cliente->razonsocial ?? 'N/A'),
+                    'descripcion' => 'Anuló la factura N° '.($venta->numero_factura ?: $venta->id).' del cliente '.($venta->cliente->razonsocial ?? 'N/A'),
                 ]);
             }
         });
@@ -62,8 +59,14 @@ class Venta extends Model
     {
         return $this->hasMany(VentaDetalle::class, 'id_venta');
     }
+
     public function pagare()
     {
         return $this->hasOne(Pagare::class, 'id_venta');
+    }
+
+    public function pagares()
+    {
+        return $this->hasMany(Pagare::class, 'id_venta');
     }
 }

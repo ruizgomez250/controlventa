@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\BillingWebhookController;
 use App\Http\Controllers\Api\VentaControllerApi;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProductoController;
-use App\Http\Controllers\VentaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,15 +18,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/productos', [ProductoController::class, 'indexl']);
-Route::get('/productos/{id}', [ProductoController::class, 'show']);
-Route::post('/clientesa', [ClienteController::class, 'storeA']);
-Route::get('/clientesa', [ClienteController::class, 'indexA']);
-Route::post('/ventasa', [VentaController::class, 'storeApi']);
-Route::post('/ventasasimpli', [VentaController::class, 'storeApiSimplified']);
-Route::get('/ventas', [VentaControllerApi::class, 'index']);     // Todas las ventas
-Route::get('/ventas/{id}', [VentaControllerApi::class, 'show']); // Venta por ID
+Route::post('/billing/webhook/{provider}', BillingWebhookController::class)
+    ->middleware(['central', 'throttle:30,1'])
+    ->name('billing.webhook');
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/productos', [ProductoController::class, 'indexl'])->middleware('can:producto leer');
+    Route::get('/productos/{id}', [ProductoController::class, 'show'])->middleware('can:producto leer');
+    Route::post('/clientesa', [ClienteController::class, 'storeA'])->middleware('can:cliente crear');
+    Route::get('/clientesa', [ClienteController::class, 'indexA'])->middleware('can:cliente leer');
+    Route::get('/ventas', [VentaControllerApi::class, 'index'])->middleware('can:venta leer');
+    Route::get('/ventas/{id}', [VentaControllerApi::class, 'show'])->middleware('can:venta leer');
+
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 });

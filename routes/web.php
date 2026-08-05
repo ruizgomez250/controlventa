@@ -1,30 +1,29 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CitaController;
-use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\MascotaController;
-use App\Http\Controllers\ProductoController;
-use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\AutocompleteController;
 use App\Http\Controllers\CajaReporteController;
 use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\ChangePasswordController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ChequeController;
+use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\SifenController;
+use App\Http\Controllers\GastoController;
+use App\Http\Controllers\ImpuestoController;
+use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProductoreporteController;
+use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\ReporteVentaController;
+use App\Http\Controllers\ReporteVentaNuevoController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\TablaPorcentajeController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\GastoController;
 use App\Http\Controllers\ImpuestoController;
-use App\Http\Controllers\PersonaController;
-use App\Http\Controllers\EntregaInsumoController;
 use App\Http\Controllers\ReporteVentaController;
 use App\Http\Controllers\ReporteVentaNuevoController;
-use App\Http\Controllers\ReporteGestionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,28 +37,25 @@ use App\Http\Controllers\ReporteGestionController;
 */
 
 // Depuración - verificar conexión y usuarios
-Route::get('/debug-login', function () {
-    $dbName = DB::connection()->getDatabaseName();
-    $users = \App\Models\User::all();
-    $output = "DB: {$dbName}<br>";
-    $output .= "Usuarios (" . $users->count() . "):<br>";
-    foreach ($users as $u) {
-        $hashPreview = strlen($u->password) . ' chars, starts with: ' . substr($u->password, 0, 10);
-        $output .= "- {$u->email} | password: {$hashPreview}<br>";
-    }
-    return $output;
-});
-
 // Redirigir raíz al login
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
 // Rutas del panel de administración multi-empresa (dominio principal)
-Route::resource('empresas', App\Http\Controllers\EmpresaController::class);
-
 // Rutas principales de la aplicación (funcionan en localhost/dominio principal)
-Auth::routes();
+Auth::routes(['register' => false]);
+
+Route::middleware(['central', 'throttle:10,1'])->group(function () {
+    Route::get('/suscribirme', [CheckoutController::class, 'show'])->name('checkout.show');
+    Route::post('/suscribirme', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/activar/{token}', [OnboardingController::class, 'show'])->name('onboarding.show');
+    Route::post('/activar/{token}', [OnboardingController::class, 'store'])->name('onboarding.store');
+});
+
+Route::middleware(['auth', 'central.admin'])->group(function () {
+    Route::resource('empresas', App\Http\Controllers\EmpresaController::class)->except('show');
+});
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home')->middleware('auth');
 
@@ -115,45 +111,6 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile/update', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 
     Route::post('/cargardetalleventa/{id}', [VentaController::class, 'cargarDet'])->name('cargardetalleventa');
-
-    Route::prefix('geografico')->name('geografico.')->group(function () {
-        Route::get('departamentos', [\App\Http\Controllers\GeograficoController::class, 'departamentos'])->name('departamentos');
-        Route::get('distritos', [\App\Http\Controllers\GeograficoController::class, 'distritos'])->name('distritos');
-        Route::get('ciudades', [\App\Http\Controllers\GeograficoController::class, 'ciudades'])->name('ciudades');
-    });
-
-    Route::prefix('sifen')->name('sifen.')->group(function () {
-        Route::get('estado', [SifenController::class, 'estado'])->name('estado');
-        Route::get('consultar-ruc', [SifenController::class, 'consultarRUC'])->name('consultar.ruc');
-        Route::get('consultar-cdc/{id}', [SifenController::class, 'consultarCDC'])->name('consultar.cdc');
-        Route::post('reemitir/{venta}', [SifenController::class, 'reemitir'])->name('reemitir');
-        Route::post('inutilizar', [SifenController::class, 'inutilizar'])->name('inutilizar');
-        Route::post('validar-ruc', [SifenController::class, 'validarRUC'])->name('validar.ruc');
-    });
-
-    // ===== Reportes de Gestión =====
-    Route::prefix('reportes/gestion')->name('reportes.gestion.')->group(function () {
-        // Stock
-        Route::get('stock', [ReporteGestionController::class, 'stockIndex'])->name('stock');
-        Route::get('stock/inventario', [ReporteGestionController::class, 'pdfInventarioActual'])->name('stock.inventario');
-        Route::get('stock/bajo', [ReporteGestionController::class, 'pdfStockBajo'])->name('stock.bajo');
-        Route::get('stock/movimientos', [ReporteGestionController::class, 'pdfMovimientosStock'])->name('stock.movimientos');
-        Route::get('stock/rotacion', [ReporteGestionController::class, 'pdfRotacionProductos'])->name('stock.rotacion');
-        // Ventas
-        Route::get('ventas', [ReporteGestionController::class, 'ventasIndex'])->name('ventas');
-        Route::get('ventas/periodo', [ReporteGestionController::class, 'pdfVentasPeriodo'])->name('ventas.periodo');
-        Route::get('ventas/cliente', [ReporteGestionController::class, 'pdfVentasCliente'])->name('ventas.cliente');
-        Route::get('ventas/producto', [ReporteGestionController::class, 'pdfVentasProducto'])->name('ventas.producto');
-        // Financiero
-        Route::get('financiero', [ReporteGestionController::class, 'financieroIndex'])->name('financiero');
-        Route::get('financiero/cobrar', [ReporteGestionController::class, 'pdfCuentasCobrar'])->name('financiero.cobrar');
-        Route::get('financiero/pagar', [ReporteGestionController::class, 'pdfCuentasPagar'])->name('financiero.pagar');
-        Route::get('financiero/margen', [ReporteGestionController::class, 'pdfMargenGanancia'])->name('financiero.margen');
-        // Management
-        Route::get('management', [ReporteGestionController::class, 'managementIndex'])->name('management');
-        Route::get('management/vendedores', [ReporteGestionController::class, 'pdfRendimientoVendedores'])->name('management.vendedores');
-        Route::get('management/clientes', [ReporteGestionController::class, 'pdfAnalisisClientes'])->name('management.clientes');
-    });
 });
 Route::get('/sinpermiso', function () {
     return view('sinpermiso.index');
@@ -162,7 +119,6 @@ Route::get('/sinpermiso', function () {
 Route::get('/autocomplete',  [AutocompleteController::class, 'autocomplete'])->name('autocomplete');
 Route::get('/autocomplete/proveedor',  [AutocompleteController::class, 'proveedor'])->name('obtenerproveedor');
 Route::get('/autocomplete/producto',  [AutocompleteController::class, 'getproducto'])->name('obtenerproducto');
-Route::get('/autocomplete/productoventa',  [AutocompleteController::class, 'getproductoventa'])->name('obtenerproductoventa');
 Route::post('/guardar-categoria',  [CategoriaController::class, 'storeCat'])->name('guardar-categoria');
 Route::post('/guardar-unidad',  [CategoriaController::class, 'storeCat'])->name('guardar-unidad');
 Route::delete('/borrar-categoria/{id}', [CategoriaController::class, 'destroy'])->name('borrar-categoria');
@@ -179,5 +135,6 @@ Route::get('/idioma/{locale}', function ($locale) {
         session(['app_locale' => $locale]);
         app()->setLocale($locale);
     }
+
     return redirect()->back();
 })->name('idioma');

@@ -316,7 +316,7 @@
                             <rect x="2" y="4" width="20" height="16" rx="2"/>
                             <path d="M22 4L12 13 2 4"/>
                         </svg>
-                        <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" placeholder="{{ __('tu@correo.com') }}" required autofocus autocomplete="email">
+                        <input type="email" id="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', request('email')) }}" placeholder="{{ __('tu@correo.com') }}" required autofocus autocomplete="email">
                     </div>
                     @error('email')
                         <span class="invalid-feedback">{{ $message }}</span>
