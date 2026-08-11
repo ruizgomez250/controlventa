@@ -51,7 +51,8 @@ class ProductoController extends Controller
             'Tramos Mayorista',
             'Acción'
         ];
-        return view('productos.index', compact('producto', 'heads'));
+        $moneda = Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
+        return view('productos.index', compact('producto', 'heads', 'moneda'));
     }
 
     /**

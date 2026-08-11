@@ -2,7 +2,11 @@
 
 namespace App\Services;
 
+use App\Helpers\ActividadesEconomicas;
 use App\Helpers\SifenCatalogo;
+use App\Models\ActividadEconomica;
+use App\Models\Departamento;
+use App\Models\Distrito;
 use App\Models\SifenConfiguracion;
 use App\Models\Venta;
 use App\Models\Cliente;
@@ -159,15 +163,25 @@ class SifenPkuatiaService
             $errores[] = 'Calle principal del emisor no configurada.';
         }
 
-        // Validar que el departamento/distrito existan en el catálogo SET
+        // Validar que el departamento/distrito existan en la BD (catálogo SET)
         $dep = $this->config->departamento_codigo;
-        if (!$dep || !SifenCatalogo::getDepartamento((int)$dep)) {
+        if (!$dep || !Departamento::find((int)$dep)) {
             $errores[] = "Código de departamento inválido: $dep. Debe ser 1-20 según catálogo SET.";
         }
 
         $distrito = $this->config->distrito_codigo;
-        if ($dep && (!$distrito || !SifenCatalogo::getDistrito((int)$dep, (int)$distrito))) {
+        if ($dep && (!$distrito || !Distrito::where('codigo', (int)$distrito)->where('departamento_codigo', (int)$dep)->exists())) {
             $errores[] = "Código de distrito $distrito inválido para el departamento $dep.";
+        }
+
+        // Validar que la actividad económica exista en la BD (catálogo CIIU)
+        $codActividad = $this->config->actividad_economica_codigo;
+        if (!$codActividad) {
+            $errores[] = 'Actividad económica principal no configurada.';
+        } elseif (!ActividadEconomica::find((int)$codActividad)) {
+            if (!isset(ActividadesEconomicas::ACTIVIDADES[(int)$codActividad])) {
+                $errores[] = "Código de actividad económica inválido: $codActividad.";
+            }
         }
 
         // Validar RUC con algoritmo módulo 11
@@ -646,7 +660,8 @@ class SifenPkuatiaService
 
             return [
                 'cdc' => $cdc,
-                'estado' => $resultado->getDE()->getGResProc()[0]->getDMsgRes() ?? 'Consultado',
+                'codigo_resultado' => $resultado->getDCodRes(),
+                'estado' => $resultado->getDMsgRes() ?? 'Consultado',
                 'respuesta' => $resultado,
             ];
         } catch (Exception $e) {
@@ -655,19 +670,19 @@ class SifenPkuatiaService
         }
     }
 
-    /** Consulta múltiples DEs en lote por sus CDC */
-    public function consultarLote(array $cdcs): array
+    /** Consulta el resultado de procesamiento de un lote de DEs previamente enviado */
+    public function consultarLote(int $nroLote): array
     {
         $this->ensureInitialized();
 
         try {
-            $respuesta = Sifen::ConsultarLoteDE($cdcs);
+            $respuesta = Sifen::ConsultaLote($nroLote);
 
             $resultados = [];
-            foreach ($respuesta as $item) {
+            foreach ($respuesta->getGResProcLote() as $item) {
                 $resultados[] = [
                     'cdc' => $item->getId(),
-                    'estado' => 'consultado',
+                    'estado' => $item->getDEstRes(),
                 ];
             }
 
@@ -773,8 +788,8 @@ class SifenPkuatiaService
 
             return [
                 'estado' => 'enviado',
-                'nro_lote' => $respuesta->getDProtLote(),
-                'mensaje' => 'Lote enviado correctamente.',
+                'nro_lote' => $respuesta->getdProtConsLote(),
+                'mensaje' => $respuesta->getDMsgRes(),
             ];
         } catch (Exception $e) {
             Log::error('SifenPkuatiaService::enviarLote: ' . $e->getMessage());

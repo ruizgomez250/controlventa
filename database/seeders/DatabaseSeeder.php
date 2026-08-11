@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         // ]);
         $this->call([
             GeographicDataSeeder::class,
+            ActividadEconomicaSeeder::class,
             ImpuestosSeeder::class,
             PermissionSeeder::class,
             AssignAllPermissionsToUserSeeder::class,

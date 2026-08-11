@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Barrio;
+use App\Models\Ciudad;
 use App\Models\Departamento;
 use App\Models\Distrito;
-use App\Models\Ciudad;
 use Illuminate\Database\Seeder;
 
 class GeographicDataSeeder extends Seeder
@@ -29,6 +30,7 @@ class GeographicDataSeeder extends Seeder
         $departamentos = [];
         $distritos = [];
         $ciudades = [];
+        $barrios = [];
 
         while (($row = fgetcsv($handle, 0, "\t")) !== false) {
             if (count($row) < 6) continue;
@@ -61,6 +63,18 @@ class GeographicDataSeeder extends Seeder
                     'distrito_key' => $distKey,
                 ];
             }
+
+            // Columnas 6 y 7: código y nombre del barrio (opcional)
+            if (isset($row[7]) && trim($row[7]) !== '' && isset($row[6]) && trim($row[6]) !== '') {
+                $barKey = $ciuKey . '_' . (int) trim($row[6]);
+                if (!isset($barrios[$barKey])) {
+                    $barrios[$barKey] = [
+                        'codigo' => (int) trim($row[6]),
+                        'nombre' => trim($row[7]),
+                        'ciudad_key' => $ciuKey,
+                    ];
+                }
+            }
         }
 
         fclose($handle);
@@ -81,11 +95,23 @@ class GeographicDataSeeder extends Seeder
             $distritoMap[$key] = $distrito->id;
         }
 
+        $ciudadMap = [];
         foreach ($ciudades as $data) {
             $distritoId = $distritoMap[$data['distrito_key']] ?? null;
             if ($distritoId) {
-                Ciudad::firstOrCreate(
+                $ciudad = Ciudad::firstOrCreate(
                     ['codigo' => $data['codigo'], 'distrito_id' => $distritoId],
+                    ['nombre' => $data['nombre']]
+                );
+                $ciudadMap[$data['distrito_key'] . '_' . $data['codigo']] = $ciudad->id;
+            }
+        }
+
+        foreach ($barrios as $data) {
+            $ciudadId = $ciudadMap[$data['ciudad_key']] ?? null;
+            if ($ciudadId) {
+                Barrio::firstOrCreate(
+                    ['codigo' => $data['codigo'], 'ciudad_id' => $ciudadId],
                     ['nombre' => $data['nombre']]
                 );
             }

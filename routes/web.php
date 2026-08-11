@@ -20,10 +20,6 @@ use App\Http\Controllers\ReporteVentaNuevoController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\TablaPorcentajeController;
 use App\Http\Controllers\VentaController;
-use App\Http\Controllers\GastoController;
-use App\Http\Controllers\ImpuestoController;
-use App\Http\Controllers\ReporteVentaController;
-use App\Http\Controllers\ReporteVentaNuevoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,6 +95,20 @@ Route::middleware('auth')->group(function () {
     Route::resource('/cajareporte', CajaReporteController::class);
     Route::resource('/rol', RolController::class);
     Route::resource('/configuracion', ConfiguracionController::class);
+
+    Route::get('/sifen/estado', [SifenController::class, 'estado'])->name('sifen.estado');
+    Route::get('/sifen/consultar-cdc/{id}', [SifenController::class, 'consultarCDC'])->name('sifen.consultarCDC');
+    Route::get('/sifen/consultar-ruc', [SifenController::class, 'consultarRUC'])->name('sifen.consultarRUC');
+    Route::post('/sifen/reemitir/{venta}', [SifenController::class, 'reemitir'])->name('sifen.reemitir');
+    Route::post('/sifen/inutilizar', [SifenController::class, 'inutilizar'])->name('sifen.inutilizar');
+    Route::post('/sifen/validar-ruc', [SifenController::class, 'validarRUC'])->name('sifen.validarRUC');
+
+    Route::prefix('geografico')->name('geografico.')->group(function () {
+        Route::get('departamentos', [\App\Http\Controllers\GeograficoController::class, 'departamentos'])->name('departamentos');
+        Route::get('distritos', [\App\Http\Controllers\GeograficoController::class, 'distritos'])->name('distritos');
+        Route::get('ciudades', [\App\Http\Controllers\GeograficoController::class, 'ciudades'])->name('ciudades');
+    });
+
     Route::resource('/persona', PersonaController::class);
     Route::resource('/entrega_insumo', EntregaInsumoController::class);
     Route::get('/entrega_insumo/{id}/detalles', [EntregaInsumoController::class, 'getDetalles']);

@@ -179,6 +179,23 @@ class VentaController extends Controller
 
             DB::commit();
 
+            // ✅ FACTURACIÓN ELECTRÓNICA SIFEN
+            // Solo se emite el DE si SIFEN está habilitado en la configuración.
+            try {
+                $sifenService = app(\App\Services\SifenPkuatiaService::class);
+                if ($sifenService->isHabilitado()) {
+                    $resultado = $sifenService->emitir($cabecera->fresh(['cliente', 'detalles']));
+                    session(['sifen_ultimo' => $resultado]);
+                }
+            } catch (\Throwable $e) {
+                Log::error('Error al emitir DE a SIFEN.', [
+                    'venta_id' => $ultimoId,
+                    'exception' => $e->getMessage(),
+                ]);
+                $cabecera->sifen_estado = 'error';
+                $cabecera->save();
+            }
+
             return redirect()->route('venta.create')->with([
                 'success' => 'La venta se ha registrado correctamente.',
                 'ultimoId' => $ultimoId,
@@ -240,6 +257,24 @@ class VentaController extends Controller
                     }
                 }
                 DB::commit();
+
+                // ✅ CANCELACIÓN ELECTRÓNICA EN SIFEN
+                // Si la venta ya fue emitida (tiene CDC), se envía el evento de cancelación.
+                if ($cabecera->sifen_cdc) {
+                    try {
+                        $sifenService = app(\App\Services\SifenPkuatiaService::class);
+                        if ($sifenService->isHabilitado()) {
+                            $sifenService->cancelarDE($cabecera);
+                        }
+                    } catch (\Throwable $e) {
+                        Log::error('Error al cancelar DE en SIFEN.', [
+                            'venta_id' => $id,
+                            'cdc' => $cabecera->sifen_cdc,
+                            'exception' => $e->getMessage(),
+                        ]);
+                    }
+                }
+
                 return redirect()->route('venta.index')->with('success', 'La compra se ha desactivado correctamente.');
             } catch (Exception $e) {
 

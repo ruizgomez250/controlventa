@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActividadEconomica;
 use App\Models\Ciudad;
 use App\Models\Configuracion;
 use App\Models\Departamento;
@@ -51,7 +52,14 @@ class ConfiguracionController extends Controller
             }
         }
 
-        $actividadesEconomicas = ActividadesEconomicas::paraSelect();
+        $actividadesEconomicas = ActividadEconomica::query()
+            ->orderBy('codigo')
+            ->get()
+            ->pluck('descripcion_con_codigo', 'codigo');
+
+        if ($actividadesEconomicas->isEmpty()) {
+            $actividadesEconomicas = ActividadesEconomicas::paraSelect();
+        }
 
         return view('configuracion.index', compact(
             'configuraciones',
@@ -171,7 +179,14 @@ class ConfiguracionController extends Controller
 
                 // Actividad económica principal (código + descripción)
                 $sifen->actividad_economica_codigo = $request->input('sifen_actividad_economica_codigo', $sifen->actividad_economica_codigo);
-                $sifen->actividad_economica_descripcion = $request->input('sifen_actividad_economica_descripcion', $sifen->actividad_economica_descripcion);
+
+                // Si no llega la descripción desde el formulario, se resuelve desde la BD
+                $actividadDescripcion = $request->input('sifen_actividad_economica_descripcion');
+                if (!$actividadDescripcion && $sifen->actividad_economica_codigo) {
+                    $actividad = ActividadEconomica::find($sifen->actividad_economica_codigo);
+                    $actividadDescripcion = $actividad ? $actividad->descripcion : null;
+                }
+                $sifen->actividad_economica_descripcion = $actividadDescripcion ?: $sifen->actividad_economica_descripcion;
 
                 // CSC = Código de Seguridad del Contribuyente (para firmar DEs)
                 $sifen->csc_id = $request->input('sifen_csc_id', $sifen->csc_id);
