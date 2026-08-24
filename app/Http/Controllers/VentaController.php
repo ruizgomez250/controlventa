@@ -44,6 +44,18 @@ class VentaController extends Controller
         return view('ventas.index', compact('cabecera', 'heads'));
     }
 
+    public function indexEmitidas()
+    {
+        if (! auth()->user()->can('venta leer')) {
+            return view('sinpermiso.index');
+        }
+        $cabecera = Venta::with('cliente', 'usuario')
+            ->whereIn('estado', [2, 4])
+            ->get();
+
+        return view('ventas.emitidas', compact('cabecera'));
+    }
+
 
     public function create()
     {
@@ -53,8 +65,9 @@ class VentaController extends Controller
         $clientes = Cliente::where('estado', 1)->get();
         $configuracionQR = Configuracion::where('descripcion', 'qr')->first();
         $porcentajes = TablaPorcentaje::where('estado', 1)->get()->keyBy('cuota');
+        $moneda = Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
 
-        return view('ventas.create', compact('clientes', 'configuracionQR', 'porcentajes'));
+        return view('ventas.create', compact('clientes', 'configuracionQR', 'porcentajes', 'moneda'));
     }
 
     public function store(Request $request)
@@ -487,8 +500,9 @@ class VentaController extends Controller
         $cabecera = Venta::with('cliente', 'usuario')
             ->whereIn('estado', [1, 4])
             ->get();
+        $moneda = Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
 
-        return view('caja.index', compact('cabecera'));
+        return view('caja.index', compact('cabecera', 'moneda'));
     }
 
     public function indexCobradosCaja(Request $request)

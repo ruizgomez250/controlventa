@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Auditoria;
+use App\Models\Cliente;
 use App\Models\Compra_cab;
 use App\Models\Pagare;
 use App\Models\Producto;
@@ -18,23 +19,29 @@ class HomeController extends Controller
 
     public function index()
     {
-        if (in_array(request()->getHost(), config('tenancy.central_hosts'), true)) {
-            abort_unless(auth()->user()->empresa_id === null, 403);
-
-            return redirect()->route('empresas.index');
-        }
-
         $hoy = now()->toDateString();
         $anioActual = now()->year;
         $anioAnterior = $anioActual - 1;
+        $mesActual = now()->month;
+
+        $esAdminCentral = auth()->user()->empresa_id === null;
 
         // Ventas del día
         $ventasDelDia = Venta::whereDate('fecha_emision', $hoy)->sum('total');
 
         // Ventas del mes
         $ventasDelMes = Venta::whereYear('fecha_emision', $anioActual)
-            ->whereMonth('fecha_emision', now()->month)
+            ->whereMonth('fecha_emision', $mesActual)
             ->sum('total');
+
+        // Compras del mes
+        $comprasDelMes = Compra_cab::whereYear('fecha_emision', $anioActual)
+            ->whereMonth('fecha_emision', $mesActual)
+            ->sum('total_compra');
+
+        // Totales de catálogo
+        $totalClientes = Cliente::count();
+        $totalProductos = Producto::where('estado', 1)->count();
 
         // Productos más vendidos (últimos 12 meses)
         $productosMasVendidos = DB::table('ventas_detalles')
@@ -181,6 +188,10 @@ class HomeController extends Controller
         return view('home', compact(
             'ventasDelDia',
             'ventasDelMes',
+            'comprasDelMes',
+            'totalClientes',
+            'totalProductos',
+            'esAdminCentral',
             'productosMasVendidos',
             'productosBajoStock',
             'cantidadBajoStock',

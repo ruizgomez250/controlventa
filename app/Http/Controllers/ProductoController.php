@@ -68,12 +68,14 @@ class ProductoController extends Controller
         $categoria = Opcion::where('id_dominio', 3)->orderBy('descripcion')->get();
         $medida = Opcion::where('id_dominio', 5)->orderBy('id')->get();
         $proveedores = Proveedor::where('estado', 1)->orderBy('razonsocial')->get();
+        $moneda = Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
         return view('productos.create', [
             'medida' => $medida,
             'categoria' => $categoria,
             'impuestos' => $impuestos,
             'headcat' => $headcat,
-            'proveedores' => $proveedores
+            'proveedores' => $proveedores,
+            'moneda' => $moneda,
         ]);
     }
 

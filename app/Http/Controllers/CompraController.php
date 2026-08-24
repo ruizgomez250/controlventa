@@ -42,7 +42,8 @@ class CompraController extends Controller
         }
         $opcion = Opcion::where('id_dominio', 12)->get();
         $proveedor = Proveedor::where('estado', 1)->get();
-        return view('compras.create', compact('opcion', 'proveedor'));
+        $moneda = \App\Models\Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
+        return view('compras.create', compact('opcion', 'proveedor', 'moneda'));
     }
 
     /**
@@ -361,6 +362,7 @@ class CompraController extends Controller
         $cabecera = Compra_cab::with('proveedor', 'usuario')
             ->whereIn('id_estado', [1, 4])
             ->get();
-        return view('caja.compras_index', compact('cabecera'));
+        $moneda = \App\Models\Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
+        return view('caja.compras_index', compact('cabecera', 'moneda'));
     }
 }

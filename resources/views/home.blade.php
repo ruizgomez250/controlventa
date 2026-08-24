@@ -20,6 +20,17 @@
             {{ now()->format('d/m/Y') }}
         </div>
     </div>
+
+    @if(!empty($esAdminCentral) && \Illuminate\Support\Facades\Route::has('empresas.index'))
+        <div class="dashboard-admin-bar">
+            <i class="fas fa-building"></i>
+            {{ __('Administración central') }} ·
+            <a href="{{ route('empresas.index') }}">
+                {{ __('Gestionar empresas') }}
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    @endif
 @stop
 
 @section('content')
@@ -211,6 +222,70 @@
             </div>
         </div>
 
+    </div>
+
+    {{-- GRÁFICOS DEL DASHBOARD --}}
+    <div class="row">
+
+        {{-- VENTAS VS COMPRAS POR MES --}}
+        <div class="col-lg-8">
+            <div class="dashboard-card">
+                <div class="card-header-dash">
+                    <h3>
+                        <i class="fas fa-chart-bar text-modern-primary"></i>
+                        {{ __('Ventas vs Compras') }} · {{ $anioActual ?? now()->year }}
+                    </h3>
+                </div>
+
+                <div class="dashboard-chart-container">
+                    <canvas id="chartVentasCompras" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {{-- PRODUCTOS MÁS VENDIDOS (DISTRIBUCIÓN) --}}
+        <div class="col-lg-4">
+            <div class="dashboard-card">
+                <div class="card-header-dash">
+                    <h3>
+                        <i class="fas fa-chart-pie text-modern-success"></i>
+                        {{ __('Productos más vendidos') }}
+                    </h3>
+                </div>
+
+                <div class="dashboard-chart-container">
+                    @if($productosMasVendidosLista->isEmpty())
+                        <div class="empty-dashboard">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>{{ __('No hay ventas registradas.') }}</span>
+                        </div>
+                    @else
+                        <canvas id="chartProductosVendidos" height="170"></canvas>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {{-- EVOLUCIÓN DE VENTAS (AÑO ACTUAL VS ANTERIOR) --}}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="dashboard-card">
+                <div class="card-header-dash">
+                    <h3>
+                        <i class="fas fa-chart-line text-modern-warning"></i>
+                        {{ __('Evolución de ventas por mes') }} ·
+                        {{ $anioAnterior ?? (($anioActual ?? now()->year) - 1) }}
+                        vs {{ $anioActual ?? now()->year }}
+                    </h3>
+                </div>
+
+                <div class="dashboard-chart-container">
+                    <canvas id="chartEvolucionVentas" height="100"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- PRIMERA FILA DE INFORMACIÓN --}}
@@ -775,6 +850,34 @@
             color: var(--modern-primary);
         }
 
+        .dashboard-admin-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.85rem;
+            padding: 0.55rem 0.9rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            color: var(--modern-text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .dashboard-admin-bar i {
+            color: var(--modern-primary);
+        }
+
+        .dashboard-admin-bar a {
+            color: var(--modern-primary);
+            font-weight: 700;
+        }
+
+        .dashboard-admin-bar a i {
+            margin-left: 0.25rem;
+            font-size: 0.7rem;
+        }
+
         .dashboard-summary-card {
             min-height: 135px;
             display: flex;
@@ -933,6 +1036,11 @@
 
         .dashboard-table-container {
             overflow-x: auto;
+        }
+
+        .dashboard-chart-container {
+            position: relative;
+            padding: 1rem;
         }
 
         .dashboard-scroll {
@@ -1198,6 +1306,187 @@
                     }
                 }, 6000);
             });
+
+            if (typeof window.Chart === 'undefined') {
+                return;
+            }
+
+            var meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+            var moneda = function (value) {
+                return Number(value).toLocaleString('es-PY', {
+                    style: 'currency',
+                    currency: 'PYG',
+                    maximumFractionDigits: 0,
+                });
+            };
+
+            var formatoNumero = function (value) {
+                return Number(value).toLocaleString('es-PY');
+            };
+
+            @php
+                $ventasActualArr = array_values($ventasEsteAnio ?? array_fill(1, 12, 0));
+                $ventasAnteriorArr = array_values($ventasAnhoAnterior ?? array_fill(1, 12, 0));
+                $comprasActualArr = array_values($comprasEsteAnio ?? array_fill(1, 12, 0));
+
+                $productosChart = collect($productosMasVendidosLista)->take(7);
+                $productosChartLabels = $productosChart->map(function ($p) {
+                    return \Illuminate\Support\Str::limit(
+                        data_get($p, 'nombre')
+                            ?? data_get($p, 'descripcion')
+                            ?? data_get($p, 'producto.nombre')
+                            ?? 'Producto',
+                        22,
+                        '…'
+                    );
+                })->values()->all();
+
+                $productosChartData = $productosChart->map(function ($p) {
+                    return (float) (
+                        data_get($p, 'cantidad_vendida')
+                        ?? data_get($p, 'total_vendido')
+                        ?? data_get($p, 'cantidad')
+                        ?? 0
+                    );
+                })->values()->all();
+            @endphp
+
+            // Gráfico 1: Ventas vs Compras por mes
+            var canvasVentasCompras = document.getElementById('chartVentasCompras');
+
+            if (canvasVentasCompras) {
+                new Chart(canvasVentasCompras, {
+                    type: 'bar',
+                    data: {
+                        labels: meses,
+                        datasets: [
+                            {
+                                label: 'Ventas',
+                                data: @json($ventasActualArr),
+                                backgroundColor: 'rgba(37, 99, 235, 0.75)',
+                                borderColor: '#2563eb',
+                                borderWidth: 1,
+                            },
+                            {
+                                label: 'Compras',
+                                data: @json($comprasActualArr),
+                                backgroundColor: 'rgba(234, 88, 12, 0.75)',
+                                borderColor: '#ea580c',
+                                borderWidth: 1,
+                            },
+                        ],
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        legend: { display: true, position: 'top' },
+                        scales: {
+                            xAxes: [{ gridLines: { display: false } }],
+                            yAxes: [{
+                                ticks: { beginAtZero: true, callback: formatoNumero },
+                                gridLines: { color: 'rgba(15, 23, 42, 0.06)' },
+                            }],
+                        },
+                        tooltips: {
+                            callbacks: {
+                                label: function (tooltipItem, data) {
+                                    var dataset = data.datasets[tooltipItem.datasetIndex];
+                                    return dataset.label + ': ' + moneda(dataset.data[tooltipItem.index]);
+                                },
+                            },
+                        },
+                    },
+                });
+            }
+
+            // Gráfico 2: Distribución de productos más vendidos
+            var canvasProductos = document.getElementById('chartProductosVendidos');
+
+            if (canvasProductos) {
+                new Chart(canvasProductos, {
+                    type: 'doughnut',
+                    data: {
+                        labels: @json($productosChartLabels),
+                        datasets: [{
+                            data: @json($productosChartData),
+                            backgroundColor: [
+                                '#2563eb', '#16a34a', '#dc2626', '#d97706',
+                                '#7c3aed', '#0891b2', '#db2777',
+                            ],
+                        }],
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 8, font: { size: 11 } },
+                        },
+                        tooltips: {
+                            callbacks: {
+                                label: function (tooltipItem, data) {
+                                    var label = data.labels[tooltipItem.index] || '';
+                                    var value = data.datasets[0].data[tooltipItem.index] || 0;
+                                    return label + ': ' + formatoNumero(value) + ' uds.';
+                                },
+                            },
+                        },
+                    },
+                });
+            }
+
+            // Gráfico 3: Evolución de ventas (año actual vs anterior)
+            var canvasEvolucion = document.getElementById('chartEvolucionVentas');
+
+            if (canvasEvolucion) {
+                new Chart(canvasEvolucion, {
+                    type: 'line',
+                    data: {
+                        labels: meses,
+                        datasets: [
+                            {
+                                label: @json($anioActual ?? now()->year),
+                                data: @json($ventasActualArr),
+                                borderColor: '#2563eb',
+                                backgroundColor: 'rgba(37, 99, 235, 0.10)',
+                                fill: true,
+                                tension: 0.35,
+                                pointRadius: 3,
+                                pointBackgroundColor: '#2563eb',
+                            },
+                            {
+                                label: @json($anioAnterior ?? (($anioActual ?? now()->year) - 1)),
+                                data: @json($ventasAnteriorArr),
+                                borderColor: '#16a34a',
+                                backgroundColor: 'rgba(22, 163, 74, 0.10)',
+                                fill: true,
+                                tension: 0.35,
+                                pointRadius: 3,
+                                pointBackgroundColor: '#16a34a',
+                            },
+                        ],
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        legend: { display: true, position: 'top' },
+                        scales: {
+                            xAxes: [{ gridLines: { display: false } }],
+                            yAxes: [{
+                                ticks: { beginAtZero: true, callback: formatoNumero },
+                                gridLines: { color: 'rgba(15, 23, 42, 0.06)' },
+                            }],
+                        },
+                        tooltips: {
+                            callbacks: {
+                                label: function (tooltipItem, data) {
+                                    var dataset = data.datasets[tooltipItem.datasetIndex];
+                                    return dataset.label + ': ' + moneda(dataset.data[tooltipItem.index]);
+                                },
+                            },
+                        },
+                    },
+                });
+            }
         });
     </script>
 @stop

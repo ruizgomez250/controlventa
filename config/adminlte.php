@@ -437,6 +437,14 @@ return [
 
         ['header' => 'Administración'],
         [
+            'text'       => 'Empresas',
+            'url'        => '/empresas',
+            'icon'       => 'fas fa-building',
+            'icon_color' => 'primary',
+            'classes'    => 'custom-icon-box-black',
+            'can'        => 'central.admin',
+        ],
+        [
             'text'       => 'Impuestos',
             'icon'       => 'fas fa-percent',
             'icon_color' => 'warning',
