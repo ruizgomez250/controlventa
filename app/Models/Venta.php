@@ -10,8 +10,10 @@ class Venta extends Model
 
     protected $fillable = [
         'id_usuario',
+        'client_uuid',
         'id_cliente',
         'tipo_comprobante',
+        'payment_method',
         'total',
         'fecha_emision',
         'numero_factura',
