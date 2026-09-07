@@ -35,6 +35,7 @@ class RolController extends Controller
         'reporte_venta' => ['leer'],
         'reporte_financiero' => ['leer'],
         'reporte_management' => ['leer'],
+        'fardo' => ['leer', 'crear', 'editar', 'finalizar'],
     ];
 
     public function index(): View
@@ -66,6 +67,7 @@ class RolController extends Controller
             'reporte_venta' => 'Reporte Ventas',
             'reporte_financiero' => 'Reporte Financiero',
             'reporte_management' => 'Reporte Gestión',
+            'fardo' => 'Fardos',
         ];
         $actionLabels = [
             'leer' => 'Ver',
@@ -75,6 +77,7 @@ class RolController extends Controller
             'modificar' => 'Modificar',
             'comercial' => 'Datos Comerciales',
             'stock' => 'Stock',
+            'finalizar' => 'Finalizar',
         ];
         $actionIcons = [
             'leer' => 'fa-eye',
@@ -84,6 +87,7 @@ class RolController extends Controller
             'modificar' => 'fa-cog',
             'comercial' => 'fa-chart-line',
             'stock' => 'fa-warehouse',
+            'finalizar' => 'fa-check-circle',
         ];
         $actionColors = [
             'leer' => 'info',
@@ -93,6 +97,7 @@ class RolController extends Controller
             'modificar' => 'secondary',
             'comercial' => 'primary',
             'stock' => 'secondary',
+            'finalizar' => 'primary',
         ];
 
         return view('roles.index', compact('usuarios', 'permissionGroups', 'displayNames', 'actionLabels', 'actionIcons', 'actionColors'));

@@ -3,6 +3,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Producto;
+use App\Models\GarmentType;
+use App\Models\ClothingSize;
 use App\Models\Venta;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,7 +17,7 @@ class MobileSyncController extends Controller
     public function updatedProducts(Request $request): JsonResponse
     {
         $request->validate(['last_sync' => ['nullable', 'date']]);
-        $query = Producto::query()->with(['categoriaproducto', 'unidaddemedida', 'impuesto']);
+        $query = Producto::query()->with(['categoriaproducto', 'unidaddemedida', 'impuesto', 'garmentType', 'clothingSize']);
         if ($request->filled('last_sync')) $query->where('updated_at', '>', $request->date('last_sync'));
         return response()->json(['success' => true, 'server_time' => now()->toIso8601String(), 'data' => $query->orderBy('updated_at')->get()]);
     }
@@ -27,10 +29,27 @@ class MobileSyncController extends Controller
             'descripcion' => ['required','string','max:150'], 'detalle' => ['nullable','string'],
             'stock' => ['required','numeric','min:0'], 'stock_minimo' => ['nullable','numeric','min:0'],
             'pventa' => ['required','numeric','min:0'], 'id_medida' => ['nullable','integer'],
+            'garment_type' => ['nullable','string','max:100'], 'clothing_size' => ['nullable','string','max:30'],
+            'brand' => ['nullable','string','max:80'], 'color' => ['nullable','string','max:60'],
+            'age_group' => ['nullable','string','max:40'], 'collection' => ['nullable','string','max:100'],
+            'bale_id' => ['nullable','integer','exists:bales,id'],
         ]);
+        $data['garment_type_id'] = filled($data['garment_type'] ?? null) ? GarmentType::firstOrCreate(['name' => trim($data['garment_type'])])->id : null;
+        $data['clothing_size_id'] = filled($data['clothing_size'] ?? null) ? ClothingSize::firstOrCreate(['name' => trim($data['clothing_size'])])->id : null;
+        unset($data['garment_type'], $data['clothing_size']);
         $data += ['estado' => 1, 'pcosto' => 0];
         $producto = Producto::updateOrCreate(['client_uuid' => $data['client_uuid']], $data);
+        if (!empty($data['bale_id'])) DB::table('bale_product_items')->insertOrIgnore(['bale_id' => $data['bale_id'], 'producto_id' => $producto->id, 'quantity' => $data['stock'], 'created_at' => now(), 'updated_at' => now()]);
         return response()->json(['success' => true, 'data' => $producto], $producto->wasRecentlyCreated ? 201 : 200);
+    }
+
+    public function clothingCatalog(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'garment_types' => GarmentType::orderBy('name')->pluck('name'),
+            'clothing_sizes' => ClothingSize::orderBy('sort_order')->orderBy('name')->pluck('name'),
+        ]);
     }
 
     public function uploadPhoto(Request $request, int $id): JsonResponse

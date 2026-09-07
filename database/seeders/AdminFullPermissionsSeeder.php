@@ -28,6 +28,7 @@ class AdminFullPermissionsSeeder extends Seeder
         'empresa'           => ['leer', 'crear', 'editar', 'borrar'],
         'persona'           => ['leer', 'crear', 'editar', 'borrar'],
         'entrega_insumo'    => ['leer', 'crear', 'editar', 'borrar'],
+        'fardo'             => ['leer', 'crear', 'editar', 'finalizar'],
     ];
 
     public function run(): void

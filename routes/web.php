@@ -22,6 +22,7 @@ use App\Http\Controllers\ReporteVentaNuevoController;
 use App\Http\Controllers\RolController;
 use App\Http\Controllers\TablaPorcentajeController;
 use App\Http\Controllers\VentaController;
+use App\Http\Controllers\BaleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +66,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('/cliente', ClienteController::class);
     Route::resource('/proveedor', ProveedorController::class);
     Route::resource('/producto', ProductoController::class);
+    Route::resource('/bales', BaleController::class)->except(['destroy']);
+    Route::post('/bales/{bale}/finalize', [BaleController::class, 'finalize'])->name('bales.finalize');
     Route::get('/qrproductover', [ProductoController::class, 'createReporte'])->name('qrproductover');
     Route::get('/qrproducto/{id}', [ProductoController::class, 'qrproducto'])->name('qrproducto');
     Route::get('/barcodeproducto/{id}', [ProductoController::class, 'barcodeproducto'])->name('barcodeproducto');

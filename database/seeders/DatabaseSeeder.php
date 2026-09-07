@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             AssignAllPermissionsToUserSeeder::class,
             AdminFullPermissionsSeeder::class,
+            OldNavyClothingCatalogSeeder::class,
         ]);
     }
 }

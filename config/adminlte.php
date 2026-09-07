@@ -312,6 +312,13 @@ return [
             ],
         ],
         [
+            'text' => 'Fardos',
+            'url' => '/bales',
+            'icon' => 'fas fa-boxes',
+            'icon_color' => 'teal',
+            'can' => 'fardo leer',
+        ],
+        [
             'text'       => 'Clientes',
             'icon'       => 'fas fa-users',
             'icon_color' => 'primary',

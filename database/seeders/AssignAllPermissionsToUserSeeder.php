@@ -24,6 +24,7 @@ class AssignAllPermissionsToUserSeeder extends Seeder
         'tabla_porcentaje'  => ['leer', 'modificar'],
         'configuracion'     => ['modificar'],
         'empresa'           => ['leer', 'crear', 'editar', 'borrar'],
+        'fardo'             => ['leer', 'crear', 'editar', 'finalizar'],
     ];
 
     public function run(): void
