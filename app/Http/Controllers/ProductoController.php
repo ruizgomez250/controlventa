@@ -100,6 +100,7 @@ class ProductoController extends Controller
                 'codigo'              => 'required|string|max:14|unique:productos,codigo',
                 'descripcion'         => 'required|string|max:150',
                 'detalle'             => 'nullable|string',
+                'gender'              => 'nullable|in:Femenino,Masculino,Unisex',
                 'id_categoria'        => 'required|exists:opciones,id',
                 'id_medida'           => 'required|exists:opciones,id',
                 'id_impuesto'         => 'required|exists:impuestos,id',
@@ -272,6 +273,7 @@ class ProductoController extends Controller
             'codigo'              => 'required|string|max:14|unique:productos,codigo,' . $producto->id,
             'descripcion'         => 'required|string|max:150',
             'detalle'             => 'nullable|string',
+            'gender'              => 'nullable|in:Femenino,Masculino,Unisex',
 
             'id_categoria'        => 'required|exists:opciones,id',
             'id_medida'           => 'required|exists:opciones,id',

@@ -9,7 +9,7 @@ class Producto extends Model
 {
     use HasFactory;
     protected $table = "productos"; //le personalizo el nombre a la tabla
-    protected $fillable = ['id', 'client_uuid', 'bale_id', 'bale_unit_cost', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'garment_type_id', 'clothing_size_id', 'brand', 'color', 'age_group', 'collection', 'stock', 'stock_minimo', 'stock_inicial', 'stock_maximo', 'ubicacion_deposito', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'imagen', 'id_impuesto', 'id_proveedor', 'pmayorista', 'cmayorista', 'dmayorista', 'tipo'];
+    protected $fillable = ['id', 'client_uuid', 'bale_id', 'bale_unit_cost', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'garment_type_id', 'clothing_size_id', 'brand', 'color', 'age_group', 'gender', 'collection', 'stock', 'stock_minimo', 'stock_inicial', 'stock_maximo', 'ubicacion_deposito', 'id_medida', 'estado', 'pcosto', 'pventa', 'observacion', 'imagen', 'id_impuesto', 'id_proveedor', 'pmayorista', 'cmayorista', 'dmayorista', 'tipo'];
 
     protected static function booted()
     {

@@ -11,17 +11,40 @@ class BaleController extends Controller
     public function index() { abort_unless(auth()->user()->can('fardo leer'), 403); $bales = Bale::with('supplierRelation')->withCount('products')->latest()->get(); return view('bales.index', compact('bales')); }
     public function create() { abort_unless(auth()->user()->can('fardo crear'), 403); return view('bales.form', ['bale' => new Bale(), 'suppliers' => Proveedor::orderBy('razonsocial')->get()]); }
     public function edit(Bale $bale) { abort_unless(auth()->user()->can('fardo editar'), 403); $bale->loadCount('products'); return view('bales.form', ['bale' => $bale, 'suppliers' => Proveedor::orderBy('razonsocial')->get()]); }
-    public function show(Bale $bale)
+    public function show(Request $request, Bale $bale)
     {
         abort_unless(auth()->user()->can('fardo leer'), 403);
         $bale->load('supplierRelation')->loadCount('products');
-        $products = \App\Models\Producto::with(['garmentType', 'clothingSize'])
+        $productsQuery = \App\Models\Producto::with(['garmentType', 'clothingSize'])
             ->where(function ($query) use ($bale) {
                 $query->where('bale_id', $bale->id)->orWhereHas('additionalBales', fn ($q) => $q->where('bales.id', $bale->id));
-            })
+            });
+
+        $filters = $request->validate([
+            'age_group' => ['nullable', 'array'],
+            'age_group.*' => ['string', 'max:40'],
+            'gender' => ['nullable', 'array'],
+            'gender.*' => ['string', 'max:30'],
+            'garment_type_id' => ['nullable', 'array'],
+            'garment_type_id.*' => ['integer', 'exists:garment_types,id'],
+        ]);
+
+        $catalogQuery = \App\Models\Producto::query()->where(function ($query) use ($bale) {
+            $query->where('bale_id', $bale->id)->orWhereHas('additionalBales', fn ($q) => $q->where('bales.id', $bale->id));
+        });
+        $ageGroups = (clone $catalogQuery)->whereNotNull('age_group')->where('age_group', '<>', '')->distinct()->orderBy('age_group')->pluck('age_group');
+        $genders = (clone $catalogQuery)->whereNotNull('gender')->where('gender', '<>', '')->distinct()->orderBy('gender')->pluck('gender');
+        $garmentTypes = \App\Models\GarmentType::whereHas('products', function ($query) use ($bale) {
+            $query->where('bale_id', $bale->id)->orWhereHas('additionalBales', fn ($q) => $q->where('bales.id', $bale->id));
+        })->orderBy('name')->get();
+
+        $products = $productsQuery
+            ->when(!empty($filters['age_group']), fn ($query) => $query->whereIn('age_group', $filters['age_group']))
+            ->when(!empty($filters['gender']), fn ($query) => $query->whereIn('gender', $filters['gender']))
+            ->when(!empty($filters['garment_type_id']), fn ($query) => $query->whereIn('garment_type_id', $filters['garment_type_id']))
             ->orderByDesc('productos.id')
-            ->paginate(30);
-        return view('bales.show', compact('bale', 'products'));
+            ->paginate(30)->withQueryString();
+        return view('bales.show', compact('bale', 'products', 'ageGroups', 'genders', 'garmentTypes'));
     }
 
     public function store(Request $request)

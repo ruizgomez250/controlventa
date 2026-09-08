@@ -119,6 +119,19 @@
                                 </x-adminlte-select>
                             </div>
 
+                            <div class="row">
+                                <x-adminlte-select name="gender"
+                                                   id="gender"
+                                                   label="Sexo"
+                                                   fgroup-class="col-md-4"
+                                                   data-placeholder="{{ __('Seleccionar sexo...') }}">
+                                    <option value="">{{ __('Sin especificar') }}</option>
+                                    <option value="Femenino" {{ old('gender', $producto->gender) === 'Femenino' ? 'selected' : '' }}>{{ __('Femenino') }}</option>
+                                    <option value="Masculino" {{ old('gender', $producto->gender) === 'Masculino' ? 'selected' : '' }}>{{ __('Masculino') }}</option>
+                                    <option value="Unisex" {{ old('gender', $producto->gender) === 'Unisex' ? 'selected' : '' }}>{{ __('Unisex') }}</option>
+                                </x-adminlte-select>
+                            </div>
+
                             @if ($errors->any())
                                 <div class="alert alert-danger">
                                     <strong>Verificar los datos:</strong>

@@ -57,7 +57,7 @@ class VentaController extends Controller
     }
 
 
-    public function create()
+    public function create(Request $request)
     {
         if (! auth()->user()->can('venta crear')) {
             return view('sinpermiso.index');
@@ -66,8 +66,13 @@ class VentaController extends Controller
         $configuracionQR = Configuracion::where('descripcion', 'qr')->first();
         $porcentajes = TablaPorcentaje::where('estado', 1)->get()->keyBy('cuota');
         $moneda = Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
+        $productIds = collect($request->input('productos', []))
+            ->filter(fn ($id) => filter_var($id, FILTER_VALIDATE_INT))
+            ->unique()->values()->take(100);
+        $productosSeleccionados = Producto::with(['unidaddemedida', 'impuesto', 'precioTiers'])
+            ->whereIn('id', $productIds)->where('stock', '>', 0)->get();
 
-        return view('ventas.create', compact('clientes', 'configuracionQR', 'porcentajes', 'moneda'));
+        return view('ventas.create', compact('clientes', 'configuracionQR', 'porcentajes', 'moneda', 'productosSeleccionados'));
     }
 
     public function store(Request $request)

@@ -455,7 +455,7 @@
 
         // --- Agregar Ítem ---
 
-        function addNewItem() {
+        function addNewItem(producto = null) {
             const newItem = document.createElement("div");
             newItem.classList.add("item", "px-2", "py-1");
 
@@ -550,12 +550,28 @@
             });
 
             actualizarSumaTotal();
-            codigoInput.focus();
+            if (producto) {
+                newItem.querySelector('input[name="codigo[]"]').value = producto.id;
+                newItem.querySelector('input[name="codigo1[]"]').value = producto.codigo;
+                newItem.querySelector('input[name="descripcion[]"]').value = `${producto.descripcion} (${Math.trunc(producto.stock)})`;
+                newItem.querySelector('input[name="unidad[]"]').value = producto.unidaddemedida?.descripcion || 'UNIDAD';
+                newItem.querySelector('input[name="cantidad[]"]').value = 1;
+                newItem.querySelector('input[name="precio[]"]').value = producto.pventa;
+                newItem.querySelector('input[name="precioorig[]"]').value = producto.pventa;
+                newItem.querySelector('input[name="iva[]"]').value = producto.impuesto?.valor ?? 0;
+                newItem.querySelector('input[name="precio_tiers[]"]').value = JSON.stringify(producto.precio_tiers || []);
+                actualizarSumaTotal();
+            } else {
+                codigoInput.focus();
+            }
+            return newItem;
         }
 
         // --- Cargar primer ítem al inicio ---
         document.addEventListener("DOMContentLoaded", () => {
-            addNewItem();
+            const seleccionados = @json($productosSeleccionados ?? []);
+            if (seleccionados.length) seleccionados.forEach(producto => addNewItem(producto));
+            else addNewItem();
         });
 
         // --- Funciones de producto, cliente, QR, etc. ---

@@ -31,7 +31,7 @@ class MobileSyncController extends Controller
             'pventa' => ['required','numeric','min:0'], 'id_medida' => ['nullable','integer'],
             'garment_type' => ['nullable','string','max:100'], 'clothing_size' => ['nullable','string','max:30'],
             'brand' => ['nullable','string','max:80'], 'color' => ['nullable','string','max:60'],
-            'age_group' => ['nullable','string','max:40'], 'collection' => ['nullable','string','max:100'],
+            'age_group' => ['nullable','string','max:40'], 'gender' => ['nullable','string','max:30'], 'collection' => ['nullable','string','max:100'],
             'bale_id' => ['nullable','integer','exists:bales,id'],
         ]);
         $data['garment_type_id'] = filled($data['garment_type'] ?? null) ? GarmentType::firstOrCreate(['name' => trim($data['garment_type'])])->id : null;
@@ -49,6 +49,7 @@ class MobileSyncController extends Controller
             'success' => true,
             'garment_types' => GarmentType::orderBy('name')->pluck('name'),
             'clothing_sizes' => ClothingSize::orderBy('sort_order')->orderBy('name')->pluck('name'),
+            'genders' => Producto::whereNotNull('gender')->where('gender', '<>', '')->distinct()->orderBy('gender')->pluck('gender'),
         ]);
     }
 
