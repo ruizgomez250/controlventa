@@ -41,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/fardos/{bale}', [BaleApiController::class, 'show']);
     Route::get('/fardos/{bale}/productos', [BaleApiController::class, 'products']);
     Route::post('/fardos/{bale}/productos/{producto}/sumar', [BaleApiController::class, 'addExisting']);
+    Route::patch('/fardos/{bale}', [BaleApiController::class, 'update']);
     Route::post('/fardos', [BaleApiController::class, 'store']);
     Route::post('/fardos/{bale}/iniciar', [BaleApiController::class, 'start']);
     Route::post('/fardos/{bale}/finalizar', [BaleApiController::class, 'finalize']);

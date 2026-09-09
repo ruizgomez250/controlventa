@@ -67,9 +67,15 @@ class MobileSyncController extends Controller
         $data = $request->validate([
             'client_uuid' => ['required','uuid'], 'id_cliente' => ['required','integer','exists:clientes,id'],
             'payment_method' => ['required','in:EFECTIVO,TARJETA,TRANSFERENCIA,CREDITO'], 'fecha_emision' => ['required','date'],
+            'installment_dates' => ['required_if:payment_method,CREDITO','prohibited_unless:payment_method,CREDITO','array','max:120'],
+            'installment_dates.*' => ['required','date_format:Y-m-d'],
             'items' => ['required','array','min:1'], 'items.*.id_producto' => ['required','integer','exists:productos,id'],
             'items.*.cantidad' => ['required','numeric','gt:0'], 'items.*.precio_u' => ['required','numeric','min:0'],
         ]);
+        $dates = $data['installment_dates'] ?? [];
+        $sortedDates = $dates;
+        sort($sortedDates);
+        if ($dates !== $sortedDates) throw ValidationException::withMessages(['installment_dates' => ['Las fechas de las cuotas deben estar ordenadas.']]);
         $existing = Venta::where('client_uuid', $data['client_uuid'])->first();
         if ($existing) return response()->json(['success' => true, 'data' => $existing->load('detalles')]);
 
@@ -87,6 +93,20 @@ class MobileSyncController extends Controller
                 }
                 $producto->decrement('stock', $item['cantidad']);
                 $venta->detalles()->create(['id_producto' => $producto->id, 'cantidad' => $item['cantidad'], 'descripcion' => $producto->descripcion, 'precio_u' => $item['precio_u'], 'monto' => $item['cantidad'] * $item['precio_u']]);
+            }
+            if ($data['payment_method'] === 'CREDITO') {
+                $dates = $data['installment_dates'];
+                $totalCents = (int) round($total * 100);
+                $baseCents = intdiv($totalCents, count($dates));
+                foreach ($dates as $index => $date) {
+                    \App\Models\Pagare::create([
+                        'id_venta' => $venta->id,
+                        'fecha_emision' => $data['fecha_emision'],
+                        'fecha_vencimiento' => $date,
+                        'monto' => ($baseCents + ($index < $totalCents % count($dates) ? 1 : 0)) / 100,
+                        'estado' => 1,
+                    ]);
+                }
             }
             return $venta;
         });

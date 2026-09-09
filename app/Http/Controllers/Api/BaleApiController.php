@@ -75,6 +75,42 @@ class BaleApiController extends Controller
         return response()->json(['success' => true, 'data' => Bale::create($data)->loadCount('products')], 201);
     }
 
+    public function update(Request $request, Bale $bale): JsonResponse
+    {
+        abort_unless($request->user()->can('fardo editar'), 403);
+        $data = $request->validate([
+            'purchase_date' => ['required', 'date_format:Y-m-d'],
+            'bale_type' => ['present', 'nullable', 'string', 'max:100'],
+            'purchase_amount' => ['required', 'numeric', 'min:0'],
+            'freight_amount' => ['required', 'numeric', 'min:0'],
+            'other_costs' => ['required', 'numeric', 'min:0'],
+            'estimated_quantity' => ['present', 'nullable', 'integer', 'min:1', 'max:2147483647'],
+            'actual_quantity' => ['present', 'nullable', 'integer', 'min:1', 'max:2147483647'],
+            'damaged_quantity' => ['required', 'integer', 'min:0', 'max:2147483647'],
+            'notes' => ['present', 'nullable', 'string', 'max:5000'],
+        ]);
+        $updated = DB::transaction(function () use ($bale, $data) {
+            $locked = Bale::whereKey($bale->id)->lockForUpdate()->firstOrFail();
+            $actual = $data['actual_quantity'];
+            $damaged = (int) $data['damaged_quantity'];
+            if (($locked->status === 'finalized' && $actual === null)
+                || ($actual === null && $damaged > 0)
+                || ($actual !== null && $damaged >= (int) $actual)) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'actual_quantity' => 'Indica la cantidad recibida y deja al menos una prenda aprovechable.',
+                ]);
+            }
+            // Editar cantidades no crea ni elimina mercaderías y conserva el estado y fecha de cierre.
+            $locked->update($data);
+            if ($locked->status === 'finalized') {
+                $unitCost = $locked->fresh()->unit_cost;
+                $locked->products()->update(['bale_unit_cost' => $unitCost, 'pcosto' => $unitCost]);
+            }
+            return $locked->fresh()->load('supplierRelation')->loadCount('products');
+        });
+        return response()->json(['success' => true, 'data' => $updated]);
+    }
+
     public function suppliers(): JsonResponse { return response()->json(['success' => true, 'data' => Proveedor::orderBy('razonsocial')->get(['id','razonsocial','ruc'])]); }
     public function storeSupplier(Request $request): JsonResponse
     {
