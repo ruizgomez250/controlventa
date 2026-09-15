@@ -3,7 +3,7 @@
 return [
     'central_hosts' => array_values(array_filter(array_map(
         'trim',
-        explode(',', env('CENTRAL_HOSTS', 'localhost,127.0.0.1'))
+        explode(',', env('CENTRAL_HOSTS', 'localhost,127.0.0.1,10.11.0.114'))
     ))),
 
     'base_domain' => env('TENANT_BASE_DOMAIN', 'lvh.me'),

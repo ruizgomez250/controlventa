@@ -28,7 +28,7 @@ class MobileSyncController extends Controller
             'client_uuid' => ['required','uuid'], 'codigo' => ['required','string','max:14'],
             'descripcion' => ['required','string','max:150'], 'detalle' => ['nullable','string'],
             'stock' => ['required','numeric','min:0'], 'stock_minimo' => ['nullable','numeric','min:0'],
-            'pventa' => ['required','numeric','min:0'], 'id_medida' => ['nullable','integer'],
+            'pcosto' => ['nullable','numeric','min:0'], 'pventa' => ['required','numeric','min:0'], 'id_medida' => ['nullable','integer'],
             'garment_type' => ['nullable','string','max:100'], 'clothing_size' => ['nullable','string','max:30'],
             'brand' => ['nullable','string','max:80'], 'color' => ['nullable','string','max:60'],
             'age_group' => ['nullable','string','max:40'], 'gender' => ['nullable','string','max:30'], 'collection' => ['nullable','string','max:100'],
@@ -37,7 +37,12 @@ class MobileSyncController extends Controller
         $data['garment_type_id'] = filled($data['garment_type'] ?? null) ? GarmentType::firstOrCreate(['name' => trim($data['garment_type'])])->id : null;
         $data['clothing_size_id'] = filled($data['clothing_size'] ?? null) ? ClothingSize::firstOrCreate(['name' => trim($data['clothing_size'])])->id : null;
         unset($data['garment_type'], $data['clothing_size']);
-        $data += ['estado' => 1, 'pcosto' => 0];
+        $data += ['estado' => 1];
+        // Al editar una prenda sincronizada, conservar su costo de compra.
+        if (($data['pcosto'] ?? null) === null) {
+            unset($data['pcosto']);
+            if (!Producto::where('client_uuid', $data['client_uuid'])->exists()) $data['pcosto'] = 0;
+        }
         $producto = Producto::updateOrCreate(['client_uuid' => $data['client_uuid']], $data);
         if (!empty($data['bale_id'])) DB::table('bale_product_items')->insertOrIgnore(['bale_id' => $data['bale_id'], 'producto_id' => $producto->id, 'quantity' => $data['stock'], 'created_at' => now(), 'updated_at' => now()]);
         return response()->json(['success' => true, 'data' => $producto], $producto->wasRecentlyCreated ? 201 : 200);
