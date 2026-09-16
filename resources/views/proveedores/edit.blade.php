@@ -12,6 +12,12 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
+                    @if ($errors->any())
+                        <div class="alert alert-danger" role="alert">
+                            <strong>No se pudo actualizar el proveedor:</strong>
+                            <ul class="mb-0">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                        </div>
+                    @endif
                     <form action="{{ route('proveedor.update', $proveedor) }}" method="post">
                         @csrf
                         @method('put')
@@ -20,34 +26,34 @@
                         <div class="row">
                             <x-adminlte-input name="razonsocial" label="Razón Social"
                                 placeholder="{{ __('Ingresar nombre de persona o empresa') }}" fgroup-class="col-md-8"
-                                value="{{ $proveedor->razonsocial }}" />
+                                value="{{ old('razonsocial', $proveedor->razonsocial) }}" />
                             <x-adminlte-input name="ruc" label="Ruc" placeholder="{{ __('Ingresar ruc') }}"
-                                fgroup-class="col-md-4" value="{{ $proveedor->ruc }}" />
+                                fgroup-class="col-md-4" value="{{ old('ruc', $proveedor->ruc) }}" />
                         </div>
 
                         <div class="row">
                             <x-adminlte-input name="celular" label="Celular" placeholder="{{ __('Ingresar número de celular') }}"
-                                fgroup-class="col-md-3" value="{{ $proveedor->celular }}" />
+                                fgroup-class="col-md-3" value="{{ old('celular', $proveedor->celular) }}" />
                             <x-adminlte-input name="correo" type="email" label="Email"
                                 placeholder="{{ __('Ingresar dirección de correo electronico') }}" fgroup-class="col-md-3"
-                                value="{{ $proveedor->correo }}" />
+                                value="{{ old('correo', $proveedor->correo) }}" />
                             <x-adminlte-input name="direccion" label="Dirección"
                                 placeholder="{{ __('Ingresar dirección de domicilio') }}" fgroup-class="col-md-6"
-                                value="{{ $proveedor->direccion }} " />
+                                value="{{ old('direccion', $proveedor->direccion) }}" />
                         </div>
 
                         <div class="row">
                             {{-- Disabled --}}
                             <x-adminlte-textarea name="observacion" label="Observación" fgroup-class="col-md-12">
-                                {{ $proveedor->observacion }}
+                                {{ old('observacion', $proveedor->observacion) }}
                             </x-adminlte-textarea>
                         </div>
 
                         <div class="row">
                             <label>{{ __('Estado:') }}</label>
                             <select name="estado" id="estado">
-                                <option value="1" {{$proveedor->estado === 1 ? 'selected' : ''}}>{{ __('Activo') }}</option>
-                                <option value="0" {{$proveedor->estado === 0 ? 'selected' : ''}}>{{ __('Inactivo') }}</option>
+                                <option value="1" @selected(old('estado', $proveedor->estado) == '1')>{{ __('Activo') }}</option>
+                                <option value="0" @selected(old('estado', $proveedor->estado) == '0')>{{ __('Inactivo') }}</option>
                               </select>
                         </div>
 

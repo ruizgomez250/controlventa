@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use App\Models\Proveedor;
 use App\Models\Opcion;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ProveedorController extends Controller
 {
@@ -55,18 +56,7 @@ class ProveedorController extends Controller
         if (!auth()->user()->can('proveedor crear')) {
             return redirect()->route('sinpermiso');
         }
-        $estado = $request->input('estado');
-        if ($estado === 'true') {
-            $estado = 1;
-        } elseif ($estado === 'false' || $estado === null) {
-            $estado = 0;
-        } else {
-            $estado = $request->input('estado');
-        }
-
-        // Recoger todos los datos del request, incluyendo el campo 'estado' procesado
-        $data = $request->all();
-        $data['estado'] = $estado;
+        $data = $this->validatedSupplier($request);
 
         // Crear el nuevo proveedor
         Proveedor::create($data);
@@ -101,13 +91,30 @@ class ProveedorController extends Controller
         if (!auth()->user()->can('proveedor editar')) {
             return redirect()->route('sinpermiso');
         }
-        // Recoger todos los datos del request excepto 'estado'
-
-        $data = $request->input();
+        $data = $this->validatedSupplier($request);
 
         // Actualizar el proveedor con los datos procesados
         $proveedor->update($data);
         return redirect()->route('proveedor.index')->with('success', 'Proveedor actualizado con éxito');
+    }
+
+    private function validatedSupplier(Request $request): array
+    {
+        $request->merge([
+            'razonsocial' => trim((string) $request->input('razonsocial')),
+            'ruc' => trim((string) $request->input('ruc')),
+        ]);
+
+        return $request->validate([
+            'razonsocial' => ['required', 'string', 'max:70'],
+            'ruc' => ['required', 'string', 'max:14'],
+            'direccion' => ['nullable', 'string', 'max:150'],
+            'correo' => ['nullable', 'email', 'max:50'],
+            'telefono' => ['nullable', 'string', 'max:30'],
+            'celular' => ['nullable', 'string', 'max:12'],
+            'observacion' => ['nullable', 'string'],
+            'estado' => ['required', Rule::in(['0', '1'])],
+        ]);
     }
 
 

@@ -63,6 +63,12 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
+                @if ($errors->any())
+                    <div class="alert alert-danger" role="alert">
+                        <strong>No se pudo guardar el proveedor:</strong>
+                        <ul class="mb-0">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                    </div>
+                @endif
                 <form action="{{ route('proveedor.store') }}" method="post">
                     @csrf
                     @method('POST')
@@ -82,7 +88,7 @@
                             <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
                         <x-adminlte-input name="ruc" label="Ruc" placeholder="{{ __('Ingresar ruc') }}"
-                            fgroup-class="col-md-4" />
+                            fgroup-class="col-md-4" value="{{ old('ruc') }}" />
                         @error('ruc')
                             <div class="alert alert-danger">{{ $message }}</div>
                         @enderror
@@ -96,10 +102,10 @@
                                 'labelText' => '<i class="fas fa-power-off text-muted"></i>',
                             ];
                         @endphp
-                        <x-adminlte-select name="estado" label="Estado del Cliente"
+                        <x-adminlte-select name="estado" label="Estado del Proveedor"
                             data-placeholder="{{ __('Seleccionar una opción...') }}" fgroup-class="col-md-3">
-                            <option value="1">{{ __('Activo') }}</option>
-                            <option value="0">{{ __('Inactivo') }}</option>
+                            <option value="1" @selected(old('estado', '1') == '1')>{{ __('Activo') }}</option>
+                            <option value="0" @selected(old('estado') == '0')>{{ __('Inactivo') }}</option>
                         </x-adminlte-select>
                     </div>
 
