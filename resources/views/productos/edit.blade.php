@@ -11,7 +11,7 @@
     $defaultImage = asset('images/default.png');
 
     $imagenActual = $imagenUrl
-        ?? ($producto->imagen ? asset('storage/' . $producto->imagen) : $defaultImage);
+        ?? ($producto->web_imagen_url ?: $defaultImage);
 @endphp
 
 <div class="row">

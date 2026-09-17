@@ -9,8 +9,8 @@
 
 @section('content')
 <div class="row">
-    @if($bale->image_url)<div class="col-md-3"><div class="card"><img src="{{ $bale->image_url }}" class="card-img-top" alt="Foto de {{ $bale->code }}" style="height:190px;object-fit:cover"></div></div>@endif
-    <div class="{{ $bale->image_url ? 'col-md-9' : 'col-12' }}"><div class="row">
+    @if($bale->web_image_url)<div class="col-md-3"><div class="card"><img src="{{ $bale->web_image_url }}" class="card-img-top" alt="Foto de {{ $bale->code }}" style="height:190px;object-fit:cover"></div></div>@endif
+    <div class="{{ $bale->web_image_url ? 'col-md-9' : 'col-12' }}"><div class="row">
         <div class="col-sm-4"><div class="small-box bg-info"><div class="inner"><h3>{{ $bale->products_count }}</h3><p>Mercaderías registradas</p></div><div class="icon"><i class="fas fa-tshirt"></i></div></div></div>
         <div class="col-sm-4"><div class="small-box bg-success"><div class="inner"><h3>Gs. {{ number_format($bale->total_cost,0,',','.') }}</h3><p>Costo total del fardo</p></div><div class="icon"><i class="fas fa-money-bill-wave"></i></div></div></div>
         <div class="col-sm-4"><div class="small-box bg-warning"><div class="inner"><h3>Gs. {{ number_format($bale->unit_cost,0,',','.') }}</h3><p>Costo promedio</p></div><div class="icon"><i class="fas fa-calculator"></i></div></div></div>
@@ -58,7 +58,7 @@
         @forelse($products as $product)
             <tr>
                 <td><input type="checkbox" class="producto-check" name="productos[]" value="{{ $product->id }}" @disabled($product->stock <= 0)></td>
-                <td><img src="{{ $product->imagen_url }}" alt="{{ $product->descripcion }}" class="img-thumbnail" style="width:70px;height:70px;object-fit:cover"></td>
+                <td><img src="{{ $product->web_imagen_url ?: asset('images/default.png') }}" alt="{{ $product->descripcion }}" class="img-thumbnail" style="width:70px;height:70px;object-fit:cover"></td>
                 <td>{{ $product->descripcion }}@if($product->color)<br><small class="text-muted">{{ $product->brand }}{{ $product->brand && $product->color ? ' · ' : '' }}{{ $product->color }}</small>@endif</td>
                 <td>{{ $product->age_group ?: '—' }}<br><small>{{ $product->gender ?: 'Sin sexo' }}</small></td>
                 <td>{{ $product->garmentType?->name ?: '—' }}<br><small>{{ $product->clothingSize?->name ?: 'Sin talla' }}</small></td>

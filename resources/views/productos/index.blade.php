@@ -23,9 +23,7 @@
                     <x-adminlte-datatable id="table1" :heads="$heads" head-theme="dark" theme="light" striped hoverable with-buttons>
                         @foreach ($producto as $row)
                             @php
-                                $imagenUrl = $row->imagen
-                                    ? asset('storage/' . $row->imagen)
-                                    : asset('images/default.png');
+                                $imagenUrl = $row->web_imagen_url ?: asset('images/default.png');
 
                                 $detalleProducto = [
                                     'id' => $row->id,

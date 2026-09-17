@@ -73,7 +73,7 @@ class Producto extends Model
 
     public function getWebImagenUrlAttribute(): ?string
     {
-        return $this->imagen ? route('media.web', ['type' => 'productos', 'file' => basename($this->imagen)], false) : null;
+        return $this->imagen ? rtrim(request()->getBaseUrl(), '/') . route('media.web', ['type' => 'productos', 'file' => basename($this->imagen)], false) : null;
     }
 
     public function impuesto()

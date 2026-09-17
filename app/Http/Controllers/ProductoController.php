@@ -236,9 +236,7 @@ class ProductoController extends Controller
         // URL de la imagen actual del producto.
         // En la BD se guarda algo como: productos/archivo.jpg
         // En el navegador se muestra como: public/storage/productos/archivo.jpg
-        $imagenUrl = $producto->imagen
-            ? asset('storage/' . $producto->imagen)
-            : null;
+        $imagenUrl = $producto->web_imagen_url;
 
         return view('productos.edit', [
             'headcat'     => $headcat,

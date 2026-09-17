@@ -4,7 +4,7 @@
 @if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
 <div class="card"><form method="POST" action="{{ $bale->exists ? route('bales.update',$bale) : route('bales.store') }}">@csrf @if($bale->exists)@method('PUT')@endif
 <div class="card-body"><div class="row">
-@if($bale->image_url)<div class="form-group col-12"><label>Foto registrada desde la APK</label><br><img src="{{ $bale->image_url }}" alt="Foto de {{ $bale->code }}" class="img-thumbnail" style="max-width:320px;max-height:220px;object-fit:cover"></div>@endif
+@if($bale->web_image_url)<div class="form-group col-12"><label>Foto registrada desde la APK</label><br><img src="{{ $bale->web_image_url }}" alt="Foto de {{ $bale->code }}" class="img-thumbnail" style="max-width:320px;max-height:220px;object-fit:cover"></div>@endif
 <div class="form-group col-md-4"><label>Código (automático si se deja vacío)</label><input class="form-control" name="code" value="{{ old('code',$bale->code) }}"></div>
 <div class="form-group col-md-4"><label>Fecha de compra *</label><input type="date" class="form-control" required name="purchase_date" value="{{ old('purchase_date',$bale->purchase_date?->format('Y-m-d') ?: now()->format('Y-m-d')) }}"></div>
 <div class="form-group col-md-4"><label>Cantidad estimada</label><input type="number" min="1" class="form-control" name="estimated_quantity" value="{{ old('estimated_quantity',$bale->estimated_quantity) }}"></div>

@@ -16,7 +16,7 @@ class Bale extends Model
     public function supplierRelation() { return $this->belongsTo(Proveedor::class, 'supplier_id'); }
     public function getSupplierNameAttribute(): ?string { return $this->supplierRelation?->razonsocial ?: $this->supplier; }
     public function getImageUrlAttribute(): ?string { return $this->image ? asset('storage/' . $this->image) : null; }
-    public function getWebImageUrlAttribute(): ?string { return $this->image ? route('media.web', ['type' => 'fardos', 'file' => basename($this->image)], false) : null; }
+    public function getWebImageUrlAttribute(): ?string { return $this->image ? rtrim(request()->getBaseUrl(), '/') . route('media.web', ['type' => 'fardos', 'file' => basename($this->image)], false) : null; }
     public function getTotalCostAttribute(): float { return (float) $this->purchase_amount + (float) $this->freight_amount + (float) $this->other_costs; }
     public function getSellableQuantityAttribute(): int
     {
