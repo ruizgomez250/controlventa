@@ -62,8 +62,11 @@ class MobileSyncController extends Controller
     {
         $request->validate(['photo' => ['required','image','max:10240']]);
         $producto = Producto::findOrFail($id);
-        if ($producto->imagen) Storage::disk('public')->delete($producto->imagen);
-        $producto->update(['imagen' => $request->file('photo')->store('productos', 'public')]);
+        $newImage = $request->file('photo')->store('productos', 'public');
+        abort_unless($newImage && Storage::disk('public')->exists($newImage), 500, 'No se pudo guardar la foto de la mercadería.');
+        $oldImage = $producto->imagen;
+        $producto->update(['imagen' => $newImage]);
+        if ($oldImage && $oldImage !== $newImage) Storage::disk('public')->delete($oldImage);
         return response()->json(['success' => true, 'data' => $producto->fresh()]);
     }
 

@@ -135,8 +135,11 @@ class BaleApiController extends Controller
     public function uploadPhoto(Request $request, Bale $bale): JsonResponse
     {
         $request->validate(['photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240']]);
-        if ($bale->image) Storage::disk('public')->delete($bale->image);
-        $bale->update(['image' => $request->file('photo')->store('fardos', 'public')]);
+        $newImage = $request->file('photo')->store('fardos', 'public');
+        abort_unless($newImage && Storage::disk('public')->exists($newImage), 500, 'No se pudo guardar la foto del fardo.');
+        $oldImage = $bale->image;
+        $bale->update(['image' => $newImage]);
+        if ($oldImage && $oldImage !== $newImage) Storage::disk('public')->delete($oldImage);
         return response()->json(['success' => true, 'data' => $bale->fresh()->load('supplierRelation')->loadCount('products')]);
     }
 }

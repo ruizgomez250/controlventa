@@ -111,7 +111,7 @@
 
                     <div class="row">
 
-                        <x-adminlte-input name="celular" label="Celular" placeholder="{{ __('Ingresar número de celular') }}"
+                        <x-adminlte-input name="celular" type="tel" inputmode="tel" maxlength="25" label="Celular" placeholder="+54 9 11 1234 5678"
                             fgroup-class="col-md-3" value="{{ old('celular') }}" style="text-align: center;"
                             label-class="text-success">
                             <x-slot name="prependSlot">

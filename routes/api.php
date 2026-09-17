@@ -28,6 +28,12 @@ Route::post('/billing/webhook/{provider}', BillingWebhookController::class)
 Route::post('/login', [MobileAuthController::class, 'login'])->middleware('throttle:10,1');
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/media/{type}/{file}', function (string $type, string $file) {
+        abort_unless(in_array($type, ['fardos', 'productos'], true) && preg_match('/^[A-Za-z0-9_-][A-Za-z0-9._-]*\.(jpg|jpeg|png|webp)$/i', $file), 404);
+        $path = $type . '/' . $file;
+        abort_unless(\Illuminate\Support\Facades\Storage::disk('public')->exists($path), 404);
+        return \Illuminate\Support\Facades\Storage::disk('public')->response($path);
+    })->middleware('throttle:120,1');
     Route::post('/logout', [MobileAuthController::class, 'logout']);
     Route::get('/productos', [ProductoController::class, 'indexl'])->middleware('can:producto leer');
     Route::get('/productos/{id}', [ProductoController::class, 'showl'])->middleware('can:producto leer');

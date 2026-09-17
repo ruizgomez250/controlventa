@@ -111,7 +111,7 @@ class ProveedorController extends Controller
             'direccion' => ['nullable', 'string', 'max:150'],
             'correo' => ['nullable', 'email', 'max:50'],
             'telefono' => ['nullable', 'string', 'max:30'],
-            'celular' => ['nullable', 'string', 'max:12'],
+            'celular' => ['nullable', 'string', 'max:25'],
             'observacion' => ['nullable', 'string'],
             'estado' => ['required', Rule::in(['0', '1'])],
         ]);
