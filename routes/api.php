@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\VentaControllerApi;
 use App\Http\Controllers\Api\MobileAuthController;
 use App\Http\Controllers\Api\MobileSyncController;
 use App\Http\Controllers\Api\BaleApiController;
+use App\Http\Controllers\Api\MobilePeopleController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProductoController;
 use Illuminate\Http\Request;
@@ -39,6 +40,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/productos/{id}', [ProductoController::class, 'showl'])->middleware('can:producto leer');
     Route::post('/clientesa', [ClienteController::class, 'storeA'])->middleware('can:cliente crear');
     Route::get('/clientesa', [ClienteController::class, 'indexA'])->middleware('can:cliente leer');
+    Route::post('/mobile/clientes', [MobilePeopleController::class, 'createClient'])->middleware('can:cliente crear');
+    Route::put('/mobile/clientes/{cliente}', [MobilePeopleController::class, 'updateClient'])->middleware('can:cliente editar');
+    Route::put('/mobile/proveedores/{proveedor}', [MobilePeopleController::class, 'updateSupplier'])->middleware('can:proveedor editar');
     Route::get('/ventas', [VentaControllerApi::class, 'index'])->middleware('can:venta leer');
     Route::get('/ventas/{id}', [VentaControllerApi::class, 'show'])->middleware('can:venta leer');
     Route::get('/sync/productos/updated', [MobileSyncController::class, 'updatedProducts'])->middleware('can:producto leer');
