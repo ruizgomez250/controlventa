@@ -71,6 +71,11 @@ class Producto extends Model
             : asset('images/default.png');
     }
 
+    public function getWebImagenUrlAttribute(): ?string
+    {
+        return $this->imagen ? route('media.web', ['type' => 'productos', 'file' => basename($this->imagen)], false) : null;
+    }
+
     public function impuesto()
     {
         return $this->belongsTo(Impuesto::class, 'id_impuesto');

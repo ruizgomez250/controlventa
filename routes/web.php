@@ -60,6 +60,12 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 //acceden los autenticados
 Route::middleware('auth')->group(function () {
+    Route::get('/web-media/{type}/{file}', function (string $type, string $file) {
+        abort_unless(in_array($type, ['fardos', 'productos'], true) && preg_match('/^[A-Za-z0-9_-][A-Za-z0-9._-]*\.(jpg|jpeg|png|webp)$/i', $file), 404);
+        $path = $type . '/' . $file;
+        abort_unless(\Illuminate\Support\Facades\Storage::disk('public')->exists($path), 404);
+        return \Illuminate\Support\Facades\Storage::disk('public')->response($path);
+    })->name('media.web');
     Route::resource('impuestos', ImpuestoController::class);
     Route::resource('/gasto', GastoController::class);
     Route::resource('/tablaporc', TablaPorcentajeController::class);
