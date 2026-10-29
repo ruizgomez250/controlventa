@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\SifenConfiguracion;
 use App\Models\Venta;
 use App\Models\Cliente;
+use App\Helpers\RucParaguayo;
 use DOMDocument;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -88,20 +89,19 @@ class SifenService
         $cliente = $venta->cliente;
         $detalles = $venta->detalles;
 
-        $rucEmisor = preg_replace('/[^0-9]/', '', $this->config->ruc_emisor);
-        $dvEmisor = $this->config->dv;
+        $emisor = RucParaguayo::validar((string) $this->config->ruc_emisor, $this->config->dv);
+        $rucEmisor = $emisor['ruc'];
+        $dvEmisor = $emisor['dv'];
 
         $rucRec = '';
         $dvRec = '';
         $esContribuyente = false;
 
         if ($cliente && $cliente->ruc) {
-            $rucLimpio = preg_replace('/[^0-9]/', '', $cliente->ruc);
-            if (strlen($rucLimpio) > 1) {
-                $dvRec = substr($rucLimpio, -1);
-                $rucRec = substr($rucLimpio, 0, -1);
-                $esContribuyente = true;
-            }
+            $receptor = RucParaguayo::validar((string) $cliente->ruc, $cliente->dv);
+            $dvRec = $receptor['dv'];
+            $rucRec = $receptor['ruc'];
+            $esContribuyente = true;
         }
 
         $razonSocialRec = $cliente ? ($cliente->razonsocial ?: 'Consumidor Final') : 'Consumidor Final';
@@ -338,10 +338,12 @@ XML;
         $dTotGralOpe = number_format(round($dTotGralOpe), $this->precision, '.', '');
         $dTotIVA = number_format(round($dTotIVA), $this->precision, '.', '');
 
+        $sifenNs = self::SIFEN_NS;
+        $sifenXsi = self::SIFEN_XSI;
         $xmlCrudo = <<<XML
-<rDE xmlns="{$this::SIFEN_NS}"
-     xmlns:xsi="{$this::SIFEN_XSI}"
-     xsi:schemaLocation="{$this::SIFEN_NS} siRecepDE_v150.xsd">
+<rDE xmlns="{$sifenNs}"
+     xmlns:xsi="{$sifenXsi}"
+     xsi:schemaLocation="{$sifenNs} siRecepDE_v150.xsd">
     <dVerFor>150</dVerFor>
     <DE Id="{$Id}">
         <dDVId>{$cv}</dDVId>

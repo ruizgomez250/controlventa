@@ -374,6 +374,7 @@ return [
             'submenu'    => [
                 ['text' => 'Lista de Ventas',   'url' => '/venta', 'can' => 'venta leer'],
                 ['text' => 'Facturas Emitidas', 'url' => '/venta/emitidas', 'can' => 'venta leer'],
+                ['text' => 'Bandeja de comprobantes', 'url' => '/sifen/comprobantes', 'can' => 'venta leer', 'icon' => 'fas fa-inbox'],
                 ['text' => 'Registrar Venta',   'url' => '/venta/create', 'can' => 'venta crear'],
             ],
         ],
@@ -545,7 +546,7 @@ return [
     'plugins' => [
 
         'Datatables' => [
-            'active' => true,
+            'active' => false,
             'files' => [
                 [
                     'type' => 'js',
@@ -566,7 +567,7 @@ return [
         ],
 
         'DatatablesPlugins1' => [
-            'active' => true,
+            'active' => false,
             'files' => [
                 [
                     'type' => 'js',
@@ -612,7 +613,7 @@ return [
         ],
 
         'Select2' => [
-            'active' => true,
+            'active' => false,
             'files' => [
                 [
                     'type' => 'js',
@@ -628,12 +629,12 @@ return [
         ],
 
         'Chartjs' => [
-            'active' => true,
+            'active' => false,
             'files' => [
                 [
                     'type' => 'js',
-                    'asset' => false,
-                    'location' => '//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.min.js',
+                    'asset' => true,
+                    'location' => 'vendor/chartjs/Chart.bundle.min.js',
                 ],
             ],
         ],

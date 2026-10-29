@@ -1,5 +1,7 @@
 @extends('adminlte::page')
 
+@section('plugins.Datatables', true)
+
 @section('content_header')
     <div class="row">
         <div class="col-6">
@@ -38,7 +40,7 @@
                                 <th>{{ __('Monto Total') }}</th>
                                 <th>{{ __('Usuario') }}</th>
                                 <th>{{ __('Estado') }}</th>
-                                <th>{{ __('Acciones') }}</th>
+                                <th class="all">{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -62,7 +64,7 @@
 
                                 </td>
                                 <td>
-
+                                    @include('sifen.partials.imprimir', ['venta' => $compra])
                                     <a href="#" class="btn btn-sm btn-outline-secondary pagar-monto-btn"
                                         data-compra-id="{{ $compra->id }}" title="{{ __('Ver Comprobantes') }}">
                                         <i class="fa fa-sm fa-print"></i></a>

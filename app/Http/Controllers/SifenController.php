@@ -43,6 +43,72 @@ class SifenController extends Controller
         }
     }
 
+    public function comprobantes(Request $request)
+    {
+        abort_unless(auth()->user()->can('venta leer'), 403);
+        $filtros = $request->validate([
+            'estado' => 'nullable|in:sin_enviar,por_cobrar,enviando,pendiente,autorizado,rechazado,error,cancelado',
+            'buscar' => 'nullable|string|max:100',
+            'desde' => 'nullable|date',
+            'hasta' => 'nullable|date|after_or_equal:desde',
+        ]);
+        $query = Venta::with('cliente');
+        if ($estado = $filtros['estado'] ?? null) {
+            $estado === 'sin_enviar' ? $query->whereNull('sifen_estado') : $query->where('sifen_estado', $estado);
+        }
+        if ($buscar = $filtros['buscar'] ?? null) {
+            $query->where(function ($q) use ($buscar) {
+                $q->where('numero_factura', 'like', '%' . $buscar . '%')
+                    ->orWhere('sifen_cdc', 'like', '%' . $buscar . '%')
+                    ->orWhereHas('cliente', fn ($cliente) => $cliente->where('razonsocial', 'like', '%' . $buscar . '%'));
+            });
+        }
+        if (!empty($filtros['desde'])) $query->whereDate('fecha_emision', '>=', $filtros['desde']);
+        if (!empty($filtros['hasta'])) $query->whereDate('fecha_emision', '<=', $filtros['hasta']);
+        $comprobantes = $query->orderByDesc('id')->paginate(25)->withQueryString();
+        $estados = ['sin_enviar' => 'Sin enviar', 'por_cobrar' => 'Pendiente de cobro', 'enviando' => 'Enviando', 'pendiente' => 'Pendiente de aprobación', 'autorizado' => 'Aprobado', 'rechazado' => 'Rechazado', 'error' => 'Error técnico', 'cancelado' => 'Cancelado'];
+        return view('sifen.comprobantes', compact('comprobantes', 'estados'));
+    }
+
+    public function facturaTest(Request $request, Venta $venta)
+    {
+        abort_unless(auth()->user()->can('venta leer') || auth()->user()->can('caja leer'), 403);
+        $request->validate(['formato' => 'nullable|in:a4,ticket']);
+        $formato = $request->input('formato', 'a4');
+        $config = $this->sifen->getConfig();
+        abort_if($config->isProduccion(), 409, 'Esta vista es exclusiva de TEST.');
+        $venta->load(['cliente', 'detalles']);
+        $qrUrl = 'https://ekuatia.set.gov.py/consultas-test/';
+        $cdc = null;
+        $archivos = glob(storage_path('app/sifen/auditoria/*/*/*/venta_' . (int) $venta->id . '_*.xml')) ?: [];
+        rsort($archivos);
+        foreach ($archivos as $archivo) {
+            $xml = new \DOMDocument();
+            if (!@$xml->loadXML(file_get_contents($archivo), LIBXML_NONET)) {
+                continue;
+            }
+            $xpath = new \DOMXPath($xml);
+            $url = $xpath->evaluate('string(//*[local-name()="dCarQR"])');
+            $id = $xpath->evaluate('string(//*[local-name()="DE"]/@Id)');
+            $parts = parse_url($url);
+            parse_str($parts['query'] ?? '', $query);
+            if (($parts['scheme'] ?? '') === 'https'
+                && in_array($parts['host'] ?? '', ['ekuatia.set.gov.py', 'www.ekuatia.set.gov.py'], true)
+                && ($parts['path'] ?? '') === '/consultas-test/qr'
+                && preg_match('/^\d{44}$/', $id)
+                && ($query['Id'] ?? null) === $id
+                && (!$venta->sifen_cdc || $venta->sifen_cdc === $id)
+                && $xpath->query('//*[local-name()="Signature"]')->length > 0) {
+                $qrUrl = $url;
+                $cdc = $id;
+                break;
+            }
+        }
+        $qrSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(240)->margin(4)->generate($qrUrl);
+        return response()->view('ventas.factura-test', compact('venta', 'config', 'qrUrl', 'qrSvg', 'cdc', 'formato'))
+            ->header('Cache-Control', 'private, no-store');
+    }
+
     public function consultarCDC(Request $request, $id)
     {
         try {
@@ -78,9 +144,11 @@ class SifenController extends Controller
             $resultado = $this->sifen->consultarRUC($request->ruc);
 
             return response()->json([
-                'success' => true,
+                'success' => $resultado['encontrado'] ?? false,
                 'data' => $resultado,
             ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['success' => false, 'mensaje' => $e->getMessage()], 422);
         } catch (\Exception $e) {
             Log::error('SifenController::consultarRUC: ' . $e->getMessage());
             return response()->json([

@@ -1,5 +1,11 @@
 @extends('adminlte::page')
 
+@section('plugins.Select2', true)
+
+@section('plugins.Datatables', false)
+@section('plugins.DatatablesPlugins1', false)
+@section('plugins.Chartjs', false)
+
 @section('content_header')
     <h1 class="m-0 custom-heading">{{ __('Registrar Venta') }}</h1>
 @stop
@@ -9,6 +15,17 @@
 @endsection
 
 @section('content')
+    @if(session('error'))<div class="alert alert-danger">{{ session('error') }}</div>@endif
+    @if($errors->any())<div class="alert alert-danger">{{ $errors->first() }}</div>@endif
+    @if($ventaParaCobrar)
+        <div class="alert alert-success" id="venta-cobro-pendiente">
+            <span id="venta-cobro-estado">Venta #{{ $ventaParaCobrar->id }} registrada.</span>
+            <button type="button" id="abrir-cobro-venta" class="btn btn-success ml-2" onclick="abrirCobroVenta()">Cobrar venta</button>
+            @include('sifen.partials.imprimir', ['venta' => $ventaParaCobrar])
+        </div>
+    @elseif(session('ultimoId') && session('estadov') && !auth()->user()->can('caja crear'))
+        <div class="alert alert-warning">La venta se registró. Tu usuario necesita el permiso de crear cobros en caja para cobrarla.</div>
+    @endif
     <form action="{{ route('venta.store') }}" method="post" autocomplete="off" onkeypress="return event.keyCode != 13;">
         @csrf
         @method('POST')
@@ -72,7 +89,10 @@
                 </h3>
                 <h3>{{ __('Vuelto') }} {{ $moneda }}<span id="vuelto" class="text-info">0</span>
                 </h3>
-                <button type="button" class="btn btn-primary" onclick="pagar1()">{{ __('Guardar') }}</button>
+                <button type="button" class="btn btn-primary" id="confirmar-cobro" onclick="pagar1()">{{ __('Cobrar') }}</button>
+                @if($ventaParaCobrar)
+                    <div class="mt-3">@include('sifen.partials.imprimir', ['venta' => $ventaParaCobrar])</div>
+                @endif
             </div>
         </x-adminlte-modal>
 
@@ -85,9 +105,12 @@
                             value="{{ date('Y-m-d') }}" required>
                     </div>
                     <x-adminlte-input type="text" id="nrofactura" name="nrofactura" label="Factura Nº"
-                        fgroup-class="col-md-2" value="0" required />
+                        fgroup-class="col-md-2" :value="$proximaFactura" :readonly="$numeracionAutomatica" required />
                     <x-adminlte-input type="text" id="timbrado" name="timbrado" label="Timbrado Nº"
-                        fgroup-class="col-md-2" value="0" required />
+                        fgroup-class="col-md-2" :value="$numeracionAutomatica ? $sifenConfig->timbrado : old('timbrado', '')" :readonly="$numeracionAutomatica" required />
+                    @if($numeracionAutomatica)
+                        <div class="col-12"><small class="text-muted">{{ $sifenConfig->ambiente == 1 ? 'TEST' : 'Producción' }} · {{ str_pad($sifenConfig->establecimiento, 3, '0', STR_PAD_LEFT) }}-{{ str_pad($sifenConfig->punto_expedicion, 3, '0', STR_PAD_LEFT) }} · El número definitivo se asigna al guardar la venta.</small></div>
+                    @endif
 
                     <div class="col-md-3">
                         <div class="card" style="margin-top: -18px">
@@ -133,7 +156,7 @@
                                 <div class="input-group-text bg-gradient-primary"><i class="fas fa-user"></i></div>
                             </x-slot>
                             @foreach ($clientes as $item)
-                                <option value="{{ $item->id }}" data-ruc="{{ $item->ruc }}">
+                                <option value="{{ $item->id }}" data-ruc="{{ $item->ruc_completo }}">
                                     {{ $item->razonsocial }}</option>
                             @endforeach
                         </x-adminlte-select2>
@@ -248,29 +271,31 @@
 @stop
 
 @push('js')
-    <script src="{{ asset('jsQR.js') }}"></script>
+    @if ($configuracionQR && $configuracionQR->estado == 1)
+        <script src="{{ asset('jsQR.js') }}" defer></script>
+    @endif
     <script src="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.js') }}"></script>
 
-    @if (session('success') && session('ultimoId') && session('estadov'))
+    @if ($ventaParaCobrar)
         <script>
-            $(function() {
-                let compraId = {{ session('ultimoId') }};
-                $.get(`{{ url('/') }}/venta/${compraId}/detalles`, function(response) {
-                    let total = 0,
-                        rows = '';
-                    response.detalles.forEach(d => {
-                        let monto = parseFloat(d.monto) - parseFloat(response.sumaMontos || 0);
-                        rows +=
-                            `<tr><td>${d.producto.descripcion}</td><td>${monto.toFixed(2)}</td></tr>`;
-                        total += monto;
-                    });
-                    $('#tablaModBody').html(rows);
-                    $('#montoAbonar1').val(total.toFixed(2));
-                    $('#montoAbonar').val(total.toFixed(2));
-                    $('#idfac').val(compraId);
-                    $('#pagomontoModal').modal('show');
-                }).fail(() => console.error('Error al cargar detalles.'));
-            });
+            let cobroVentaCompletado = false;
+            function abrirCobroVenta() {
+                if (cobroVentaCompletado) return;
+                const saldo = @json((float) $ventaParaCobrar->saldo_cobrar);
+                const detalles = @json($ventaParaCobrar->detalles->map->only(['descripcion', 'monto'])->values());
+                const $tabla = $('#tablaModBody').empty();
+                detalles.forEach(detalle => {
+                    $('<tr>').append($('<td>').text(detalle.descripcion))
+                        .append($('<td>').text(Number(detalle.monto).toFixed(2))).appendTo($tabla);
+                });
+                $('#montoAbonar1, #montoAbonar').val(saldo.toFixed(2));
+                $('#idfac').val(@json($ventaParaCobrar->id));
+                $('#descuent').val(0);
+                $('#descUs').val('');
+                $('#vuelto, #diferenciaAbonar').text('0.00');
+                $('#pagomontoModal').appendTo(document.body).modal('show');
+            }
+            $(function() { abrirCobroVenta(); });
         </script>
     @endif
 
@@ -680,6 +705,7 @@
         }
 
         function pagar1() {
+            if ($('#confirmar-cobro').prop('disabled')) return;
             const montoVal = parseFloat($('#montoAbonar').val()) || 0;
             if (montoVal <= 0) {
                 Swal.fire('Error', 'El monto a abonar debe ser mayor a 0', 'error');
@@ -694,6 +720,7 @@
                 cancelButtonText: 'Cancelar'
             }).then(result => {
                 if (result.isConfirmed) {
+                    $('#confirmar-cobro').prop('disabled', true);
                     const id = $('#idfac').val();
                     const monto = montoVal;
                     const desc = parseFloat($('#descuent').val()) || 0;
@@ -701,11 +728,23 @@
                             _token: '{{ csrf_token() }}'
                         })
                         .done(res => {
-                            Swal.fire('Éxito', res.success, 'success');
-                            window.open("{{ url('/') }}/documentopagomontopdf/" + res.caja, '_blank');
+                            if (!res.success || !res.caja) {
+                                Swal.fire('Error', 'No se pudo confirmar el cobro.', 'error');
+                                return;
+                            }
+                            if (typeof cobroVentaCompletado !== 'undefined') cobroVentaCompletado = true;
+                            $('#venta-cobro-estado').text('Cobro registrado correctamente.');
+                            $('#abrir-cobro-venta').hide();
+                            const fiscal = res.sifen || {};
+                            const detalleFiscal = fiscal.estado ? `SIFEN: ${fiscal.estado}. ${fiscal.mensaje || ''}` : 'Sin resultado fiscal.';
+                            Swal.fire({title: 'Cobro registrado', text: `${res.success} ${detalleFiscal}`,
+                                icon: ['error', 'rechazado'].includes(fiscal.estado) ? 'warning' : 'success',
+                                footer: '<a href="{{ route('sifen.comprobantes') }}">Ver bandeja de comprobantes</a>'});
+                            window.open(res.factura_url || "{{ url('/') }}/documentopagomontopdf/" + res.caja, '_blank');
                             $('#pagomontoModal').modal('hide');
                         })
-                        .fail(() => Swal.fire('Error', 'Hubo un error al procesar la solicitud', 'error'));
+                        .fail(() => Swal.fire('Error', 'Hubo un error al procesar la solicitud. Revisá Caja antes de intentar de nuevo.', 'error'))
+                        .always(() => $('#confirmar-cobro').prop('disabled', false));
                 }
             });
         }

@@ -62,17 +62,41 @@ class VentaController extends Controller
         if (! auth()->user()->can('venta crear')) {
             return view('sinpermiso.index');
         }
-        $clientes = Cliente::where('estado', 1)->get();
-        $configuracionQR = Configuracion::where('descripcion', 'qr')->first();
-        $porcentajes = TablaPorcentaje::where('estado', 1)->get()->keyBy('cuota');
-        $moneda = Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
+        $clientes = Cliente::where('estado', 1)->get(['id', 'razonsocial', 'ruc', 'dv']);
+        $configuracionVenta = Configuracion::whereIn('descripcion', ['qr', 'moneda', 'ventas'])
+            ->get(['descripcion', 'estado', 'observacion'])->keyBy('descripcion');
+        $configuracionQR = $configuracionVenta->get('qr');
+        $porcentajes = TablaPorcentaje::where('estado', 1)->get(['cuota', 'porcentaje'])->keyBy('cuota');
+        $moneda = $configuracionVenta->get('moneda')?->observacion ?? 'Gs.';
         $productIds = collect($request->input('productos', []))
             ->filter(fn ($id) => filter_var($id, FILTER_VALIDATE_INT))
             ->unique()->values()->take(100);
-        $productosSeleccionados = Producto::with(['unidaddemedida', 'impuesto', 'precioTiers'])
-            ->whereIn('id', $productIds)->where('stock', '>', 0)->get();
+        $productosSeleccionados = $productIds->isEmpty() ? collect()
+            : Producto::with(['unidaddemedida', 'impuesto', 'precioTiers'])
+                ->whereIn('id', $productIds)->where('stock', '>', 0)->get();
 
-        return view('ventas.create', compact('clientes', 'configuracionQR', 'porcentajes', 'moneda', 'productosSeleccionados'));
+        $ventaParaCobrar = null;
+        $pagoSimplificado = (bool) $configuracionVenta->get('ventas')?->estado;
+        $ventaPendienteId = session('venta_pendiente_cobro', session('ultimoId'));
+        if ($ventaPendienteId && $pagoSimplificado && auth()->user()->can('caja crear')) {
+            $ventaParaCobrar = Venta::with('detalles')->where('id_usuario', auth()->id())
+                ->whereIn('estado', [1, 4])->find($ventaPendienteId);
+            if ($ventaParaCobrar) {
+                $ventaParaCobrar->saldo_cobrar = max(0, (float) $ventaParaCobrar->total
+                    - (float) Caja::where('id_venta', $ventaParaCobrar->id)->sum('monto'));
+                if ($ventaParaCobrar->saldo_cobrar <= 0) $ventaParaCobrar = null;
+            }
+            if (!$ventaParaCobrar) session()->forget('venta_pendiente_cobro');
+        }
+
+        $sifenConfig = \App\Models\SifenConfiguracion::first([
+            'habilitado', 'timbrado', 'ultimo_numero_factura', 'ambiente', 'establecimiento', 'punto_expedicion',
+        ]);
+        $numeracionAutomatica = (bool) $sifenConfig?->habilitado;
+        $proximaFactura = $numeracionAutomatica
+            ? str_pad((string) app(\App\Services\SifenNumeracionService::class)->siguiente($sifenConfig), 7, '0', STR_PAD_LEFT)
+            : old('nrofactura', '');
+        return view('ventas.create', compact('clientes', 'configuracionQR', 'porcentajes', 'moneda', 'productosSeleccionados', 'ventaParaCobrar', 'sifenConfig', 'numeracionAutomatica', 'proximaFactura'));
     }
 
     public function store(Request $request)
@@ -125,6 +149,7 @@ class VentaController extends Controller
             $cabecera->estado = 1;
             $cabecera->timbrado_factura = $request->timbrado;
             $cabecera->id_usuario = auth()->id();
+            app(\App\Services\SifenNumeracionService::class)->asignar($cabecera);
             $cabecera->save();
 
             $ultimoId = $cabecera->id;
@@ -151,7 +176,7 @@ class VentaController extends Controller
                 }
 
                 $subtotal = $cantidadVendida * $precioUnitario;
-                $porcentajeImpuesto = (float) $producto->impuesto;
+                $porcentajeImpuesto = (float) ($producto->impuesto?->valor ?? 0);
                 $montoTotParc = round($subtotal * (1 + ($porcentajeImpuesto / 100)), 2);
                 $total += $montoTotParc;
 
@@ -197,22 +222,11 @@ class VentaController extends Controller
 
             DB::commit();
 
-            // ✅ FACTURACIÓN ELECTRÓNICA SIFEN
-            // Solo se emite el DE si SIFEN está habilitado en la configuración.
-            try {
-                $sifenService = app(\App\Services\SifenPkuatiaService::class);
-                if ($sifenService->isHabilitado()) {
-                    $resultado = $sifenService->emitir($cabecera->fresh(['cliente', 'detalles']));
-                    session(['sifen_ultimo' => $resultado]);
-                }
-            } catch (\Throwable $e) {
-                Log::error('Error al emitir DE a SIFEN.', [
-                    'venta_id' => $ultimoId,
-                    'exception' => $e->getMessage(),
-                ]);
-                $cabecera->sifen_estado = 'error';
-                $cabecera->save();
+            if ($estadov) {
+                session(['venta_pendiente_cobro' => $ultimoId]);
             }
+
+            // El envío SIFEN se inicia al confirmar el primer cobro.
 
             return redirect()->route('venta.create')->with([
                 'success' => 'La venta se ha registrado correctamente.',
@@ -381,7 +395,8 @@ class VentaController extends Controller
 
                 DB::commit();
 
-            return response()->json(['ventaycuotas' => $ventaycuotas, 'idcaja' => $caja->id, 'success' => 'Cuota pagada en forma exitosa.'], 200);
+            $sifen = $this->enviarSifenTrasCobro($cabecera);
+            return response()->json(['ventaycuotas' => $ventaycuotas, 'idcaja' => $caja->id, 'success' => 'Cuota pagada en forma exitosa.', 'sifen' => $sifen], 200);
         } catch (Exception $e) {
             DB::rollBack();
 
@@ -398,7 +413,11 @@ class VentaController extends Controller
 
                 DB::beginTransaction();
                 $montocondesc = $montoabonado + $descuento;
-                $venta = Venta::find($id);
+                $venta = Venta::query()->lockForUpdate()->findOrFail($id);
+                if (in_array((int) $venta->estado, [0, 2], true)) {
+                    DB::rollBack();
+                    return response()->json(['error' => 'La venta está anulada o ya fue cobrada. No se registró otro pago.'], 409);
+                }
                 //dd($venta);
                 if ($venta->tipo_comprobante == 'CONTADO') {
                     $venta->estado = 2;
@@ -432,11 +451,32 @@ class VentaController extends Controller
 
                 DB::commit();
 
-            return response()->json(['caja' => $caja->id, 'success' => 'Cuota pagada en forma exitosa.'], 200);
+            if ((string) session('venta_pendiente_cobro') === (string) $id) {
+                session()->forget('venta_pendiente_cobro');
+            }
+            $sifen = $this->enviarSifenTrasCobro($venta);
+            $facturaUrl = (int) $venta->fresh()->sifen_ambiente === 1
+                ? route('sifen.factura-test', ['venta' => $venta->id, 'formato' => 'ticket']) : null;
+            return response()->json(['caja' => $caja->id, 'success' => 'Cobro registrado correctamente.', 'sifen' => $sifen, 'factura_url' => $facturaUrl], 200);
         } catch (Exception $e) {
             DB::rollBack();
 
             return response()->json(['error' => 'Ha ocurrido un error al procesar la operación.'], 500);
+        }
+    }
+
+    private function enviarSifenTrasCobro(Venta $venta): array
+    {
+        // Un fallo fiscal no revierte un cobro que ya fue confirmado.
+        try {
+            return app(\App\Services\SifenCobroService::class)->enviar($venta);
+        } catch (\Throwable $e) {
+            try {
+                app(\App\Services\SifenPkuatiaService::class)->registrarError($venta, $e->getMessage());
+            } catch (\Throwable $registroError) {
+                Log::error('No se pudo guardar el resultado fiscal del cobro.', ['venta_id' => $venta->id]);
+            }
+            return ['estado' => 'error', 'mensaje' => 'El cobro se guardó, pero falló el envío fiscal. Revisá la bandeja de comprobantes antes de reenviar.'];
         }
     }
 
@@ -535,6 +575,7 @@ class VentaController extends Controller
         $idUsuarioLogueado = auth()->user()->id;
 
         $cabecera = Venta::select('ventas.*')
+            ->with(['cliente', 'usuario'])
             ->join('cajas', 'ventas.id', '=', 'cajas.id_venta')
             ->where('cajas.id_usuario', $idUsuarioLogueado)
             ->whereDate('cajas.fecha_cobro', $fecha)

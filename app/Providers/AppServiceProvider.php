@@ -31,15 +31,18 @@ class AppServiceProvider extends ServiceProvider
                 'configuracion' => ['modificar'],
                 'empresa' => ['leer', 'crear', 'editar', 'borrar'],
             ];
-            $creado = false;
+            $nombres = [];
             foreach ($grupos as $model => $acciones) {
                 foreach ($acciones as $accion) {
-                    $permiso = $model . ' ' . $accion;
-                    if (!Permission::where('name', $permiso)->exists()) {
-                        Permission::create(['name' => $permiso]);
-                        $creado = true;
-                    }
+                    $nombres[] = $model . ' ' . $accion;
                 }
+            }
+            // Una sola consulta; no se comparten resultados entre empresas/conexiones.
+            $existentes = Permission::whereIn('name', $nombres)->pluck('name')->all();
+            $creado = false;
+            foreach (array_diff($nombres, $existentes) as $permiso) {
+                Permission::create(['name' => $permiso]);
+                $creado = true;
             }
             if ($creado) {
                 app(PermissionRegistrar::class)->forgetCachedPermissions();

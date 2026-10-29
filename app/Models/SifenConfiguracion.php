@@ -25,6 +25,8 @@ class SifenConfiguracion extends Model
     protected $table = 'sifen_configuraciones';
 
     protected $fillable = [
+        'timbrado',
+        'fecha_inicio_timbrado',
         'ruc_emisor',               // RUC del emisor (2-8 dígitos)
         'dv',                       // Dígito verificador del RUC
         'razon_social',             // Razón social del emisor
@@ -72,7 +74,7 @@ class SifenConfiguracion extends Model
      */
     public function isHabilitado(): bool
     {
-        return $this->habilitado && $this->ruc_emisor && $this->dv && $this->certificado_p12;
+        return $this->habilitado && $this->ruc_emisor && $this->dv !== null && $this->dv !== '' && $this->certificado_p12;
     }
 
     /** Retorna la URL base del ambiente SIFEN (producción o testing) */

@@ -108,6 +108,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('/configuracion', ConfiguracionController::class);
 
     Route::get('/sifen/estado', [SifenController::class, 'estado'])->name('sifen.estado');
+    Route::get('/sifen/comprobantes', [SifenController::class, 'comprobantes'])->name('sifen.comprobantes');
+    Route::get('/sifen/factura-test/{venta}', [SifenController::class, 'facturaTest'])->name('sifen.factura-test');
     Route::get('/sifen/consultar-cdc/{id}', [SifenController::class, 'consultarCDC'])->name('sifen.consultarCDC');
     Route::get('/sifen/consultar-ruc', [SifenController::class, 'consultarRUC'])->name('sifen.consultarRUC');
     Route::post('/sifen/reemitir/{venta}', [SifenController::class, 'reemitir'])->name('sifen.reemitir');

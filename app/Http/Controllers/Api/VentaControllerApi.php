@@ -13,7 +13,7 @@ class VentaControllerApi extends Controller
         $ventas = Venta::query()
             ->with([
                 'usuario:id,name,email',
-                'cliente:id,razonsocial,ruc,telefono,correo,direccion',
+                'cliente:id,razonsocial,ruc,dv,telefono,correo,direccion',
                 'detalles.producto:id,descripcion,codigo,imagen',
                 'pagares:id,id_venta,monto,estado,fecha_vencimiento',
             ])
@@ -33,7 +33,7 @@ class VentaControllerApi extends Controller
         $venta = Venta::query()
             ->with([
                 'usuario:id,name,email',
-                'cliente:id,razonsocial,ruc,telefono,correo,direccion',
+                'cliente:id,razonsocial,ruc,dv,telefono,correo,direccion',
                 'detalles.producto:id,descripcion,codigo,imagen',
                 'pagares:id,id_venta,monto,estado,fecha_vencimiento',
             ])

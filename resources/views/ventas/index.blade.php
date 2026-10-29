@@ -1,5 +1,7 @@
 @extends('adminlte::page')
 
+@section('plugins.Datatables', true)
+
 @section('content_header')
     <div class="row">
         <div class="col-6">
@@ -28,8 +30,8 @@
                                 <th>{{ __('Tipo de Comprobante') }}</th>
                                 <th>{{ __('Total') }}</th>
                                 <th>{{ __('Usuario') }}</th>
-                                <th>{{ __('Estado') }}</th>
-                                <th>{{ __('Acciones') }}</th>
+                                <th class="all">{{ __('Estado') }}</th>
+                                <th class="all">{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -47,17 +49,21 @@
                                     <td>{{ number_format($compra->total, 0, '.', ',') }}</td>
                                     <td>{{ $compra->usuario->name }}</td>
                                     <td>
+                                        @include('sifen.partials.estado', ['venta' => $compra])
+                                        <div class="small mt-1">
                                         @if ($compra->estado == 1)
-                                            <span class="badge badge-warning">Pedido Generado</span>
+                                            <span>Pago: pendiente</span>
                                         @elseif ($compra->estado == 0)
-                                            <span class="badge badge-danger">Anulado</span>
+                                            <span>Venta anulada</span>
                                         @elseif ($compra->estado == 4)
-                                            <span class="badge badge-info">Pago parcial</span>
+                                            <span>Pago: parcial</span>
                                         @else
-                                            <span class="badge badge-success">Pagado</span>
+                                            <span>Pago: cobrado</span>
                                         @endif
+                                        </div>
                                     </td>
                                     <td>
+                                        @include('sifen.partials.imprimir', ['venta' => $compra])
                                         @if ($compra->estado == 1)
                                             <button type="button" class="btn btn-sm btn-outline-secondary"
                                                 id="delete-button"

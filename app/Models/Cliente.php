@@ -9,7 +9,7 @@ class Cliente extends Model
 {
     use HasFactory;
     protected $table = 'clientes'; 
-    protected  $fillable = ['id','razonsocial','ruc','direccion','correo','telefono','celular','estado','observacion'];
+    protected  $fillable = ['id','razonsocial','ruc','dv','direccion','correo','telefono','celular','estado','observacion'];
 
     public function ventas()
     {
@@ -18,29 +18,31 @@ class Cliente extends Model
 
     public function getRucLimpioAttribute(): string
     {
-        return preg_replace('/[^0-9]/', '', $this->ruc ?? '');
+        try {
+            return \App\Helpers\RucParaguayo::numeroConsulta((string) $this->ruc);
+        } catch (\InvalidArgumentException $e) {
+            return '';
+        }
     }
 
     public function getRucSinDVAttribute(): ?string
     {
-        $limpio = $this->ruc_limpio;
-        if (strlen($limpio) > 1) {
-            return substr($limpio, 0, -1);
-        }
-        return null;
+        return $this->ruc_limpio !== '' ? $this->ruc_limpio : null;
     }
 
     public function getDVAttribute(): ?string
     {
-        $limpio = $this->ruc_limpio;
-        if (strlen($limpio) > 1) {
-            return substr($limpio, -1);
-        }
-        return null;
+        return isset($this->attributes['dv']) ? (string) $this->attributes['dv'] : null;
+    }
+
+    public function getRucCompletoAttribute(): string
+    {
+        return (string) $this->ruc . ($this->dv !== null && $this->dv !== '' ? '-' . $this->dv : '');
     }
 
     public function getTieneRUCAttribute(): bool
     {
-        return strlen($this->ruc_limpio) > 1;
+        return preg_match('/^[0-9]{5,8}$/', (string) $this->ruc) === 1
+            && preg_match('/^\d$/', (string) $this->dv) === 1;
     }
 }

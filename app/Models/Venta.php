@@ -8,6 +8,11 @@ class Venta extends Model
 {
     protected $table = 'ventas'; //le personalizo el nombre de la tabla
 
+    protected $casts = [
+        'sifen_respuesta' => 'array',
+        'sifen_actualizado_at' => 'datetime',
+    ];
+
     protected $fillable = [
         'id_usuario',
         'client_uuid',

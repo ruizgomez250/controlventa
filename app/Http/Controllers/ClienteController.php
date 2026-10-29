@@ -13,6 +13,7 @@ use Illuminate\View\View;
 
 class ClienteController extends Controller
 {
+    use \App\Http\Controllers\Concerns\NormalizaRuc;
     public function index(): View
     {
         if (! auth()->user()->can('cliente leer')) {
@@ -120,6 +121,7 @@ class ClienteController extends Controller
             return redirect()->route('sinpermiso');
         }
         try {
+            $this->normalizarRuc($request);
             $validated = $request->validate($this->rules());
 
             Cliente::create($validated);
@@ -135,7 +137,8 @@ class ClienteController extends Controller
     public function apistore(Request $request)
     {
         try {
-            Cliente::create($request->all());
+            $this->normalizarRuc($request);
+            Cliente::create($request->validate($this->rules()));
 
             return redirect()->route('cliente.create')->with('success', 'Operación exitosa');
         } catch (ValidationException $e) {
@@ -150,8 +153,11 @@ class ClienteController extends Controller
 
         try {
             // Validación: solo 'nombre' es obligatorio
+            $this->normalizarRuc($request);
             $validatedData = $request->validate([
                 'razonsocial' => 'required|string|max:255',
+                'ruc' => ['nullable', 'string', 'regex:/^[0-9]{5,8}$/'],
+                'dv' => ['nullable', 'required_with:ruc', 'string', 'regex:/^\d$/'],
                 'telefono' => 'nullable|string|max:30',
                 'correo' => 'nullable|email|max:255',
                 'direccion' => 'nullable|string|max:255',
@@ -202,9 +208,12 @@ class ClienteController extends Controller
             return redirect()->route('sinpermiso');
         }
         try {
+            $this->normalizarRuc($request);
             $cliente->update($request->validate($this->rules()));
 
             return redirect()->route('cliente.index')->with('success', 'Operación exitosa');
+        } catch (ValidationException $e) {
+            return redirect()->route('cliente.edit', $cliente)->withErrors($e->validator)->withInput();
         } catch (Exception $e) {
             return redirect()->route('cliente.index')->with('error', 'no se pudo completar la operacion!!');
         }
@@ -229,6 +238,7 @@ class ClienteController extends Controller
         if (! auth()->user()->can('cliente crear')) {
             return view('sinpermiso.index');
         }
+        $this->normalizarRuc($request);
         Cliente::create($request->validate($this->rules()));
         // Retorna una respuesta JSON con código de respuesta HTTP 201
         return response()->json([
@@ -241,7 +251,8 @@ class ClienteController extends Controller
     {
         return [
             'razonsocial' => ['required', 'string', 'max:255'],
-            'ruc' => ['nullable', 'string', 'max:30'],
+            'ruc' => ['nullable', 'required_with:dv', 'string', 'regex:/^[0-9]{5,8}$/'],
+            'dv' => ['nullable', 'required_with:ruc', 'string', 'regex:/^\d$/'],
             'direccion' => ['nullable', 'string', 'max:255'],
             'correo' => ['nullable', 'email:rfc', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:30'],

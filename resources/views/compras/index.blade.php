@@ -1,5 +1,7 @@
 @extends('adminlte::page')
 
+@section('plugins.Datatables', true)
+
 @section('content_header')
     <div class="row">
         <div class="col-6">

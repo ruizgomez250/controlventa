@@ -159,7 +159,7 @@
                                     <div class="form-group">
                                         <label>{{ __('DV') }}</label>
                                         <input type="text" name="sifen_dv" class="form-control"
-                                            value="{{ $sifenConfig->dv }}" placeholder="Ej: 1" maxlength="3">
+                                            value="{{ $sifenConfig->dv }}" placeholder="Ej: 1" maxlength="1" inputmode="numeric" pattern="[0-9]">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -255,11 +255,25 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label>{{ __('Contraseña del Certificado') }}</label>
-                                        <input type="password" name="sifen_certificado_password" class="form-control"
-                                            value="{{ $sifenConfig->certificado_password }}" placeholder="********">
+                                        <label for="sifen_certificado_password">{{ __('Contraseña del Certificado') }}</label>
+                                        <div class="input-group">
+                                            <input type="password" name="sifen_certificado_password" class="form-control"
+                                                id="sifen_certificado_password"
+                                                value="{{ $sifenConfig->certificado_password }}" placeholder="********">
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-secondary"
+                                                    id="toggle_certificado_password" aria-controls="sifen_certificado_password"
+                                                    aria-label="Mostrar contraseña" title="Mostrar contraseña" aria-pressed="false">
+                                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 form-group"><label for="sifen_timbrado">Timbrado electrónico</label><input id="sifen_timbrado" name="sifen_timbrado" class="form-control" maxlength="8" pattern="[0-9]{8}" value="{{ $sifenConfig->timbrado }}"></div>
+                                <div class="col-md-4 form-group"><label for="sifen_fecha_inicio_timbrado">Inicio de vigencia del timbrado</label><input type="date" id="sifen_fecha_inicio_timbrado" name="sifen_fecha_inicio_timbrado" class="form-control" value="{{ $sifenConfig->fecha_inicio_timbrado }}"></div>
                             </div>
                             {{-- Nueva fila: Códigos geográficos y actividad económica --}}
                             <div class="row mt-3 border-top pt-3">
@@ -472,6 +486,15 @@
             };
 
             $(document).ready(function() {
+                $('#toggle_certificado_password').on('click', function() {
+                    var input = document.getElementById('sifen_certificado_password');
+                    var visible = input.type === 'password';
+                    input.type = visible ? 'text' : 'password';
+                    var label = visible ? 'Ocultar contraseña' : 'Mostrar contraseña';
+                    $(this).attr('aria-pressed', String(visible)).attr('aria-label', label).attr('title', label);
+                    $(this).find('i').toggleClass('fa-eye', !visible).toggleClass('fa-eye-slash', visible);
+                });
+
                 $('.select2-geo').each(function() {
                     var $el = $(this);
                     $el.select2({
@@ -498,12 +521,8 @@
                     });
                 });
 
-                var departamentoInicial = $('#sifen_departamento_codigo').val();
-                var distritoInicial = $('#sifen_distrito_codigo').val();
-
-                if (departamentoInicial && distritoInicial) {
-                    window.filtrarCiudad(distritoInicial);
-                }
+                // Las ciudades iniciales y su selección ya vienen del servidor.
+                // Recargarlas aquí borraba la ciudad guardada al abrir la pantalla.
             });
         </script>
     @endpush

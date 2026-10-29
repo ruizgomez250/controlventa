@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Helpers\ActividadesEconomicas;
 use App\Helpers\SifenCatalogo;
+use App\Helpers\RucParaguayo;
 use App\Models\ActividadEconomica;
 use App\Models\Departamento;
 use App\Models\Distrito;
@@ -92,6 +93,12 @@ class SifenPkuatiaService
      */
     protected function ensureInitialized(): void
     {
+        // En esta instalación default_socket_timeout=0 hace fallar de inmediato
+        // la descarga del WSDL y sus XSD, aunque HTTPS y el certificado funcionen.
+        if ((int) ini_get('default_socket_timeout') <= 0) {
+            ini_set('default_socket_timeout', '60');
+        }
+
         if ($this->initialized) {
             return;
         }
@@ -150,7 +157,7 @@ class SifenPkuatiaService
         if (!$this->config->ruc_emisor) {
             $errores[] = 'RUC del emisor no configurado.';
         }
-        if (!$this->config->dv) {
+        if ($this->config->dv === null || $this->config->dv === '') {
             $errores[] = 'DV del emisor no configurado.';
         }
         if (!$this->config->razon_social) {
@@ -196,47 +203,25 @@ class SifenPkuatiaService
     }
 
     /**
-     * Algoritmo módulo 11 para RUC paraguayo (hasta 8 dígitos + DV).
+     * Valida RUC paraguayo (5 a 8 dígitos + DV) con módulo 11.
      * Toma los dígitos del RUC en orden inverso, los multiplica por
-     * la secuencia [2,3,4,5,6,7], suma, resto 11.
+     * la secuencia de pesos 2 a 11, suma, resto 11.
      * Si el resto > 1, DV = 11 - resto; si no, DV = 0.
      */
     public function validarRUC(string $ruc, ?string $dvEsperado = null): array
     {
-        $rucLimpio = preg_replace('/[^0-9]/', '', $ruc);
-
-        if (strlen($rucLimpio) < 2 || strlen($rucLimpio) > 8) {
-            return ['valido' => false, 'mensaje' => 'El RUC debe tener entre 2 y 8 dígitos numéricos.'];
+        try {
+            $sinDv = $dvEsperado === null && !str_contains($ruc, '-');
+            $numero = RucParaguayo::numeroConsulta($ruc);
+            $calculado = RucParaguayo::calcularDv($numero);
+            if (!$sinDv) RucParaguayo::validar($ruc, $dvEsperado);
+            return ['valido' => true, 'ruc' => $numero, 'dv' => (int) $calculado,
+                'dv_validado' => !$sinDv, 'existencia_verificada' => false,
+                'mensaje' => $sinDv ? 'Formato válido. DV calculado; falta un DV ingresado para compararlo.'
+                    : 'Formato y DV válidos por módulo 11. La existencia en Marangatu no fue verificada.'];
+        } catch (\InvalidArgumentException $e) {
+            return ['valido' => false, 'dv_validado' => false, 'existencia_verificada' => false, 'mensaje' => $e->getMessage()];
         }
-
-        $pesos = [2, 3, 4, 5, 6, 7];
-        $suma = 0;
-        $digitos = array_reverse(str_split($rucLimpio));
-
-        foreach ($digitos as $i => $digito) {
-            $suma += (int)$digito * $pesos[$i % 6];
-        }
-
-        $resto = $suma % 11;
-        $dvCalculado = $resto > 1 ? 11 - $resto : 0;
-
-        if ($dvEsperado !== null) {
-            $dvLimpio = (int)preg_replace('/[^0-9]/', '', $dvEsperado);
-            if ($dvCalculado !== $dvLimpio) {
-                return [
-                    'valido' => false,
-                    'mensaje' => "El dígito verificador no coincide. Esperado: $dvCalculado, presente: $dvLimpio.",
-                    'dv_calculado' => $dvCalculado,
-                ];
-            }
-        }
-
-        return [
-            'valido' => true,
-            'ruc' => $rucLimpio,
-            'dv' => $dvCalculado,
-            'mensaje' => 'RUC válido.',
-        ];
     }
 
     /**
@@ -294,6 +279,7 @@ class SifenPkuatiaService
                 'venta_id' => $venta->id,
                 'trace' => $e->getTraceAsString(),
             ]);
+            $this->registrarError($venta, $e->getMessage());
             throw $e;
         }
     }
@@ -311,6 +297,19 @@ class SifenPkuatiaService
             }
             $filename = $dir . '/venta_' . $venta->id . '_' . $tipo . '_' . date('YmdHis') . '.xml';
             file_put_contents($filename, $xml);
+
+            $document = new \DOMDocument();
+            if ($document->loadXML($xml, LIBXML_NONET)) {
+                $xpath = new \DOMXPath($document);
+                $cdc = $xpath->evaluate('string(//*[local-name()="DE"]/@Id)');
+                if (preg_match('/^\d{44}$/', $cdc)) {
+                    $venta->sifen_cdc = $cdc;
+                    $venta->sifen_estado = 'pendiente';
+                    $venta->sifen_ambiente = $this->config->ambiente;
+                    $venta->sifen_actualizado_at = now();
+                    $venta->save();
+                }
+            }
 
             Log::info("SIFEN XML $tipo guardado para venta {$venta->id}", ['archivo' => $filename]);
         } catch (Exception $e) {
@@ -355,9 +354,9 @@ class SifenPkuatiaService
         // Datos del timbrado: número, fechas, establecimiento, punto de expedición, documento
         $factura->setTimbrado(
             numTimb: (int)$venta->timbrado_factura,
-            fechaInicio: new DateTime($venta->fecha_emision),
-            numEst: (int)$this->config->establecimiento,
-            numExp: (int)$this->config->punto_expedicion,
+            fechaInicio: new DateTime($venta->sifen_fecha_inicio_timbrado ?: ($this->config->fecha_inicio_timbrado ?: $venta->fecha_emision)),
+            numEst: (int)($venta->sifen_establecimiento ?: $this->config->establecimiento),
+            numExp: (int)($venta->sifen_punto_expedicion ?: $this->config->punto_expedicion),
             numDoc: (int)($venta->numero_factura ?: $venta->id),
         );
 
@@ -366,12 +365,13 @@ class SifenPkuatiaService
             : new DateTime('now', new DateTimeZone('America/Asuncion'));
         $factura->setFechaEmision($fechaEmision);
 
-        $rucEmisor = preg_replace('/[^0-9]/', '', $this->config->ruc_emisor);
+        $emisor = RucParaguayo::validar((string) $this->config->ruc_emisor, $this->config->dv);
+        $rucEmisor = $emisor['ruc'];
 
         // Datos del emisor (quien emite la factura, configurado en SIFEN)
         $factura->setEmisor(
             rucEmisor: $rucEmisor,
-            dv: (int)$this->config->dv,
+            dv: (int)$emisor['dv'],
             tipoContribuyente: $this->config->tipo_contribuyente ?: EmisRecTipCont::PersonaJuridica,
             tipoRegimen: $this->config->tipo_regimen,
             nombreEmisor: $this->config->razon_social ?: 'Sin Razon Social',
@@ -413,6 +413,8 @@ class SifenPkuatiaService
             moneda: 'PYG',
         );
 
+        $factura->calcTotSub();
+
         return $factura;
     }
 
@@ -428,30 +430,10 @@ class SifenPkuatiaService
         $esContribuyente = false;
 
         if ($cliente && $cliente->ruc) {
-            $rucLimpio = preg_replace('/[^0-9]/', '', $cliente->ruc);
-
-            if (strlen($rucLimpio) >= 3) {
-                // Último dígito = DV, el resto = RUC
-                $dvRec = (int)substr($rucLimpio, -1);
-                $rucRec = substr($rucLimpio, 0, -1);
-
-                // Validar RUC con módulo 11
-                $validacion = $this->validarRUC($rucRec, (string)$dvRec);
-                if ($validacion['valido']) {
-                    $esContribuyente = true;
-                } else {
-                    Log::warning('Cliente RUC inválido, se usará como Consumidor Final', [
-                        'cliente_id' => $cliente->id,
-                        'ruc' => $cliente->ruc,
-                        'error' => $validacion['mensaje'],
-                    ]);
-                }
-            } else {
-                Log::info('Cliente sin RUC completo, se usará como Consumidor Final', [
-                    'cliente_id' => $cliente->id,
-                    'ruc' => $cliente->ruc,
-                ]);
-            }
+            $receptor = RucParaguayo::validar((string) $cliente->ruc, $cliente->dv);
+            $rucRec = $receptor['ruc'];
+            $dvRec = (int) $receptor['dv'];
+            $esContribuyente = true;
         }
 
         $nombreRec = $cliente ? ($cliente->razonsocial ?: 'Consumidor Final') : 'Consumidor Final';
@@ -494,22 +476,30 @@ class SifenPkuatiaService
         $tasaEnum = match ($tasaIVA) {
             5 => CamIVATasaIVA::IVA5,
             10 => CamIVATasaIVA::IVA10,
-            default => CamIVATasaIVA::IVA5,
+            default => CamIVATasaIVA::ExentoExonerado,
         };
 
         $cantidad = number_format((float)$detalle->cantidad, 4, '.', '');
-        $precioUnit = number_format((float)$detalle->precio_u, 0, '.', '');
+        $precioUnit = number_format((float)$detalle->cantidad > 0
+            ? (float)$detalle->monto / (float)$detalle->cantidad : (float)$detalle->precio_u, 8, '.', '');
 
         // Unidad de medida: por defecto 77 (UNI), se busca en catálogo SET
         $codUnidadMedida = 77;
         $desUnidadMedida = 'UNI';
         if ($detalle->producto && $detalle->producto->unidaddemedida) {
             $nombreUnidad = strtolower(trim($detalle->producto->unidaddemedida->descripcion));
-            $codUnidadMedida = SifenCatalogo::getUnidadMedidaCodigo($nombreUnidad);
-            $descUnidad = SifenCatalogo::getUnidadMedida($codUnidadMedida);
-            if ($descUnidad) {
-                $desUnidadMedida = $descUnidad;
-            }
+            $codUnidadMedida = match ($nombreUnidad) {
+                'kg', 'kilo', 'kilogramo', 'kilogramos' => 83,
+                'g', 'gr', 'gramo', 'gramos' => 86,
+                'lt', 'l', 'litro', 'litros' => 89,
+                'ml', 'mililitro', 'mililitros' => 88,
+                'm', 'mt', 'metro', 'metros' => 87,
+                'm2' => 109,
+                'm3' => 110,
+                'cm', 'centimetro' => 91,
+                'ton', 'tonelada' => 99,
+                default => 77,
+            };
         }
 
         $factura->addItem(
@@ -531,7 +521,7 @@ class SifenPkuatiaService
      * Extrae:
      *   - CDC (Código de Control): identificador único del documento en SET
      *   - CDE (Código de Documento Electrónico): número de autorización
-     *   - Estado: autorizado (260-269), pendiente (270-279), rechazado
+     *   - Estado: aprobado, pendiente o rechazado según el protocolo DNIT
      * Guarda estos valores en la venta (columnas sifen_cdc, sifen_cde, sifen_estado).
      */
     protected function procesarRespuesta($respuesta, Venta $venta): array
@@ -539,46 +529,93 @@ class SifenPkuatiaService
         $resultado = [
             'estado' => 'rechazado',
             'cde' => null,
-            'cdc' => null,
+            'cdc' => $venta->sifen_cdc,
             'mensaje' => '',
+            'codigo' => null,
+            'detalles' => [],
         ];
 
         try {
+            // Conserva la respuesta original antes de acceder a propiedades
+            // opcionales de la biblioteca (un rechazo puede omitir id/protocolo).
+            try {
+                Storage::disk('local')->put(
+                    'sifen/respuestas/venta_' . $venta->id . '_' . uniqid('', true) . '.json',
+                    json_encode($respuesta, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+                );
+            } catch (\Throwable $auditoriaError) {
+                Log::warning('No se pudo guardar la respuesta original SIFEN.', ['venta_id' => $venta->id]);
+            }
             // RProtDe = Protocolo de recepción del DE
             $prot = $respuesta->getRProtDe();
-            $resultado['cdc'] = $prot->getId();
+            $cdcRespuesta = isset($prot->id) ? $prot->id : null;
+            if ($cdcRespuesta && preg_match('/^\d{44}$/', $cdcRespuesta)) {
+                if ($venta->sifen_cdc && $venta->sifen_cdc !== $cdcRespuesta) {
+                    throw new Exception('El CDC de la respuesta no corresponde a esta venta.');
+                }
+                $resultado['cdc'] = $cdcRespuesta;
+            }
+            $estadoDnit = mb_strtolower(trim($prot->dEstRes ?? ''));
 
             // GResProc = grupo de resultado de procesamiento
-            $gResProc = $prot->getGResProc();
+            $gResProc = $prot->gResProc ?? [];
+            foreach ($gResProc as $detalle) {
+                $resultado['detalles'][] = ['codigo' => (string) ($detalle->dCodRes ?? ''), 'mensaje' => (string) ($detalle->dMsgRes ?? '')];
+            }
             if (!empty($gResProc)) {
                 $proc = $gResProc[0];
-                $codRes = (int)$proc->dCodRes;
-                $msgRes = $proc->dMsgRes;
+                $msgRes = $proc->dMsgRes ?? 'DNIT no devolvió un mensaje de procesamiento.';
                 $resultado['mensaje'] = $msgRes;
+                $resultado['codigo'] = isset($proc->dCodRes) ? (string) $proc->dCodRes : null;
 
-                // Códigos de resultado SET:
-                // 260-269 = autorizado, 270-279 = pendiente, otros = rechazado
-                if ($codRes >= 260 && $codRes < 270) {
+                // El estado del protocolo determina el resultado del documento.
+                if (in_array($estadoDnit, ['aprobado', 'aprobado con obs.', 'aprobado con observaciones'], true)) {
                     $resultado['estado'] = 'autorizado';
-                    $resultado['cde'] = $prot->getDProtAut() ?? $prot->getId();
-                } elseif ($codRes >= 270 && $codRes < 280) {
+                    $resultado['cde'] = isset($prot->dProtAut) ? $prot->getDProtAut() : null;
+                } elseif (in_array($estadoDnit, ['pendiente', 'en procesamiento'], true)) {
                     $resultado['estado'] = 'pendiente';
                 } else {
                     $resultado['estado'] = 'rechazado';
                 }
+            } else {
+                $resultado['estado'] = 'error';
+                $resultado['mensaje'] = 'La respuesta de SIFEN no contiene resultados de procesamiento. Se conservó la respuesta original para revisión.';
             }
 
             // Persistir en la BD
             $venta->sifen_cdc = $resultado['cdc'];
             $venta->sifen_cde = $resultado['cde'];
             $venta->sifen_estado = $resultado['estado'];
+            $venta->sifen_codigo = $resultado['codigo'];
+            $venta->sifen_mensaje = $resultado['mensaje'];
+            $venta->sifen_respuesta = $resultado['detalles'];
+            $venta->sifen_ambiente = $this->config->ambiente;
+            $venta->sifen_actualizado_at = now();
             $venta->save();
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
+            $resultado['estado'] = 'error';
             $resultado['mensaje'] = 'Error al procesar respuesta: ' . $e->getMessage();
+            $this->registrarError($venta, $resultado['mensaje']);
             Log::error('SifenPkuatiaService::procesarRespuesta: ' . $e->getMessage());
         }
 
         return $resultado;
+    }
+
+    public function registrarError(Venta $venta, string $mensaje): void
+    {
+        foreach ([$this->config->certificado_password, $this->config->csc_codigo] as $secreto) {
+            if (is_string($secreto) && $secreto !== '') {
+                $mensaje = str_replace($secreto, '[oculto]', $mensaje);
+            }
+        }
+        $venta->sifen_estado = 'error';
+        $venta->sifen_codigo = null;
+        $venta->sifen_mensaje = mb_substr($mensaje, 0, 10000);
+        $venta->sifen_respuesta = null;
+        $venta->sifen_ambiente = $this->config->ambiente;
+        $venta->sifen_actualizado_at = now();
+        $venta->save();
     }
 
     /**
@@ -626,28 +663,41 @@ class SifenPkuatiaService
     /** Consulta los datos de un RUC en la SET (razón social, dirección, DV) */
     public function consultarRUC(string $ruc): ?array
     {
+        $numero = RucParaguayo::numeroConsulta($ruc);
         $this->ensureInitialized();
 
         try {
-            $rucLimpio = preg_replace('/[^0-9]/', '', $ruc);
-            $respuesta = Sifen::ConsultarRUC($rucLimpio);
+            $respuesta = $this->consultarNumeroRuc($numero);
             $rContRuc = $respuesta->getRContRuc();
 
-            if ($rContRuc) {
+            if (isset($rContRuc->dRUCCons)) {
                 return [
-                    'ruc' => $rContRuc->dRucCont,
-                    'dv' => $rContRuc->dDVCont,
+                    'ruc' => $rContRuc->dRUCCons,
+                    'dv' => RucParaguayo::calcularDv($rContRuc->dRUCCons),
+                    'dv_origen' => 'calculado_modulo11',
                     'razon_social' => $rContRuc->dRazCons,
-                    'direccion' => $rContRuc->dDirCont ?? null,
                     'contribuyente' => true,
+                    'encontrado' => true,
+                    'existencia_verificada' => true,
+                    'codigo_resultado' => $respuesta->getDCodRes(),
+                    'mensaje' => $respuesta->getDMsgRes(),
                 ];
             }
 
-            return null;
-        } catch (Exception $e) {
+            return ['ruc' => $numero, 'contribuyente' => false, 'encontrado' => false,
+                'existencia_verificada' => (int) $respuesta->getDCodRes() === 500,
+                'codigo_resultado' => $respuesta->getDCodRes(), 'mensaje' => $respuesta->getDMsgRes()];
+        } catch (\Throwable $e) {
             Log::warning('SifenPkuatiaService::consultarRUC: ' . $e->getMessage());
-            return null;
+            return ['ruc' => $numero, 'contribuyente' => false, 'encontrado' => false,
+                'existencia_verificada' => false, 'codigo_resultado' => null,
+                'mensaje' => 'No se pudo verificar la existencia del RUC en SIFEN: ' . $e->getMessage()];
         }
+    }
+
+    protected function consultarNumeroRuc(string $numero)
+    {
+        return Sifen::ConsultarRUC($numero);
     }
 
     /** Consulta el estado de un DE en SET por su CDC */
@@ -799,14 +849,14 @@ class SifenPkuatiaService
 
     protected function getTasaIVA(?string $tipoImpuesto): int
     {
-        if (!$tipoImpuesto) {
+        if ($tipoImpuesto === null || trim($tipoImpuesto) === '') {
             return 10;
         }
         $tipo = strtolower(trim($tipoImpuesto));
-        if (in_array($tipo, ['exenta', 'exento', '0', '0%'])) {
+        if (in_array($tipo, ['exenta', 'exento', '0', '0%']) || (is_numeric($tipo) && (float) $tipo === 0.0)) {
             return 0;
         }
-        if (in_array($tipo, ['5', '5%'])) {
+        if (in_array($tipo, ['5', '5%']) || (is_numeric($tipo) && (float) $tipo === 5.0)) {
             return 5;
         }
         return 10;

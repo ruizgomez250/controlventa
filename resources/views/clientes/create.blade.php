@@ -46,10 +46,9 @@
                         @method('POST')
                         <div class="row">
                             <x-adminlte-input name="razonsocial" label="Razón Social"
-                                placeholder="{{ __('Ingresar nombre de persona o empresa') }}" fgroup-class="col-md-8"
+                                placeholder="{{ __('Ingresar nombre de persona o empresa') }}" fgroup-class="col-md-7"
                                 value="{{ old('razonsocial') }}" />
-                            <x-adminlte-input name="ruc" label="Ruc" placeholder="{{ __('Ingresar ruc') }}"
-                                fgroup-class="col-md-4" value="{{ old('ruc') }}" />
+                            @include('clientes.partials.ruc', ['clienteRuc' => null])
                         </div>
 
                         <div class="row">

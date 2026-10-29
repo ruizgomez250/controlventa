@@ -18,9 +18,8 @@
 
                         <div class="row">
                             <x-adminlte-input name="razonsocial" label="Razón Social"
-                                placeholder="{{ __('Ingresar nombre de persona o empresa') }}" fgroup-class="col-md-8"  value="{{ $cliente->razonsocial}}" />
-                                <x-adminlte-input name="ruc" label="Ruc"
-                                placeholder="{{ __('Ingresar ruc') }}" fgroup-class="col-md-4" value="{{ $cliente->ruc}}" />
+                                placeholder="{{ __('Ingresar nombre de persona o empresa') }}" fgroup-class="col-md-7"  value="{{ $cliente->razonsocial}}" />
+                            @include('clientes.partials.ruc', ['clienteRuc' => $cli])
                         </div>
 
                         <div class="row">

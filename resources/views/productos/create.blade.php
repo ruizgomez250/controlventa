@@ -1,5 +1,9 @@
 @extends('adminlte::page')
 
+@section('plugins.Datatables', true)
+@section('plugins.DatatablesPlugins1', true)
+@section('plugins.Select2', true)
+
 @section('plugins.BootstrapSwitch', true)
 
 @section('content_header')

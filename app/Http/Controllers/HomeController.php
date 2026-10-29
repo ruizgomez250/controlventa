@@ -81,8 +81,10 @@ class HomeController extends Controller
             ->count();
 
         // Cuentas por cobrar (pagares pendientes - estado 1 = pendiente)
-        $cuentasPorCobrar = Pagare::where('estado', 1)->sum('monto');
-        $cantidadCuotasPendientes = Pagare::where('estado', 1)->count();
+        $resumenCuotas = Pagare::where('estado', 1)
+            ->selectRaw('COALESCE(SUM(monto), 0) as saldo, COUNT(*) as cantidad')->first();
+        $cuentasPorCobrar = $resumenCuotas->saldo;
+        $cantidadCuotasPendientes = $resumenCuotas->cantidad;
 
         // Últimas ventas
         $ultimasVentas = Venta::with('cliente', 'usuario')
@@ -113,25 +115,32 @@ class HomeController extends Controller
             ->orderByDesc('saldo_pendiente')
             ->get();
 
-        $cuentasCorrientes = $clientesConDeuda->map(function ($item) {
-            // Vencimientos pendientes para este cliente
-            $vencimientos = DB::table('pagare')
+        $idsClientesConDeuda = $clientesConDeuda->pluck('id');
+        $vencimientosPorCliente = collect();
+        $historialPorCliente = collect();
+        if ($idsClientesConDeuda->isNotEmpty()) {
+            $vencimientosPorCliente = DB::table('pagare')
                 ->join('ventas', 'pagare.id_venta', '=', 'ventas.id')
-                ->where('ventas.id_cliente', $item->id)
+                ->whereIn('ventas.id_cliente', $idsClientesConDeuda)
                 ->where('pagare.estado', 1)
-                ->select('pagare.fecha_vencimiento', 'pagare.monto')
+                ->select('ventas.id_cliente', 'pagare.fecha_vencimiento', 'pagare.monto')
                 ->orderBy('pagare.fecha_vencimiento')
-                ->get();
+                ->get()->groupBy('id_cliente');
 
-            // Pagos realizados (historial)
-            $historialPagos = DB::table('pagare')
+            // Cinco pagos por cliente en una consulta, sin cargar todo su historial.
+            $ultimosPagos = DB::table('pagare')
                 ->join('ventas', 'pagare.id_venta', '=', 'ventas.id')
-                ->where('ventas.id_cliente', $item->id)
+                ->whereIn('ventas.id_cliente', $idsClientesConDeuda)
                 ->where('pagare.estado', 2)
-                ->select('pagare.fecha_pago', 'pagare.monto')
-                ->orderByDesc('pagare.fecha_pago')
-                ->limit(5)
-                ->get();
+                ->select('ventas.id_cliente', 'pagare.fecha_pago', 'pagare.monto')
+                ->selectRaw('ROW_NUMBER() OVER (PARTITION BY ventas.id_cliente ORDER BY pagare.fecha_pago DESC, pagare.id DESC) as posicion');
+            $historialPorCliente = DB::query()->fromSub($ultimosPagos, 'pagos_ordenados')
+                ->where('posicion', '<=', 5)->orderByDesc('fecha_pago')->get()->groupBy('id_cliente');
+        }
+
+        $cuentasCorrientes = $clientesConDeuda->map(function ($item) use ($vencimientosPorCliente, $historialPorCliente) {
+            $vencimientos = $vencimientosPorCliente->get($item->id, collect());
+            $historialPagos = $historialPorCliente->get($item->id, collect());
 
             return (object) [
                 'id' => $item->id,

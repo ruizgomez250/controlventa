@@ -1,5 +1,7 @@
 @extends('adminlte::page')
 
+@section('plugins.Datatables', true)
+
 @section('content_header')
     <div class="row">
         <div class="col-6">
@@ -28,7 +30,7 @@
                                 <th>{{ __('Monto Total') }}</th>
                                 <th>{{ __('Usuario') }}</th>
                                 <th>{{ __('Estado') }}</th>
-                                <th>{{ __('Acciones') }}</th>
+                                <th class="all">{{ __('Acciones') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -83,7 +85,7 @@
 
                                     </td>
                                     <td>
-
+                                        @include('sifen.partials.imprimir', ['venta' => $compra])
                                         {{-- <a href="#" class="btn btn-sm btn-outline-secondary ver-detalle-btn"
                                             data-compra-id="{{ $compra->id }}" title="{{ __('Mostrar detalles') }}">
                                             <i class="fa fa-eye"></i>
@@ -253,6 +255,8 @@
                 // Accede al ID desde la variable Blade
                 cuotaboton = '';
                 $(document).ready(function() {
+                    // El backdrop-filter de las tarjetas encierra el modal debajo de la sombra.
+                    $('#detalleModal, #documentosModal, #pagocuotaModal, #pagomontoModal').appendTo(document.body);
                     // Inicialización de DataTables
                     var table = $('#table1').DataTable({
                         responsive: true,
@@ -423,7 +427,8 @@
                         }
                     });
                 });
-                $('.pagar-monto-btn').click(function() {
+                $('#table1 tbody').on('click', '.pagar-monto-btn', function(event) {
+                    event.preventDefault();
                     var compraId = $(this).data('compra-id');
                     // Realiza una petición AJAX para obtener los detalles de la compra
                     $.ajax({
@@ -433,20 +438,23 @@
                             var detalle = response.detalles;
 
                             // Acceder a la suma de los montos
-                            var sumaMontos = response.sumaMontos;
+                            var sumaMontos = Number(response.sumaMontos) || 0;
                             var detalleHTML = '';
                             var total = 0;
                             // Construye el HTML de los detalles de la compra utilizando los datos obtenidos 
                             detalle.forEach(function(detalle) {
                                 item = 1;
-                                monto = parseFloat(detalle.monto) - parseFloat(sumaMontos);
-                                detalleHTML += '<tr><td>' + detalle.producto.descripcion +
+                                monto = parseFloat(detalle.monto) || 0;
+                                detalleHTML += '<tr><td>' + $('<div>').text(detalle.descripcion).html() +
                                     '</td><td>' + monto + ' </td></tr>';
                                 total = total + monto;
                             });
                             // Asignar un valor al input
+                            total = Math.max(0, total - sumaMontos);
                             document.getElementById('montoAbonar').value = total;
                             document.getElementById('montoAbonar1').value = total;
+                            $('#descuent').val(0);
+                            $('#diferenciaAbonar, #vuelto').text('0');
                             document.getElementById('idfac').value = compraId;
                             // Llena el contenido del modal con los detalles
                             $('#tablaModBody').html(detalleHTML);
@@ -676,12 +684,15 @@
                                 },
                                 success: function(response) {
                                     if (response.hasOwnProperty('success')) {
-                                        Swal.fire('Éxito', response.success, 'success');
+                                        const fiscal = response.sifen || {};
+                                        Swal.fire({title: 'Cobro registrado', text: response.success + ' SIFEN: ' + (fiscal.estado || 'sin resultado') + '. ' + (fiscal.mensaje || ''),
+                                            icon: ['error', 'rechazado'].includes(fiscal.estado) ? 'warning' : 'success',
+                                            footer: '<a href="{{ route('sifen.comprobantes') }}">Ver bandeja de comprobantes</a>'});
                                         var cajaId = response.caja;
-                                        var url = "{{ route('documentopagomontopdf', '') }}/" + cajaId;
+                                        var url = response.factura_url || "{{ route('documentopagomontopdf', '') }}/" + cajaId;
 
                                         window.open(url, '_blank');
-                                        location.reload();
+                                        // El resultado fiscal queda visible hasta que el usuario lo cierre.
                                     } else {
                                         Swal.fire('Error', 'La respuesta no contiene datos válidos', 'error');
                                     }

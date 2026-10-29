@@ -1,5 +1,7 @@
 @extends('adminlte::page')
 
+@section('plugins.Select2', true)
+
 
 
 @section('content_header')

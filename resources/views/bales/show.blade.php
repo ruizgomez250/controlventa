@@ -1,5 +1,7 @@
 @extends('adminlte::page')
 
+@section('plugins.Select2', true)
+
 @section('content_header')
 <div class="d-flex justify-content-between align-items-center">
     <div><h1 class="mb-0">Mercaderías de {{ $bale->code }}</h1><small class="text-muted">{{ $bale->bale_type ?: 'Fardo sin tipo' }} · {{ $bale->supplier_name ?: 'Sin proveedor' }}</small></div>

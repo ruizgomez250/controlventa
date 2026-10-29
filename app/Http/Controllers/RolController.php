@@ -43,7 +43,7 @@ class RolController extends Controller
         if (!auth()->user()->can('rol crear')) {
             return view('sinpermiso.index');
         }
-        $usuarios = User::all();
+        $usuarios = User::get(['id', 'name', 'email']);
 
         $permissionGroups = self::GRUPOS;
         $displayNames = [

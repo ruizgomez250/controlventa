@@ -1,3 +1,6 @@
+
+@section('plugins.Datatables', true)
+@section('plugins.DatatablesPlugins1', true)
 <div>
     <div class="modal fade" id="addCatModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class ConfiguracionController extends Controller
 {
+    use \App\Http\Controllers\Concerns\NormalizaRuc;
     public function index()
     {
         $configuraciones = Configuracion::all();
@@ -44,7 +45,9 @@ class ConfiguracionController extends Controller
         // Solo cargar ciudades si hay distrito seleccionado
         $ciudadesIniciales = collect();
         if ($sifenConfig->distrito_codigo) {
-            $distrito = Distrito::where('codigo', $sifenConfig->distrito_codigo)->first();
+            $distrito = Distrito::where('codigo', $sifenConfig->distrito_codigo)
+                ->where('departamento_codigo', $sifenConfig->departamento_codigo)
+                ->first();
             if ($distrito) {
                 $ciudadesIniciales = Ciudad::where('distrito_id', $distrito->id)
                     ->orderBy('codigo')
@@ -54,8 +57,8 @@ class ConfiguracionController extends Controller
 
         $actividadesEconomicas = ActividadEconomica::query()
             ->orderBy('codigo')
-            ->get()
-            ->pluck('descripcion_con_codigo', 'codigo');
+            ->pluck('descripcion', 'codigo')
+            ->map(fn ($descripcion, $codigo) => $codigo . ' - ' . $descripcion);
 
         if ($actividadesEconomicas->isEmpty()) {
             $actividadesEconomicas = ActividadesEconomicas::paraSelect();
@@ -94,6 +97,13 @@ class ConfiguracionController extends Controller
      */
     public function store(Request $request)
     {
+        $this->normalizarRuc($request, 'sifen_ruc_emisor', 'sifen_dv');
+        $request->validate([
+            'sifen_ruc_emisor' => ['nullable', 'regex:/^[0-9]{5,8}$/'],
+            'sifen_dv' => ['nullable', 'regex:/^[0-9]$/'],
+            'sifen_timbrado' => ['nullable', 'regex:/^\d{8}$/'],
+            'sifen_fecha_inicio_timbrado' => ['nullable', 'date_format:Y-m-d'],
+        ]);
         try {
             DB::transaction(function () use ($request) {
 
@@ -149,6 +159,8 @@ class ConfiguracionController extends Controller
                 ]);
 
                 // Datos del emisor
+                $sifen->timbrado = $request->input('sifen_timbrado', $sifen->timbrado);
+                $sifen->fecha_inicio_timbrado = $request->input('sifen_fecha_inicio_timbrado', $sifen->fecha_inicio_timbrado);
                 $sifen->ruc_emisor = $request->input('sifen_ruc_emisor', $sifen->ruc_emisor);
                 $sifen->dv = $request->input('sifen_dv', $sifen->dv);
                 $sifen->razon_social = $request->input('sifen_razon_social', $sifen->razon_social);

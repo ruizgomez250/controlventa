@@ -237,6 +237,7 @@ class ProductoController extends Controller
         // En la BD se guarda algo como: productos/archivo.jpg
         // En el navegador se muestra como: public/storage/productos/archivo.jpg
         $imagenUrl = $producto->web_imagen_url;
+        $moneda = Configuracion::where('descripcion', 'moneda')->value('observacion') ?? 'Gs.';
 
         return view('productos.edit', [
             'headcat'     => $headcat,
@@ -247,6 +248,7 @@ class ProductoController extends Controller
             'impuestos'   => $impuestos,
             'proveedores' => $proveedores,
             'imagenUrl'   => $imagenUrl,
+            'moneda'      => $moneda,
             'host'        => $host,
         ]);
     }

@@ -29,7 +29,7 @@
         <link rel="stylesheet" href="{{ asset('vendor/adminlte/dist/css/adminlte.min.css') }}">
 
         @if(config('adminlte.google_fonts.allowed', true))
-            <link rel="stylesheet" href="https://fonts.bunny.net/css?family=inter:400,500,600,700,300italic,400italic,600italic&display=swap">
+            <link rel="stylesheet" href="{{ asset('vendor/fonts/inter/inter.css') }}">
         @endif
     @else
         <link rel="stylesheet" href="{{ mix(config('adminlte.laravel_mix_css_path', 'css/app.css')) }}">

@@ -1,5 +1,8 @@
 @extends('adminlte::page')
 
+@section('plugins.Datatables', true)
+@section('plugins.DatatablesPlugins1', true)
+
 @section('content_header')
     <div class="row">
         <div class="col-6">
@@ -73,7 +76,7 @@
                             <tr>
                                 <td>{{ $row->id }}</td>
                                 <td>{{ $row->razonsocial }}</td>
-                                <td>{{ $row->ruc }}</td>
+                                <td>{{ $row->ruc_completo }}</td>
                                 <td>{{ $row->correo }}</td>
                                 <td>{{ $row->celular }}</td>
                                 <td class="{{ $row->estado == '1' ? 'text-success' : 'text-danger' }}">

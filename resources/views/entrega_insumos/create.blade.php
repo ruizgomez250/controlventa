@@ -1,5 +1,7 @@
 @extends('adminlte::page')
 
+@section('plugins.Select2', true)
+
 @section('content_header')
     <h1 class="m-0 custom-heading">{{ __('Nueva Entrega de Insumos') }}</h1>
 @stop

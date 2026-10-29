@@ -1,5 +1,7 @@
 @extends('adminlte::page')
 
+@section('plugins.Chartjs', true)
+
 @section('title', 'Panel principal')
 
 @section('content_header')

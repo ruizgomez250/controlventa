@@ -7409,11 +7409,6 @@ class SifenCatalogo
         return self::TIPO_CONTRIBUYENTE[$codigo] ?? null;
     }
 
-    public static function getActividadEconomica(int $codigo): ?string
-    {
-        return self::ACTIVIDADES_ECONOMICAS[$codigo] ?? null;
-    }
-
     public static function departamentosParaSelect(): array
     {
         $options = [];
@@ -7452,12 +7447,4 @@ class SifenCatalogo
         return $options;
     }
 
-    public static function actividadesEconomicasParaSelect(): array
-    {
-        $options = [];
-        foreach (self::ACTIVIDADES_ECONOMICAS as $cod => $nombre) {
-            $options[$cod] = "$cod - $nombre";
-        }
-        return $options;
-    }
 }

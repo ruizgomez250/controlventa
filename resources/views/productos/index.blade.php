@@ -1,5 +1,8 @@
 @extends('adminlte::page')
 
+@section('plugins.Datatables', true)
+@section('plugins.DatatablesPlugins1', true)
+
 @section('content_header')
     <div class="row">
         <div class="col-6">
@@ -73,6 +76,7 @@
                                 <td>
                                     @if ($row->imagen)
                                         <img src="{{ $imagenUrl }}"
+                                             loading="lazy" decoding="async"
                                              alt="{{ $row->descripcion }}"
                                              style="width:50px;height:50px;object-fit:cover;border-radius:4px;cursor:pointer;"
                                              onclick="mostrarImagen(@js($imagenUrl), @js($row->descripcion))">
