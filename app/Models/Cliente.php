@@ -9,7 +9,17 @@ class Cliente extends Model
 {
     use HasFactory;
     protected $table = 'clientes'; 
-    protected  $fillable = ['id','razonsocial','ruc','dv','direccion','correo','telefono','celular','estado','observacion'];
+    protected $attributes = ['es_contribuyente' => true];
+    protected  $fillable = [
+        'id', 'razonsocial', 'ruc', 'dv', 'es_contribuyente', 'tipo_contribuyente', 'tipo_identificacion',
+        'numero_identificacion', 'direccion', 'correo', 'telefono', 'celular', 'estado', 'observacion',
+    ];
+
+    protected $casts = [
+        'es_contribuyente' => 'boolean',
+        'tipo_contribuyente' => 'integer',
+        'tipo_identificacion' => 'integer',
+    ];
 
     public function ventas()
     {

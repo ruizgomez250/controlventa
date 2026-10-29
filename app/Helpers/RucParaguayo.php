@@ -66,6 +66,21 @@ final class RucParaguayo
         return $partes;
     }
 
+    /** Valor por defecto: los RUC de personas jurídicas empiezan en 80000000; las físicas usan su cédula. */
+    public static function tipoContribuyente(string $ruc): int
+    {
+        return (int) self::numeroConsulta($ruc) >= 80000000 ? 2 : 1;
+    }
+
+    /** La cédula paraguaya (tipo 1) no lleva DV: "1.807.552-5" se envía como "1807552". */
+    public static function numeroDocumento(int $tipoIdentificacion, string $numero): string
+    {
+        $numero = self::sinEspacios($numero);
+        if ($tipoIdentificacion !== 1) return $numero;
+        $numero = str_replace('.', '', $numero);
+        return preg_match('/^([0-9]+)-[0-9]$/D', $numero, $partes) ? $partes[1] : $numero;
+    }
+
     public static function sinEspacios(string $valor): string
     {
         $limpio = preg_replace('/[\s\p{Z}]+/u', '', $valor);

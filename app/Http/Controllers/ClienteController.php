@@ -121,7 +121,7 @@ class ClienteController extends Controller
             return redirect()->route('sinpermiso');
         }
         try {
-            $this->normalizarRuc($request);
+            $this->prepararIdentidadSifen($request);
             $validated = $request->validate($this->rules());
 
             Cliente::create($validated);
@@ -137,7 +137,7 @@ class ClienteController extends Controller
     public function apistore(Request $request)
     {
         try {
-            $this->normalizarRuc($request);
+            $this->prepararIdentidadSifen($request);
             Cliente::create($request->validate($this->rules()));
 
             return redirect()->route('cliente.create')->with('success', 'Operación exitosa');
@@ -153,11 +153,15 @@ class ClienteController extends Controller
 
         try {
             // Validación: solo 'nombre' es obligatorio
-            $this->normalizarRuc($request);
+            $this->prepararIdentidadSifen($request);
             $validatedData = $request->validate([
                 'razonsocial' => 'required|string|max:255',
-                'ruc' => ['nullable', 'string', 'regex:/^[0-9]{5,8}$/'],
-                'dv' => ['nullable', 'required_with:ruc', 'string', 'regex:/^\d$/'],
+                'es_contribuyente' => ['sometimes', 'boolean'],
+                'ruc' => ['nullable', 'required_if:es_contribuyente,1', 'required_with:dv', 'string', 'regex:/^[0-9]{5,8}$/'],
+                'dv' => ['nullable', 'required_if:es_contribuyente,1', 'required_with:ruc', 'string', 'regex:/^\d$/'],
+                'tipo_contribuyente' => ['nullable', 'integer', 'in:1,2'],
+                'tipo_identificacion' => ['nullable', 'required_if:es_contribuyente,0', 'integer', 'in:1,2,3,4,5,6,9'],
+                'numero_identificacion' => ['nullable', 'required_if:es_contribuyente,0', 'string', 'max:50'],
                 'telefono' => 'nullable|string|max:30',
                 'correo' => 'nullable|email|max:255',
                 'direccion' => 'nullable|string|max:255',
@@ -208,7 +212,7 @@ class ClienteController extends Controller
             return redirect()->route('sinpermiso');
         }
         try {
-            $this->normalizarRuc($request);
+            $this->prepararIdentidadSifen($request, $cliente);
             $cliente->update($request->validate($this->rules()));
 
             return redirect()->route('cliente.index')->with('success', 'Operación exitosa');
@@ -238,7 +242,7 @@ class ClienteController extends Controller
         if (! auth()->user()->can('cliente crear')) {
             return view('sinpermiso.index');
         }
-        $this->normalizarRuc($request);
+        $this->prepararIdentidadSifen($request);
         Cliente::create($request->validate($this->rules()));
         // Retorna una respuesta JSON con código de respuesta HTTP 201
         return response()->json([
@@ -251,8 +255,12 @@ class ClienteController extends Controller
     {
         return [
             'razonsocial' => ['required', 'string', 'max:255'],
-            'ruc' => ['nullable', 'required_with:dv', 'string', 'regex:/^[0-9]{5,8}$/'],
-            'dv' => ['nullable', 'required_with:ruc', 'string', 'regex:/^\d$/'],
+            'es_contribuyente' => ['sometimes', 'boolean'],
+            'ruc' => ['nullable', 'required_if:es_contribuyente,1', 'required_with:dv', 'string', 'regex:/^[0-9]{5,8}$/'],
+            'dv' => ['nullable', 'required_if:es_contribuyente,1', 'required_with:ruc', 'string', 'regex:/^\d$/'],
+            'tipo_contribuyente' => ['nullable', 'integer', 'in:1,2'],
+            'tipo_identificacion' => ['nullable', 'required_if:es_contribuyente,0', 'integer', 'in:1,2,3,4,5,6,9'],
+            'numero_identificacion' => ['nullable', 'required_if:es_contribuyente,0', 'string', 'max:50'],
             'direccion' => ['nullable', 'string', 'max:255'],
             'correo' => ['nullable', 'email:rfc', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:30'],

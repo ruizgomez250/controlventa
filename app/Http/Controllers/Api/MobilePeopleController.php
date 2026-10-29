@@ -20,7 +20,7 @@ class MobilePeopleController extends Controller
 
     public function updateClient(Request $request, Cliente $cliente): JsonResponse
     {
-        $cliente->update($this->clientData($request, $cliente->id));
+        $cliente->update($this->clientData($request, $cliente));
         return response()->json(['success' => true, 'data' => $cliente->fresh()]);
     }
 
@@ -34,13 +34,17 @@ class MobilePeopleController extends Controller
         return response()->json(['success' => true, 'data' => $proveedor->fresh()]);
     }
 
-    private function clientData(Request $request, ?int $id = null): array
+    private function clientData(Request $request, ?Cliente $cliente = null): array
     {
-        $this->normalizarRuc($request);
+        $this->prepararIdentidadSifen($request, $cliente);
         return $request->validate([
             'razonsocial' => ['required', 'string', 'max:70'],
-            'ruc' => ['nullable', 'string', 'regex:/^[0-9]{5,8}$/', Rule::unique('clientes', 'ruc')->ignore($id)],
-            'dv' => ['nullable', 'string', 'regex:/^\d$/'],
+            'es_contribuyente' => ['required', 'boolean'],
+            'ruc' => ['nullable', 'required_if:es_contribuyente,1', 'string', 'regex:/^[0-9]{5,8}$/', Rule::unique('clientes', 'ruc')->ignore($cliente?->id)],
+            'dv' => ['nullable', 'required_if:es_contribuyente,1', 'string', 'regex:/^\d$/'],
+            'tipo_contribuyente' => ['nullable', 'integer', 'in:1,2'],
+            'tipo_identificacion' => ['nullable', 'required_if:es_contribuyente,0', 'integer', 'in:1,2,3,4,5,6,9'],
+            'numero_identificacion' => ['nullable', 'required_if:es_contribuyente,0', 'string', 'max:50'],
             'telefono' => ['nullable', 'string', 'max:30'],
             'correo' => ['nullable', 'email', 'max:50'],
             'direccion' => ['nullable', 'string', 'max:150'],

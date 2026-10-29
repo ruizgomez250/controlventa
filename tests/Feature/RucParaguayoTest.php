@@ -109,6 +109,78 @@ class RucParaguayoTest extends TestCase
         $this->assertStringNotContainsString('<dRucRec>25354701</dRucRec>', $xml);
     }
 
+    public function test_xml_serializa_a_jorge_como_no_contribuyente_con_cedula_sin_dv(): void
+    {
+        $service = new class extends SifenPkuatiaService {
+            public function __construct() {}
+            public function receptor(\IonysDev\Pkuatia\Core\DocumentosElectronicos\Factura $factura, Cliente $cliente): void
+            {
+                $this->setReceptor($factura, $cliente);
+            }
+        };
+        $factura = new \IonysDev\Pkuatia\Core\DocumentosElectronicos\Factura(
+            \IonysDev\Pkuatia\Core\Constants\CamCondOpe::Contado
+        );
+        $cliente = new Cliente([
+            'id' => 9,
+            'razonsocial' => 'Jorge Ariel Ruiz Gomez',
+            'ruc' => '1807552',
+            'dv' => '5',
+            'es_contribuyente' => false,
+            'tipo_identificacion' => 1,
+            'numero_identificacion' => '1807552-5',
+        ]);
+
+        $service->receptor($factura, $cliente);
+        $doc = new \DOMDocument('1.0', 'UTF-8');
+        $doc->appendChild($factura->gDatRec->toDOMElement($doc));
+        $xml = $doc->saveXML();
+
+        // El dato guardado trae el DV del RUC; la cédula paraguaya se envía sin él.
+        foreach (['<iTiOpe>2</iTiOpe>', '<iNatRec>2</iNatRec>', '<iTipIDRec>1</iTipIDRec>', '<dNumIDRec>1807552</dNumIDRec>'] as $campo) {
+            $this->assertStringContainsString($campo, $xml);
+        }
+        $this->assertStringNotContainsString('<dRucRec>', $xml);
+        $this->assertStringNotContainsString('<dDVRec>', $xml);
+        $this->assertStringNotContainsString('<iTiContRec>', $xml);
+    }
+
+    public function test_documento_de_identidad_solo_quita_dv_a_la_cedula_paraguaya(): void
+    {
+        $this->assertSame('1807552', RucParaguayo::numeroDocumento(1, ' 1.807.552-5 '));
+        $this->assertSame('1807552', RucParaguayo::numeroDocumento(1, '1807552'));
+        $this->assertSame('AB-12345-6', RucParaguayo::numeroDocumento(2, 'AB-12345-6'));
+    }
+
+    public function test_receptor_contribuyente_informa_persona_fisica_o_juridica(): void
+    {
+        $service = new class extends SifenPkuatiaService {
+            public function __construct() {}
+            public function receptor(\IonysDev\Pkuatia\Core\DocumentosElectronicos\Factura $factura, Cliente $cliente): void
+            {
+                $this->setReceptor($factura, $cliente);
+            }
+        };
+        $casos = [
+            // [ruc, dv, tipo guardado, iTiContRec esperado]
+            ['3895241', '6', null, 1],   // RUC de persona física (su cédula)
+            ['80178718', '1', null, 2],  // RUC de persona jurídica (80…)
+            ['3895241', '6', 2, 2],      // el valor elegido en el cliente manda
+        ];
+        foreach ($casos as [$ruc, $dv, $tipo, $esperado]) {
+            $factura = new \IonysDev\Pkuatia\Core\DocumentosElectronicos\Factura(
+                \IonysDev\Pkuatia\Core\Constants\CamCondOpe::Contado
+            );
+            $service->receptor($factura, new Cliente([
+                'id' => 22, 'razonsocial' => 'Receptor de prueba', 'ruc' => $ruc, 'dv' => $dv,
+                'es_contribuyente' => true, 'tipo_contribuyente' => $tipo,
+            ]));
+            $doc = new \DOMDocument('1.0', 'UTF-8');
+            $doc->appendChild($factura->gDatRec->toDOMElement($doc));
+            $this->assertStringContainsString('<iTiContRec>' . $esperado . '</iTiContRec>', $doc->saveXML());
+        }
+    }
+
     public function test_ws_consulta_recibe_numero_solo_en_d_r_u_c_cons_sin_red(): void
     {
         $config = new Config();

@@ -47,7 +47,7 @@ class SifenController extends Controller
     {
         abort_unless(auth()->user()->can('venta leer'), 403);
         $filtros = $request->validate([
-            'estado' => 'nullable|in:sin_enviar,por_cobrar,enviando,pendiente,autorizado,rechazado,error,cancelado',
+            'estado' => 'nullable|in:sin_enviar,por_cobrar,enviando,pendiente,sin_respuesta,autorizado,rechazado,error,cancelado',
             'buscar' => 'nullable|string|max:100',
             'desde' => 'nullable|date',
             'hasta' => 'nullable|date|after_or_equal:desde',
@@ -66,7 +66,7 @@ class SifenController extends Controller
         if (!empty($filtros['desde'])) $query->whereDate('fecha_emision', '>=', $filtros['desde']);
         if (!empty($filtros['hasta'])) $query->whereDate('fecha_emision', '<=', $filtros['hasta']);
         $comprobantes = $query->orderByDesc('id')->paginate(25)->withQueryString();
-        $estados = ['sin_enviar' => 'Sin enviar', 'por_cobrar' => 'Pendiente de cobro', 'enviando' => 'Enviando', 'pendiente' => 'Pendiente de aprobación', 'autorizado' => 'Aprobado', 'rechazado' => 'Rechazado', 'error' => 'Error técnico', 'cancelado' => 'Cancelado'];
+        $estados = ['sin_enviar' => 'Sin enviar', 'por_cobrar' => 'Pendiente de cobro', 'enviando' => 'Enviando', 'pendiente' => 'Pendiente de aprobación', 'sin_respuesta' => 'Sin respuesta de SIFEN', 'autorizado' => 'Aprobado', 'rechazado' => 'Rechazado', 'error' => 'Error técnico', 'cancelado' => 'Cancelado'];
         return view('sifen.comprobantes', compact('comprobantes', 'estados'));
     }
 
@@ -119,6 +119,16 @@ class SifenController extends Controller
                     'success' => false,
                     'mensaje' => 'La venta no tiene un CDC asociado.',
                 ], 400);
+            }
+
+            // Si el último envío quedó sin resultado, la consulta también actualiza la venta
+            if ($this->sifen->requiereVerificacion($venta)) {
+                $resultado = $this->sifen->verificarEnvioAnterior($venta) ?? [
+                    'estado' => 'no_registrado',
+                    'cdc' => $venta->sifen_cdc,
+                    'mensaje' => 'SIFEN no registra este CDC. Se puede reenviar sin duplicar la factura.',
+                ];
+                return response()->json(['success' => $resultado['estado'] !== 'sin_respuesta', 'data' => $resultado]);
             }
 
             $resultado = $this->sifen->consultarCDC($venta->sifen_cdc);

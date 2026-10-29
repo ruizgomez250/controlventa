@@ -23,6 +23,30 @@ class ClienteRucTest extends TestCase
         }
     }
 
+    public function test_formulario_completa_tipo_de_contribuyente_y_cedula_sin_dv(): void
+    {
+        $preparador = new class {
+            use \App\Http\Controllers\Concerns\NormalizaRuc;
+            public function ejecutar(\Illuminate\Http\Request $request): \Illuminate\Http\Request
+            {
+                $this->prepararIdentidadSifen($request);
+                return $request;
+            }
+        };
+        $empresa = $preparador->ejecutar(\Illuminate\Http\Request::create('/', 'POST', ['es_contribuyente' => '1', 'ruc' => '80178718-1']));
+        $this->assertSame(2, $empresa->input('tipo_contribuyente'));
+        $persona = $preparador->ejecutar(\Illuminate\Http\Request::create('/', 'POST', ['es_contribuyente' => '1', 'ruc' => '3895241', 'dv' => '6']));
+        $this->assertSame(1, $persona->input('tipo_contribuyente'));
+        $elegido = $preparador->ejecutar(\Illuminate\Http\Request::create('/', 'POST', ['es_contribuyente' => '1', 'ruc' => '3895241', 'dv' => '6', 'tipo_contribuyente' => '2']));
+        $this->assertSame('2', $elegido->input('tipo_contribuyente'));
+
+        $cedula = $preparador->ejecutar(\Illuminate\Http\Request::create('/', 'POST', ['es_contribuyente' => '0', 'ruc' => '1807552', 'dv' => '5']));
+        $this->assertSame('1807552', $cedula->input('numero_identificacion'));
+        $this->assertNull($cedula->input('tipo_contribuyente'));
+        $escrita = $preparador->ejecutar(\Illuminate\Http\Request::create('/', 'POST', ['es_contribuyente' => '0', 'numero_identificacion' => '1.807.552-5']));
+        $this->assertSame('1807552', $escrita->input('numero_identificacion'));
+    }
+
     public function test_emision_envia_ruc_completo_sin_recortar_y_dv_aparte(): void
     {
         $service = new class extends SifenPkuatiaService {

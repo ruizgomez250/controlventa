@@ -20,7 +20,7 @@
             <tbody>@forelse($comprobantes as $venta)
                 @php
                     $estado = $venta->sifen_estado ?: 'sin_enviar';
-                    $color = ['autorizado'=>'success','rechazado'=>'danger','error'=>'danger','pendiente'=>'warning','cancelado'=>'secondary'][$estado] ?? 'secondary';
+                    $color = ['autorizado'=>'success','rechazado'=>'danger','error'=>'danger','pendiente'=>'warning','sin_respuesta'=>'warning','cancelado'=>'secondary'][$estado] ?? 'secondary';
                 @endphp
                 <tr>
                     <td>#{{ $venta->id }}<br>{{ $venta->numero_factura ?: 'Sin numeración' }}<br><small>Timbrado: {{ $venta->timbrado_factura ?: 'Sin asignar' }}</small></td>
@@ -31,7 +31,7 @@
                     <td style="min-width:230px;max-width:400px;overflow-wrap:anywhere">
                         @if($venta->sifen_codigo)<strong>Código {{ $venta->sifen_codigo }}</strong><br>@endif
                         {{ $venta->sifen_mensaje ?: ($estado === 'sin_enviar' ? 'Sin envío registrado.' : 'Sin detalle guardado. Los comprobantes anteriores pueden tener información solo en los registros del servidor.') }}
-                        @if($estado === 'error' && $venta->sifen_cdc)<p class="text-danger mb-0"><small>Existe CDC. El envío pudo haber sido recibido; consultar antes de reemitir.</small></p>@endif
+                        @if(in_array($estado, ['error', 'sin_respuesta'], true) && $venta->sifen_cdc)<p class="text-danger mb-0"><small>Existe CDC. El envío pudo haber sido recibido; al reemitir se consulta primero en SIFEN para no duplicar la factura.</small></p>@endif
                     </td>
                     <td style="min-width:200px;max-width:350px;overflow-wrap:anywhere">
                         @if($venta->sifen_ambiente != 2)

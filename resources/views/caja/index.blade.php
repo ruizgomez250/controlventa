@@ -686,7 +686,7 @@
                                     if (response.hasOwnProperty('success')) {
                                         const fiscal = response.sifen || {};
                                         Swal.fire({title: 'Cobro registrado', text: response.success + ' SIFEN: ' + (fiscal.estado || 'sin resultado') + '. ' + (fiscal.mensaje || ''),
-                                            icon: ['error', 'rechazado'].includes(fiscal.estado) ? 'warning' : 'success',
+                                            icon: ['error', 'rechazado', 'sin_respuesta'].includes(fiscal.estado) ? 'warning' : 'success',
                                             footer: '<a href="{{ route('sifen.comprobantes') }}">Ver bandeja de comprobantes</a>'});
                                         var cajaId = response.caja;
                                         var url = response.factura_url || "{{ route('documentopagomontopdf', '') }}/" + cajaId;

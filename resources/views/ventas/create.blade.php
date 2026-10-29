@@ -738,7 +738,7 @@
                             const fiscal = res.sifen || {};
                             const detalleFiscal = fiscal.estado ? `SIFEN: ${fiscal.estado}. ${fiscal.mensaje || ''}` : 'Sin resultado fiscal.';
                             Swal.fire({title: 'Cobro registrado', text: `${res.success} ${detalleFiscal}`,
-                                icon: ['error', 'rechazado'].includes(fiscal.estado) ? 'warning' : 'success',
+                                icon: ['error', 'rechazado', 'sin_respuesta'].includes(fiscal.estado) ? 'warning' : 'success',
                                 footer: '<a href="{{ route('sifen.comprobantes') }}">Ver bandeja de comprobantes</a>'});
                             window.open(res.factura_url || "{{ url('/') }}/documentopagomontopdf/" + res.caja, '_blank');
                             $('#pagomontoModal').modal('hide');

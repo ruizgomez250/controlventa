@@ -27,6 +27,7 @@ use IonysDev\Pkuatia\Core\Constants\EmisRecTipCont;
 use IonysDev\Pkuatia\Core\Constants\OpeComTipTrans;
 use IonysDev\Pkuatia\Core\Constants\PaConEIniTiPago;
 use IonysDev\Pkuatia\Core\Constants\RecTiOpe;
+use IonysDev\Pkuatia\Core\Constants\TipIDRec;
 use IonysDev\Pkuatia\Core\Constants\OpeDETipEmi;
 use IonysDev\Pkuatia\Core\Constants\TimbTiDE;
 use IonysDev\Pkuatia\Core\DocumentosElectronicos\Factura;
@@ -46,6 +47,12 @@ class SifenPkuatiaService
 
     /** @var string|null Ruta temporal del archivo dId.json para la biblioteca pkuatia */
     protected ?string $dIdFilePath = null;
+
+    /** @var \SoapClient|null Último cliente SOAP creado; conserva la respuesta HTTP cruda (trace) */
+    protected static ?\SoapClient $ultimoClienteSoap = null;
+
+    /** Estados en los que SIFEN pudo haber recibido el último CDC sin que se conozca el resultado */
+    protected const ESTADOS_SIN_CONFIRMAR = ['sin_respuesta', 'enviando', 'pendiente', 'error'];
 
     /**
      * Constructor: carga la única fila de sifen_configuraciones
@@ -143,7 +150,118 @@ class SifenPkuatiaService
         }
 
         Sifen::Init($pkuatiaConfig);
+        $this->configurarTransporteSoap();
         $this->initialized = true;
+    }
+
+    /**
+     * El balanceador de SIFEN TEST corta algunas conexiones HTTP persistentes
+     * sin devolver cabeceras. Pkuatia permite inyectar la creación del cliente;
+     * se conserva el contexto TLS con el certificado y se fuerza Connection: close.
+     * El WSDL se toma de una copia local (wsdlLocal) para no descargarlo en cada operación.
+     */
+    protected function configurarTransporteSoap(): void
+    {
+        Sifen::SetSoapClientFactory(static function (string $wsdl, array $options): \SoapClient {
+            $options['keep_alive'] = false;
+            $options['connection_timeout'] = 30;
+
+            $context = $options['stream_context'] ?? null;
+            if (is_resource($context)) {
+                stream_context_set_option($context, 'http', 'protocol_version', 1.0);
+                stream_context_set_option($context, 'http', 'timeout', 60);
+                stream_context_set_option($context, 'http', 'header', "Connection: close\r\n");
+            }
+
+            return self::$ultimoClienteSoap = new \SoapClient(self::wsdlLocal($wsdl, $context), $options);
+        });
+    }
+
+    /**
+     * La caché de WSDL de PHP no se relee en este servidor, así que cada operación
+     * descargaba WSDL y XSD de SIFEN: conexiones extra que el balanceador corta.
+     * La primera vez se guarda una copia en storage/app/sifen/wsdl/<host>/... y
+     * luego solo se conecta para la operación (el endpoint está en el WSDL).
+     * Para refrescar las copias basta con borrar esa carpeta.
+     *
+     * @param resource|null $context Contexto TLS con el certificado del emisor
+     */
+    protected static function wsdlLocal(string $wsdl, $context = null): string
+    {
+        $partes = parse_url($wsdl);
+        if (($partes['scheme'] ?? '') !== 'https' || empty($partes['host']) || empty($partes['path'])) {
+            return $wsdl;
+        }
+        $carpeta = dirname($partes['path']);
+        $dir = storage_path('app/sifen/wsdl/' . $partes['host'] . $carpeta);
+        $local = $dir . '/' . basename($partes['path']);
+        if (is_file($local)) {
+            return $local;
+        }
+
+        try {
+            $base = 'https://' . $partes['host'] . $carpeta . '/';
+            $archivos = [];
+            $pendientes = [basename($partes['path']) => $wsdl];
+            while ($pendientes) {
+                $nombre = array_key_first($pendientes);
+                $url = array_shift($pendientes);
+                $contenido = @file_get_contents($url, false, is_resource($context) ? $context : null);
+                $xml = new \DOMDocument();
+                if (!is_string($contenido) || $contenido === '' || !@$xml->loadXML($contenido, LIBXML_NONET)) {
+                    throw new Exception('respuesta vacía o inválida para ' . $url);
+                }
+                $archivos[$nombre] = $contenido;
+                // Solo imports relativos a la misma carpeta (p. ej. recibe.wsdl.xsd1.xsd)
+                foreach ((new \DOMXPath($xml))->query('//@schemaLocation') as $import) {
+                    if (preg_match('/^[A-Za-z0-9_-][A-Za-z0-9._-]*$/D', $import->value) && !isset($archivos[$import->value])) {
+                        $pendientes[$import->value] = $base . $import->value;
+                    }
+                }
+            }
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+            // El WSDL se escribe al final: su existencia indica que la copia está completa
+            foreach (array_reverse($archivos, true) as $nombre => $contenido) {
+                file_put_contents($dir . '/' . $nombre, $contenido);
+            }
+            return $local;
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo guardar la copia local del WSDL de SIFEN; se usa el remoto.', ['wsdl' => $wsdl, 'error' => $e->getMessage()]);
+            return $wsdl;
+        }
+    }
+
+    /** Cabeceras y cuerpo HTTP de la última respuesta SOAP, o null si no llegó nada. */
+    protected function respuestaSoapCruda(): ?string
+    {
+        $cliente = self::$ultimoClienteSoap;
+        if (!$cliente) {
+            return null;
+        }
+        $crudo = trim($cliente->__getLastResponseHeaders() . "\n" . $cliente->__getLastResponse());
+        return $crudo === '' ? null : $crudo;
+    }
+
+    /**
+     * Guarda en storage/app/sifen/respuestas la respuesta HTTP cruda de SIFEN.
+     * Si no hay respuesta cruda (p. ej. en pruebas), guarda el objeto procesado.
+     */
+    protected function guardarRespuesta(Venta $venta, string $tipo, $respuesta = null): void
+    {
+        try {
+            $crudo = $this->respuestaSoapCruda();
+            if ($crudo === null && $respuesta === null) {
+                return;
+            }
+            Storage::disk('local')->put(
+                'sifen/respuestas/venta_' . $venta->id . '_' . $tipo . '_' . uniqid('', true) . ($crudo !== null ? '.xml' : '.json'),
+                $crudo ?? json_encode($respuesta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_INVALID_UTF8_SUBSTITUTE)
+            );
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo guardar la respuesta original SIFEN.', ['venta_id' => $venta->id, 'error' => $e->getMessage()]);
+        }
     }
 
     /**
@@ -232,18 +350,19 @@ class SifenPkuatiaService
      *  1. Verificar que SIFEN esté habilitado (isHabilitado)
      *  2. Validar configuración (RUC, cert, CSC, datos geográficos)
      *  3. Inicializar la librería pkuatia (ensureInitialized)
-     *  4. Construir objeto Factura con datos de venta, cliente, items
-     *  5. Convertir Factura → RDE (representación intermedia)
-     *  6. Firmar el DE con el CSC (Sifen::FirmarDE)
-     *  7. Guardar XML firmado en disco (auditarXML)
-     *  8. Enviar a SET (Sifen::EnviarDE)
-     *  9. Procesar respuesta: extraer CDC, CDE, estado y guardar en Venta
-     * 10. Loguear resultado (auditarRespuesta)
+     *  4. Si un envío anterior quedó sin respuesta, consultar su CDC (verificarEnvioAnterior)
+     *  5. Construir objeto Factura con datos de venta, cliente, items
+     *  6. Convertir Factura → RDE (representación intermedia)
+     *  7. Firmar el DE con el CSC (Sifen::FirmarDE)
+     *  8. Guardar XML firmado y CDC, enviar a SET y procesar la respuesta (enviarFirmado)
      */
     public function emitir(Venta $venta): array
     {
         if (!$this->isHabilitado()) {
             throw new Exception('SIFEN no está habilitado. Configure los datos del emisor y cargue el certificado.');
+        }
+        if ($venta->sifen_estado === 'autorizado') {
+            throw new Exception('El documento ya fue autorizado por SIFEN.');
         }
 
         $errores = $this->validarConfiguracion();
@@ -254,6 +373,12 @@ class SifenPkuatiaService
         try {
             $this->ensureInitialized();
 
+            // Un envío anterior sin respuesta pudo haber sido aprobado: no generar otro CDC sin consultarlo
+            $anterior = $this->verificarEnvioAnterior($venta);
+            if ($anterior !== null) {
+                return $anterior;
+            }
+
             // Construir la Factura según el modelo de datos de pkuatia
             $factura = $this->buildFactura($venta);
             // Convertir a Representación de Documento Electrónico (RDE)
@@ -262,18 +387,7 @@ class SifenPkuatiaService
             $fechaFirma = new DateTime('now', new DateTimeZone('America/Asuncion'));
             $xmlFirmado = Sifen::FirmarDE($rde, $fechaFirma);
 
-            // Guardar copia del XML firmado para auditoría
-            $this->auditarXML($venta, $xmlFirmado, 'enviado');
-
-            // Enviar a la SET vía SOAP
-            $respuesta = Sifen::EnviarDE($xmlFirmado);
-
-            // Extraer CDC, CDE y estado desde la respuesta
-            $resultado = $this->procesarRespuesta($respuesta, $venta);
-
-            $this->auditarRespuesta($venta, $resultado);
-
-            return $resultado;
+            return $this->enviarFirmado($venta, $xmlFirmado, 'enviado');
         } catch (Exception $e) {
             Log::error('SifenPkuatiaService::emitir - Error: ' . $e->getMessage(), [
                 'venta_id' => $venta->id,
@@ -282,6 +396,100 @@ class SifenPkuatiaService
             $this->registrarError($venta, $e->getMessage());
             throw $e;
         }
+    }
+
+    /**
+     * Registra el CDC, envía el DE firmado y procesa la respuesta.
+     * Si SIFEN corta la conexión, el documento pudo haber llegado: queda
+     * 'sin_respuesta' y el próximo reenvío consulta primero ese CDC.
+     */
+    protected function enviarFirmado(Venta $venta, string $xmlFirmado, string $tipo): array
+    {
+        // El CDC se guarda antes de enviar: es lo único que permite consultar un envío sin respuesta
+        $document = new \DOMDocument();
+        $cdc = $document->loadXML($xmlFirmado, LIBXML_NONET)
+            ? (new \DOMXPath($document))->evaluate('string(//*[local-name()="DE"]/@Id)')
+            : '';
+        if (!preg_match('/^\d{44}$/', $cdc)) {
+            throw new Exception('El XML firmado no contiene un CDC válido; no se envió a SIFEN.');
+        }
+        $venta->sifen_cdc = $cdc;
+        $venta->sifen_estado = 'pendiente';
+        $venta->sifen_ambiente = $this->config->ambiente;
+        $venta->sifen_actualizado_at = now();
+        $venta->save();
+
+        // Guardar copia del XML firmado para auditoría
+        $this->auditarXML($venta, $xmlFirmado, $tipo);
+
+        self::$ultimoClienteSoap = null;
+        try {
+            // Enviar a la SET vía SOAP
+            $respuesta = Sifen::EnviarDE($xmlFirmado);
+        } catch (Exception $e) {
+            $this->guardarRespuesta($venta, 'sin_respuesta');
+            Log::warning('SIFEN no respondió al envío de la venta ' . $venta->id, ['cdc' => $cdc, 'error' => $e->getMessage()]);
+            $this->registrarError($venta, $e->getMessage()
+                . ' — El documento pudo haber llegado a SIFEN; antes de reenviar se consultará el CDC.', 'sin_respuesta');
+            $resultado = ['estado' => 'sin_respuesta', 'cde' => null, 'cdc' => $cdc, 'mensaje' => $venta->sifen_mensaje, 'codigo' => null, 'detalles' => []];
+            $this->auditarRespuesta($venta, $resultado);
+            return $resultado;
+        }
+
+        // Extraer CDC, CDE y estado desde la respuesta
+        $resultado = $this->procesarRespuesta($respuesta, $venta);
+        $this->auditarRespuesta($venta, $resultado);
+        return $resultado;
+    }
+
+    /** ¿El último CDC de la venta quedó sin un resultado definitivo de SIFEN? */
+    public function requiereVerificacion(Venta $venta): bool
+    {
+        return (bool) $venta->sifen_cdc && in_array($venta->sifen_estado, self::ESTADOS_SIN_CONFIRMAR, true);
+    }
+
+    /**
+     * Consulta en SIFEN el último CDC de la venta cuando no se conoce su resultado.
+     * Devuelve null si SIFEN no lo tiene registrado (se puede emitir uno nuevo);
+     * si lo tiene aprobado o no se pudo consultar, devuelve el resultado a informar
+     * y no se debe generar otro documento.
+     */
+    public function verificarEnvioAnterior(Venta $venta): ?array
+    {
+        if (!$this->requiereVerificacion($venta)) {
+            return null;
+        }
+
+        $consulta = $this->consultarCDC($venta->sifen_cdc);
+        $respuesta = $consulta['respuesta'] ?? null;
+        $codigo = $consulta ? sprintf('%04d', $consulta['codigo_resultado']) : null;
+
+        if ($respuesta && ($respuesta->getXContenDE() !== null || isset($respuesta->rContDe))) {
+            $rContDe = $respuesta->getRContDe();
+            $venta->sifen_estado = 'autorizado';
+            $venta->sifen_cde = $rContDe && isset($rContDe->dProtAut) ? $rContDe->dProtAut : null;
+            $venta->sifen_codigo = $codigo;
+            $venta->sifen_mensaje = 'SIFEN ya tenía aprobado este CDC (verificado por consulta). No se reenvió.';
+            $venta->sifen_respuesta = [['codigo' => $codigo, 'mensaje' => (string) $consulta['estado']]];
+            $venta->sifen_ambiente = $this->config->ambiente;
+            $venta->sifen_actualizado_at = now();
+            $venta->save();
+            Log::info('SIFEN: envío anterior sin respuesta estaba aprobado', ['venta_id' => $venta->id, 'cdc' => $venta->sifen_cdc]);
+            return ['estado' => 'autorizado', 'cde' => $venta->sifen_cde, 'cdc' => $venta->sifen_cdc,
+                'mensaje' => $venta->sifen_mensaje, 'codigo' => $codigo, 'detalles' => $venta->sifen_respuesta];
+        }
+
+        // 0420: "Documento No Existe en SIFEN o ha sido Rechazado"
+        if ($codigo === '0420') {
+            Log::info('SIFEN no registra el CDC anterior; se emite un documento nuevo', ['venta_id' => $venta->id, 'cdc' => $venta->sifen_cdc]);
+            return null;
+        }
+
+        $mensaje = 'No se pudo confirmar en SIFEN si el envío anterior (CDC ' . $venta->sifen_cdc . ') fue recibido'
+            . ($consulta ? ' (' . $codigo . ' ' . $consulta['estado'] . ')' : '')
+            . '. No se generó un documento nuevo; reintente más tarde.';
+        $this->registrarError($venta, $mensaje, 'sin_respuesta');
+        return ['estado' => 'sin_respuesta', 'cde' => null, 'cdc' => $venta->sifen_cdc, 'mensaje' => $mensaje, 'codigo' => null, 'detalles' => []];
     }
 
     /**
@@ -297,19 +505,6 @@ class SifenPkuatiaService
             }
             $filename = $dir . '/venta_' . $venta->id . '_' . $tipo . '_' . date('YmdHis') . '.xml';
             file_put_contents($filename, $xml);
-
-            $document = new \DOMDocument();
-            if ($document->loadXML($xml, LIBXML_NONET)) {
-                $xpath = new \DOMXPath($document);
-                $cdc = $xpath->evaluate('string(//*[local-name()="DE"]/@Id)');
-                if (preg_match('/^\d{44}$/', $cdc)) {
-                    $venta->sifen_cdc = $cdc;
-                    $venta->sifen_estado = 'pendiente';
-                    $venta->sifen_ambiente = $this->config->ambiente;
-                    $venta->sifen_actualizado_at = now();
-                    $venta->save();
-                }
-            }
 
             Log::info("SIFEN XML $tipo guardado para venta {$venta->id}", ['archivo' => $filename]);
         } catch (Exception $e) {
@@ -420,20 +615,41 @@ class SifenPkuatiaService
 
     /**
      * Configura el receptor (cliente) de la factura.
-     * Si el cliente tiene RUC válido → se emite como B2B (contribuyente).
-     * Si no → se emite como B2C (Consumidor Final).
+     * El tipo de receptor se toma explícitamente del cliente. Un número de
+     * cédula con DV puede parecer un RUC, pero SIFEN debe recibirlo como B2C.
      */
     protected function setReceptor(Factura $factura, ?Cliente $cliente): void
     {
-        $rucRec = '';
+        $rucRec = null;
         $dvRec = null;
-        $esContribuyente = false;
+        $tipoContribuyente = null;
+        $tipoIdentificacion = null;
+        $numeroIdentificacion = null;
+        $esContribuyente = $cliente ? (bool) $cliente->es_contribuyente : false;
 
-        if ($cliente && $cliente->ruc) {
+        if ($esContribuyente) {
+            if (!$cliente?->ruc) {
+                throw new Exception('El cliente contribuyente no tiene RUC configurado.');
+            }
             $receptor = RucParaguayo::validar((string) $cliente->ruc, $cliente->dv);
             $rucRec = $receptor['ruc'];
             $dvRec = (int) $receptor['dv'];
-            $esContribuyente = true;
+            // iTiContRec: persona física (1) o jurídica (2); si el cliente no lo indica, se deduce del RUC
+            $tipoContribuyente = EmisRecTipCont::tryFrom((int) $cliente->tipo_contribuyente)
+                ?? EmisRecTipCont::from(RucParaguayo::tipoContribuyente($rucRec));
+        } else {
+            $tipoIdentificacion = (int) ($cliente?->tipo_identificacion ?: TipIDRec::CedulaParaguaya->value);
+            $numeroIdentificacion = trim((string) ($cliente?->numero_identificacion ?: ''));
+
+            // Compatibilidad con clientes antiguos: si estaban guardados en
+            // ruc/dv pero se marcan no contribuyentes, la cédula es el número sin DV.
+            if ($numeroIdentificacion === '' && $cliente?->ruc) {
+                $numeroIdentificacion = trim((string) $cliente->ruc);
+            }
+            $numeroIdentificacion = RucParaguayo::numeroDocumento($tipoIdentificacion, $numeroIdentificacion);
+            if ($numeroIdentificacion === '') {
+                throw new Exception('El cliente no contribuyente no tiene número de identificación configurado.');
+            }
         }
 
         $nombreRec = $cliente ? ($cliente->razonsocial ?: 'Consumidor Final') : 'Consumidor Final';
@@ -443,11 +659,11 @@ class SifenPkuatiaService
             esContribuyente: $esContribuyente,
             tipoOperacion: $esContribuyente ? RecTiOpe::B2B : RecTiOpe::B2C,
             codPais: 'PRY',
-            tipoContribuyente: $esContribuyente ? EmisRecTipCont::PersonaJuridica : null,
-            ruc: $rucRec ?: null,
+            tipoContribuyente: $tipoContribuyente,
+            ruc: $rucRec,
             dv: $dvRec,
-            tipoIdentificacion: null,
-            nroIdentificacion: null,
+            tipoIdentificacion: $tipoIdentificacion,
+            nroIdentificacion: $numeroIdentificacion,
             nombreFantasia: null,
             callePrincipal: $cliente->direccion ?? null,
             numeroCasa: null,
@@ -538,14 +754,7 @@ class SifenPkuatiaService
         try {
             // Conserva la respuesta original antes de acceder a propiedades
             // opcionales de la biblioteca (un rechazo puede omitir id/protocolo).
-            try {
-                Storage::disk('local')->put(
-                    'sifen/respuestas/venta_' . $venta->id . '_' . uniqid('', true) . '.json',
-                    json_encode($respuesta, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
-                );
-            } catch (\Throwable $auditoriaError) {
-                Log::warning('No se pudo guardar la respuesta original SIFEN.', ['venta_id' => $venta->id]);
-            }
+            $this->guardarRespuesta($venta, 'respuesta', $respuesta);
             // RProtDe = Protocolo de recepción del DE
             $prot = $respuesta->getRProtDe();
             $cdcRespuesta = isset($prot->id) ? $prot->id : null;
@@ -602,14 +811,15 @@ class SifenPkuatiaService
         return $resultado;
     }
 
-    public function registrarError(Venta $venta, string $mensaje): void
+    /** $estado 'sin_respuesta' indica que el CDC pudo haber llegado a SIFEN y debe consultarse antes de reenviar. */
+    public function registrarError(Venta $venta, string $mensaje, string $estado = 'error'): void
     {
         foreach ([$this->config->certificado_password, $this->config->csc_codigo] as $secreto) {
             if (is_string($secreto) && $secreto !== '') {
                 $mensaje = str_replace($secreto, '[oculto]', $mensaje);
             }
         }
-        $venta->sifen_estado = 'error';
+        $venta->sifen_estado = $estado;
         $venta->sifen_codigo = null;
         $venta->sifen_mensaje = mb_substr($mensaje, 0, 10000);
         $venta->sifen_respuesta = null;
@@ -794,6 +1004,9 @@ class SifenPkuatiaService
         if (!$this->isHabilitado()) {
             throw new Exception('SIFEN no esta habilitado.');
         }
+        if ($venta->sifen_estado === 'autorizado') {
+            throw new Exception('El documento ya fue autorizado por SIFEN.');
+        }
 
         $errores = $this->validarConfiguracion();
         if (!empty($errores)) {
@@ -803,23 +1016,20 @@ class SifenPkuatiaService
         try {
             $this->ensureInitialized();
 
+            $anterior = $this->verificarEnvioAnterior($venta);
+            if ($anterior !== null) {
+                return $anterior;
+            }
+
             $factura = $this->buildFactura($venta);
+            // El tipo de emisión forma parte del CDC: debe fijarse antes de facturaToRDE()
+            $factura->setTipoEmisionDocumento(OpeDETipEmi::Contingencia);
             $rde = $factura->facturaToRDE();
-            $rde->gOpeDE->iTipEmi = OpeDETipEmi::Contingencia->value;
-            $rde->gOpeDE->dDesTipEmi = OpeDETipEmi::Contingencia->getDescription();
 
             $fechaFirma = new DateTime('now', new DateTimeZone('America/Asuncion'));
             $xmlFirmado = Sifen::FirmarDE($rde, $fechaFirma);
 
-            $this->auditarXML($venta, $xmlFirmado, 'contingencia_enviado');
-
-            $respuesta = Sifen::EnviarDE($xmlFirmado);
-
-            $resultado = $this->procesarRespuesta($respuesta, $venta);
-
-            $this->auditarRespuesta($venta, $resultado);
-
-            return $resultado;
+            return $this->enviarFirmado($venta, $xmlFirmado, 'contingencia_enviado');
         } catch (Exception $e) {
             Log::error('SifenPkuatiaService::emitirContingencia - Error: ' . $e->getMessage(), [
                 'venta_id' => $venta->id,
