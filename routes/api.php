@@ -28,6 +28,16 @@ Route::post('/billing/webhook/{provider}', BillingWebhookController::class)
 
 Route::post('/login', [MobileAuthController::class, 'login'])->middleware('throttle:10,1');
 
+Route::prefix('tienda/v1')->name('tienda.api.')->group(function () {
+    $controller = \App\Http\Controllers\Api\TiendaController::class;
+    Route::get('/inicio', [$controller, 'inicio'])->name('inicio');
+    Route::get('/productos', [$controller, 'productos'])->name('productos');
+    Route::get('/productos/{id}', [$controller, 'producto'])->whereNumber('id')->name('producto');
+    Route::get('/imagenes/{id}', [$controller, 'imagen'])->whereNumber('id')->name('imagen');
+    Route::post('/pedidos', [$controller, 'pedido'])->middleware('throttle:tienda-pedidos')->name('pedido');
+    Route::get('/pedidos/{uuid}', [$controller, 'estado'])->middleware('throttle:tienda-seguimiento')->name('estado');
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/media/{type}/{file}', function (string $type, string $file) {
         abort_unless(in_array($type, ['fardos', 'productos'], true) && preg_match('/^[A-Za-z0-9_-][A-Za-z0-9._-]*\.(jpg|jpeg|png|webp)$/i', $file), 404);

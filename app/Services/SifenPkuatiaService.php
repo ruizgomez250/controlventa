@@ -242,6 +242,8 @@ class SifenPkuatiaService
      */
     public function emitir(Venta $venta): array
     {
+        $this->validarClienteParaEmision($venta->cliente);
+
         if (!$this->isHabilitado()) {
             throw new Exception('SIFEN no está habilitado. Configure los datos del emisor y cargue el certificado.');
         }
@@ -419,21 +421,41 @@ class SifenPkuatiaService
     }
 
     /**
-     * Configura el receptor (cliente) de la factura.
-     * Si el cliente tiene RUC válido → se emite como B2B (contribuyente).
-     * Si no → se emite como B2C (Consumidor Final).
+     * Valida el número de documento en TEST y el RUC con DV en producción.
      */
+    protected function validarClienteParaEmision(?Cliente $cliente): void
+    {
+        if ($cliente && $cliente->ruc) {
+            try {
+                if ($this->config->ambiente === 1 || (trim((string) $cliente->dv) === '' && !str_contains((string) $cliente->ruc, '-'))) {
+                    RucParaguayo::numeroConsulta((string) $cliente->ruc);
+                    return;
+                }
+                RucParaguayo::validar((string) $cliente->ruc, $cliente->dv);
+            } catch (\InvalidArgumentException $e) {
+                throw new \InvalidArgumentException('No se puede enviar la factura electrónica: revise el RUC y el identificador/DV del cliente. ' . $e->getMessage() . ' Edite el cliente y vuelva a enviar.', 0, $e);
+            }
+        }
+    }
+
     protected function setReceptor(Factura $factura, ?Cliente $cliente): void
     {
+        $this->validarClienteParaEmision($cliente);
         $rucRec = '';
         $dvRec = null;
         $esContribuyente = false;
+        $documentoRec = null;
 
         if ($cliente && $cliente->ruc) {
-            $receptor = RucParaguayo::validar((string) $cliente->ruc, $cliente->dv);
-            $rucRec = $receptor['ruc'];
-            $dvRec = (int) $receptor['dv'];
-            $esContribuyente = true;
+            // En TEST se identifica al receptor por documento, incluso si tiene DV.
+            if ($this->config->ambiente === 1 || (trim((string) $cliente->dv) === '' && !str_contains((string) $cliente->ruc, '-'))) {
+                $documentoRec = RucParaguayo::numeroConsulta((string) $cliente->ruc);
+            } else {
+                $receptor = RucParaguayo::validar((string) $cliente->ruc, $cliente->dv);
+                $rucRec = $receptor['ruc'];
+                $dvRec = (int) $receptor['dv'];
+                $esContribuyente = true;
+            }
         }
 
         $nombreRec = $cliente ? ($cliente->razonsocial ?: 'Consumidor Final') : 'Consumidor Final';
@@ -446,8 +468,8 @@ class SifenPkuatiaService
             tipoContribuyente: $esContribuyente ? EmisRecTipCont::PersonaJuridica : null,
             ruc: $rucRec ?: null,
             dv: $dvRec,
-            tipoIdentificacion: null,
-            nroIdentificacion: null,
+            tipoIdentificacion: $documentoRec !== null ? \IonysDev\Pkuatia\Core\Constants\TipIDRec::CedulaParaguaya : null,
+            nroIdentificacion: $documentoRec,
             nombreFantasia: null,
             callePrincipal: $cliente->direccion ?? null,
             numeroCasa: null,
@@ -791,6 +813,8 @@ class SifenPkuatiaService
 
     public function emitirContingencia(Venta $venta): array
     {
+        $this->validarClienteParaEmision($venta->cliente);
+
         if (!$this->isHabilitado()) {
             throw new Exception('SIFEN no esta habilitado.');
         }

@@ -22,7 +22,7 @@ use TCPDF;
 
 class VentaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (! auth()->user()->can('venta leer')) {
             return view('sinpermiso.index');
@@ -39,9 +39,12 @@ class VentaController extends Controller
             'Estado',
             'Acción',
         ];
-        $cabecera = Venta::with('cliente', 'usuario')->get();
+        $ordenables = ['id', 'fecha_emision', 'numero_factura', 'timbrado_factura', 'total', 'estado'];
+        $cabecera = \App\Services\ListadoPaginado::aplicar(Venta::with('cliente', 'usuario'), $request,
+            ['id', 'fecha_emision', 'numero_factura', 'timbrado_factura', 'tipo_comprobante', 'total', 'sifen_estado'],
+            ['cliente' => 'razonsocial', 'usuario' => 'name'], $ordenables);
 
-        return view('ventas.index', compact('cabecera', 'heads'));
+        return view('ventas.index', compact('cabecera', 'heads', 'ordenables'));
     }
 
     public function indexEmitidas()

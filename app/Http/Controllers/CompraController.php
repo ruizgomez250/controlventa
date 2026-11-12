@@ -20,7 +20,7 @@ class CompraController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         if (!auth()->user()->can('compra leer')) {
             return view('sinpermiso.index');
@@ -28,8 +28,11 @@ class CompraController extends Controller
         $heads = [
             'ID', 'Fecha', 'Nro Factura', 'Timbrado', 'Proveedor', 'Condición de Compra', 'Monto Total', 'Usuario', 'Estado', 'Acción'
         ];
-        $cabecera = Compra_cab::with('proveedor', 'usuario')->get();
-        return view('compras.index', compact('cabecera', 'heads'));
+        $ordenables = ['id', 'fecha_emision', 'nro_factura', 'timbrado', 'total_compra', 'id_estado'];
+        $cabecera = \App\Services\ListadoPaginado::aplicar(Compra_cab::with('proveedor', 'usuario'), $request,
+            ['id', 'fecha_emision', 'nro_factura', 'timbrado', 'condicion_de_compra', 'total_compra'],
+            ['proveedor' => 'razonsocial', 'usuario' => 'name'], $ordenables);
+        return view('compras.index', compact('cabecera', 'heads', 'ordenables'));
     }
 
     /**

@@ -14,18 +14,15 @@ use Illuminate\View\View;
 class ClienteController extends Controller
 {
     use \App\Http\Controllers\Concerns\NormalizaRuc;
-    public function index(): View
+    public function index(Request $request): View
     {
         if (! auth()->user()->can('cliente leer')) {
             return view('sinpermiso.index');
         }
         try {
-            $cliente = Cliente::all();
-            if ($cliente->isEmpty()) {
-                $cliente = collect();
-            } else {
-                $cliente = $cliente->sortBy('Razón Social');
-            }
+            $ordenables = ['id', 'razonsocial', 'ruc', 'correo', 'estado'];
+            $cliente = \App\Services\ListadoPaginado::aplicar(Cliente::query(), $request,
+                ['id', 'razonsocial', 'ruc', 'correo', 'telefono', 'celular'], [], $ordenables);
             $heads = [
                 'ID',
                 'Razón Social',
@@ -36,7 +33,9 @@ class ClienteController extends Controller
                 'Acción',
             ];
 
-            return view('clientes.index', ['clientes' => $cliente, 'heads' => $heads]);
+            return view('clientes.index', ['clientes' => $cliente, 'heads' => $heads, 'ordenables' => $ordenables]);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (Exception $e) {
             return view('clientes.index')->with('message', 'No se pudo completar la operación.');
         }
@@ -121,7 +120,7 @@ class ClienteController extends Controller
             return redirect()->route('sinpermiso');
         }
         try {
-            $this->normalizarRuc($request);
+            $this->normalizarRuc($request, dvOpcional: true);
             $validated = $request->validate($this->rules());
 
             Cliente::create($validated);
@@ -137,7 +136,7 @@ class ClienteController extends Controller
     public function apistore(Request $request)
     {
         try {
-            $this->normalizarRuc($request);
+            $this->normalizarRuc($request, dvOpcional: true);
             Cliente::create($request->validate($this->rules()));
 
             return redirect()->route('cliente.create')->with('success', 'Operación exitosa');
@@ -153,11 +152,11 @@ class ClienteController extends Controller
 
         try {
             // Validación: solo 'nombre' es obligatorio
-            $this->normalizarRuc($request);
+            $this->normalizarRuc($request, dvOpcional: true);
             $validatedData = $request->validate([
                 'razonsocial' => 'required|string|max:255',
                 'ruc' => ['nullable', 'string', 'regex:/^[0-9]{5,8}$/'],
-                'dv' => ['nullable', 'required_with:ruc', 'string', 'regex:/^\d$/'],
+                'dv' => ['nullable', 'string', 'regex:/^\d$/'],
                 'telefono' => 'nullable|string|max:30',
                 'correo' => 'nullable|email|max:255',
                 'direccion' => 'nullable|string|max:255',
@@ -208,7 +207,7 @@ class ClienteController extends Controller
             return redirect()->route('sinpermiso');
         }
         try {
-            $this->normalizarRuc($request);
+            $this->normalizarRuc($request, dvOpcional: true);
             $cliente->update($request->validate($this->rules()));
 
             return redirect()->route('cliente.index')->with('success', 'Operación exitosa');
@@ -238,7 +237,7 @@ class ClienteController extends Controller
         if (! auth()->user()->can('cliente crear')) {
             return view('sinpermiso.index');
         }
-        $this->normalizarRuc($request);
+        $this->normalizarRuc($request, dvOpcional: true);
         Cliente::create($request->validate($this->rules()));
         // Retorna una respuesta JSON con código de respuesta HTTP 201
         return response()->json([
@@ -252,7 +251,7 @@ class ClienteController extends Controller
         return [
             'razonsocial' => ['required', 'string', 'max:255'],
             'ruc' => ['nullable', 'required_with:dv', 'string', 'regex:/^[0-9]{5,8}$/'],
-            'dv' => ['nullable', 'required_with:ruc', 'string', 'regex:/^\d$/'],
+            'dv' => ['nullable', 'string', 'regex:/^\d$/'],
             'direccion' => ['nullable', 'string', 'max:255'],
             'correo' => ['nullable', 'email:rfc', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:30'],

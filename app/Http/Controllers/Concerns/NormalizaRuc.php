@@ -8,7 +8,7 @@ use Illuminate\Validation\ValidationException;
 
 trait NormalizaRuc
 {
-    protected function normalizarRuc(Request $request, string $campo = 'ruc', string $campoDv = 'dv'): void
+    protected function normalizarRuc(Request $request, string $campo = 'ruc', string $campoDv = 'dv', bool $dvOpcional = false): void
     {
         $ruc = $request->input($campo);
         $dv = $request->input($campoDv);
@@ -18,6 +18,10 @@ trait NormalizaRuc
             throw ValidationException::withMessages([$campo => 'El RUC y el DV deben ser valores numéricos, no listas u objetos.']);
         }
         try {
+            if ($dvOpcional && RucParaguayo::sinEspacios((string) $dv) === '' && !str_contains((string) $ruc, '-')) {
+                $request->merge([$campo => RucParaguayo::numeroConsulta((string) $ruc), $campoDv => null]);
+                return;
+            }
             $partes = RucParaguayo::validar((string) $ruc, $dv !== null ? (string) $dv : null);
         } catch (\InvalidArgumentException $e) {
             throw ValidationException::withMessages([$campo => $e->getMessage()]);

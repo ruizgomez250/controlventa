@@ -485,6 +485,16 @@ return [
             ],
         ],
         [
+            'text'       => 'Tienda online',
+            'icon'       => 'fas fa-store',
+            'can'        => 'venta leer',
+            'submenu'    => [
+                ['text' => 'Ver tienda', 'url' => '/tienda', 'target' => '_blank'],
+                ['text' => 'Pedidos web', 'url' => '/tienda-pedidos', 'can' => 'venta leer'],
+                ['text' => 'Configurar catálogo', 'url' => '/tienda-configuracion', 'can' => 'configuracion modificar'],
+            ],
+        ],
+        [
             'text'       => 'Configuración',
             'url'        => '/configuracion',
             'icon'       => 'fas fa-cogs',

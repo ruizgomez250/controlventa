@@ -70,8 +70,10 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <x-adminlte-datatable id="table1" :heads="$heads" head-theme="dark" theme="light" striped
-                        hoverable with-buttons>
+                    @include('partials.listado-filtros')
+                    <p class="small text-muted">Los botones de exportación incluyen los registros de la página actual.</p>
+                    <x-adminlte-datatable id="table1" :heads="$heads" head-theme="dark" theme="light" striped hoverable with-buttons
+                        :config="['paging' => false, 'searching' => false, 'ordering' => false, 'info' => false]">
                         @foreach ($proveedores as $row)
                             <tr>
                                 <td>{{ $row->id }}</td>
@@ -97,6 +99,7 @@
                             </tr>
                         @endforeach
                     </x-adminlte-datatable>
+                    @include('partials.listado-paginacion', ['registros' => $proveedores])
                 </div>
             </div>
         </div>

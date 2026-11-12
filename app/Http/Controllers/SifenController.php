@@ -174,6 +174,8 @@ class SifenController extends Controller
                 'success' => true,
                 'data' => $resultado,
             ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['success' => false, 'mensaje' => $e->getMessage()], 422);
         } catch (\Exception $e) {
             Log::error('SifenController::reemitir: ' . $e->getMessage());
             return response()->json([

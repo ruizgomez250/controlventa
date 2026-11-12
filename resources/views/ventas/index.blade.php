@@ -18,6 +18,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
+                    @include('partials.listado-filtros')
                     <table id="table1" class="table table-bordered table-hover" theme="light">
                         <thead>
                             <tr>
@@ -75,6 +76,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    @include('partials.listado-paginacion', ['registros' => $cabecera])
                 </div>
             </div>
         </div>
@@ -88,6 +90,10 @@
             var table = $('#table1').DataTable({
                 responsive: true,
                 autoWidth: false,
+                paging: false,
+                searching: false,
+                ordering: false,
+                info: false,
                 columnDefs: [{
                         className: 'details-control', // Agrega clase de control de detalles
                         orderable: false, // No se puede ordenar por esta columna

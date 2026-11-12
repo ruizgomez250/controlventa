@@ -37,6 +37,11 @@ class Producto extends Model
         return $this->belongsTo(Opcion::class, 'id_categoria');
     }
 
+    public function tienda()
+    {
+        return $this->hasOne(TiendaProducto::class, 'producto_id');
+    }
+
 
     public function unidaddemedida()
     {

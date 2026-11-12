@@ -15,14 +15,16 @@ class ProveedorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): view
+    public function index(Request $request): view
     {
 
         if (!auth()->user()->can('proveedor leer')) {
             return view('sinpermiso.index');
         }
         //obtenemos los datos
-        $proveedor = Proveedor::all();
+        $ordenables = ['id', 'razonsocial', 'ruc', 'correo', 'estado'];
+        $proveedor = \App\Services\ListadoPaginado::aplicar(Proveedor::query(), $request,
+            ['id', 'razonsocial', 'ruc', 'correo', 'telefono', 'celular'], [], $ordenables);
         //asignar cabecera datatable
         $heads = [
             'ID',
@@ -33,7 +35,7 @@ class ProveedorController extends Controller
             'Estado',
             'Acción'
         ];
-        return view('proveedores.index', ['proveedores' => $proveedor, 'heads' => $heads]);
+        return view('proveedores.index', ['proveedores' => $proveedor, 'heads' => $heads, 'ordenables' => $ordenables]);
     }
 
     /**

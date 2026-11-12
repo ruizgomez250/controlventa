@@ -19,8 +19,10 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
+                    @include('partials.listado-filtros')
                     <table id="table1" class="table table-bordered table-hover" theme="light">
                         <thead>
+                            <tr>
                             <th>{{ __('Detalles') }}</th> <!-- Columna para el botón de expansión -->
                             <th>{{ __('ID') }}</th>
                             <th>{{ __('Fecha de Emisión') }}</th>
@@ -68,6 +70,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    @include('partials.listado-paginacion', ['registros' => $cabecera])
 
 
                     <x-adminlte-modal id="detalleModal" title="{{ __('Detalles de la Compra') }}" theme="light" size="lg">
@@ -139,6 +142,10 @@
             var table = $('#table1').DataTable({
                 responsive: true,
                 autoWidth: false,
+                paging: false,
+                searching: false,
+                ordering: false,
+                info: false,
                 columnDefs: [{
                         className: 'details-control',
                         orderable: false,

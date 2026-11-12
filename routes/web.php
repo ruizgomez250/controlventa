@@ -45,6 +45,17 @@ Route::get('/', function () {
 // Rutas principales de la aplicación (funcionan en localhost/dominio principal)
 Auth::routes(['register' => false]);
 
+Route::view('/tienda', 'tienda.index')->name('tienda.publica');
+Route::middleware(['auth', 'can:configuracion modificar'])->group(function () {
+    Route::get('/tienda-configuracion', [\App\Http\Controllers\TiendaAdminController::class, 'configuracion'])->name('tienda.configuracion');
+    Route::put('/tienda-configuracion', [\App\Http\Controllers\TiendaAdminController::class, 'guardarConfiguracion'])->name('tienda.configuracion.guardar');
+    Route::put('/tienda-productos/{id}', [\App\Http\Controllers\TiendaAdminController::class, 'guardarProducto'])->whereNumber('id')->name('tienda.productos.guardar');
+});
+Route::middleware(['auth', 'can:venta leer'])->group(function () {
+    Route::get('/tienda-pedidos', [\App\Http\Controllers\TiendaAdminController::class, 'pedidos'])->name('tienda.pedidos');
+    Route::put('/tienda-pedidos/{id}', [\App\Http\Controllers\TiendaAdminController::class, 'actualizarPedido'])->middleware('can:venta crear')->whereNumber('id')->name('tienda.pedidos.actualizar');
+});
+
 Route::middleware(['central', 'throttle:10,1'])->group(function () {
     Route::get('/suscribirme', [CheckoutController::class, 'show'])->name('checkout.show');
     Route::post('/suscribirme', [CheckoutController::class, 'store'])->name('checkout.store');

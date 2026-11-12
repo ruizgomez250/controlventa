@@ -36,7 +36,7 @@ class MobilePeopleController extends Controller
 
     private function clientData(Request $request, ?int $id = null): array
     {
-        $this->normalizarRuc($request);
+        $this->normalizarRuc($request, dvOpcional: true);
         return $request->validate([
             'razonsocial' => ['required', 'string', 'max:70'],
             'ruc' => ['nullable', 'string', 'regex:/^[0-9]{5,8}$/', Rule::unique('clientes', 'ruc')->ignore($id)],

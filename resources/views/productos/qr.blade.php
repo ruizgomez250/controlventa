@@ -9,6 +9,18 @@
 @stop
 @section('css')
     <link rel="stylesheet" href="{{ asset('vendor/jquery-ui-1.13.2/jquery-ui.min.css') }}">
+    <style>
+        .product-code-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .product-code-actions .btn {
+            white-space: nowrap;
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -18,7 +30,7 @@
                 <div class="card-body">
                     {{-- 'id', 'codigo', 'descripcion', 'detalle', 'id_categoria', 'id_estado','pcosto', 'pventa', 'observacion' --}}
 
-                    <div class="row">
+                    <div class="row align-items-end">
                         {{-- With Label --}}
                         
                         <x-adminlte-select2 name="idproducto" id="idproducto" label="PRODUCTO"
@@ -34,12 +46,14 @@
                             @endforeach
                         </x-adminlte-select2>
                         
-                        <div class="col-md-4" style="margin-top: 32px;">
-                            <button class="btn btn-secondary" onclick="generarPDF()">
-                                <i class="fas fa-qrcode"></i>{{ __('Generar QR') }}</button>
-                            
-                            <button class="btn btn-primary" onclick="generarCodigoBarras()" style="margin-left: 10px;">
-                                <i class="fas fa-barcode"></i>{{ __('Generar Código de Barras') }}</button>
+                        <div class="col-md-8">
+                            <div class="product-code-actions">
+                                <button type="button" class="btn btn-secondary" onclick="generarPDF()">
+                                    <i class="fas fa-qrcode mr-1"></i>{{ __('Generar QR') }}</button>
+
+                                <button type="button" class="btn btn-primary" onclick="generarCodigoBarras()">
+                                    <i class="fas fa-barcode mr-1"></i>{{ __('Generar Código de Barras') }}</button>
+                            </div>
                         </div>
                     </div>
                     <!-- Agrega este elemento para mostrar la suma total -->
